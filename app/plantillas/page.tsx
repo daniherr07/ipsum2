@@ -56,7 +56,7 @@ export default function PlantillasPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
         <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-center relative">
-          <Link href="/" className="absolute left-4">
+          <Link href="/dashboard" className="absolute left-4">
             <button className="btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)]">
               <ArrowLeft className="h-5 w-5" />
             </button>

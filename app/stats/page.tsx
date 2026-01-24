@@ -331,7 +331,7 @@ export default function StatsPage() {
     <div className="h-svh flex flex-col bg-base-200 overflow-hidden">
       <header className="navbar bg-primary text-primary-content shadow-lg shrink-0">
         <div className="navbar-start">
-          <Link href="/" className="btn btn-ghost btn-circle">
+          <Link href="/dashboard" className="btn btn-ghost btn-circle">
             <ArrowLeft className="size-5" />
           </Link>
         </div>

@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { Pencil, Trash } from "lucide-react";
+import Link from "next/link";
 
 export default function AddMovement() {
   const [filter, setFilter] = useState(0);
 
   return (
     <>
-      <nav className="w-full h-12 bg-primary flex justify-center items-center">
+      <nav className="w-full h-12 bg-primary flex justify-center items-center relative">
+        <Link href={"/dashboard"} className="btn btn-primary btn-soft absolute left-3 top-2 text-primary-content"  >Atras</Link>
         <p>Movimientos</p>
       </nav>
-      <main className="w-full flex flex-col justify-center items-center p-3 gap-5">
+      <main className="w-full flex flex-col justify-center items-center p-3 gap-5 lg:px-[25dvw]">
         <div className="flex w-full gap-1">
           <button
             type="button"
@@ -48,9 +50,9 @@ export default function AddMovement() {
           <button type="button" className={`btn btn-primary`}>
             Mostrar Gráficos
           </button>
-          <button type="button" className={`btn btn-primary btn-soft`}>
+          <Link href={"/addMov"} type="button" className={`btn btn-primary btn-soft`}>
             Añadir Movimiento
-          </button>
+          </Link>
         </div>
 
         <ul className="list bg-base-100 rounded-box shadow-md max-h-dvh overflow-scroll">
