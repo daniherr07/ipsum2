@@ -9,7 +9,7 @@ export default function AddMovement() {
   return (
     <>
       <nav className="w-full h-12 bg-primary flex justify-center items-center">
-        <p>Ingresar Movimiento</p>
+        <p>Ingresar Movimiento:</p>
       </nav>
       <main className="w-full flex flex-col justify-center items-center p-3">
         <div className="flex gap-5 w-full">
