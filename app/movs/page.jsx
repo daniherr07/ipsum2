@@ -47,9 +47,9 @@ export default function AddMovement() {
         </fieldset>
 
         <div className="flex flex-col w-full gap-3">
-          <button type="button" className={`btn btn-primary`}>
+          <Link href={"/stats"} type="button" className={`btn btn-primary`}>
             Mostrar Gráficos
-          </button>
+          </Link>
           <Link href={"/addMov"} type="button" className={`btn btn-primary btn-soft`}>
             Añadir Movimiento
           </Link>
