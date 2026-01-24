@@ -12,6 +12,8 @@ import {
   TrendingDown 
 } from "lucide-react";
 
+import Link from 'next/link';
+
 export default function DashboardConstructora() {
   // Estado para manejo de fecha (Cronopedagogía aplicada)
   const [mes, setMes] = useState("Octubre");
@@ -86,33 +88,27 @@ export default function DashboardConstructora() {
 
       {/* Grid de Menú de Módulos (Estilo DaisyUI 5) */}
       <div className="grid grid-cols-2 gap-5 w-full max-w-md mt-12">
-        <button className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
+
+        <Link href={"/movs"} className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
           <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
             <Wallet size={28} />
           </div>
           <span className="text-[11px] font-black uppercase tracking-widest text-gray-200">Movimientos</span>
-        </button>
+        </Link>
 
-        <button className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
-          <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
-            <FolderKanban size={28} />
-          </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-gray-200">Proyectos</span>
-        </button>
-
-        <button className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
+        <Link href={"/plantillas"} className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
           <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
             <FileText size={28} />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-gray-200">Plantillas</span>
-        </button>
+          <span  className="text-[11px] font-black uppercase tracking-widest text-gray-200">Plantillas</span>
+        </Link>
 
-        <button className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
+        <Link href={"/stats"} className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
           <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
             <BarChart3 size={28} />
           </div>
           <span className="text-[11px] font-black uppercase tracking-widest text-gray-200">Gráficos</span>
-        </button>
+        </Link>
       </div>
     </div>
   );

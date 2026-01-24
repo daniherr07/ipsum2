@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 
 export default function AddMovement() {
@@ -9,9 +10,10 @@ export default function AddMovement() {
   return (
     <>
       <nav className="w-full h-12 bg-primary flex justify-center items-center">
+        <Link href={"/movs"} className="btn btn-primary btn-soft absolute left-3 top-2 text-primary-content">Atras</Link>
         <p>Ingresar Movimiento:</p>
       </nav>
-      <main className="w-full flex flex-col justify-center items-center p-3">
+      <main className="w-full flex flex-col justify-center items-center p-3 lg:px-[25dvw]">
         <div className="flex gap-5 w-full">
           <button
             type="button"
