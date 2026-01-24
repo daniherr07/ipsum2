@@ -5,109 +5,260 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Wallet, 
-  FolderKanban, 
   FileText, 
   BarChart3,
   TrendingUp, 
   TrendingDown 
 } from "lucide-react";
-
 import Link from 'next/link';
 
+/* =========================
+   Configuración de meses
+========================= */
+const MESES = [
+  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+];
+
+/* =========================
+   Data mock por mes/año
+   (luego puedes traerla de BD)
+========================= */
+const DATA = {
+  "2025-0": { // Enero
+    ingresos: 320000,
+    egresos: 410000,
+    categorias: {
+      Administrativos: -180000,
+      Proyectos: 80000,
+      Otros: -230000,
+    }
+  },
+  "2025-1": { // Febrero
+    ingresos: 500000,
+    egresos: 450000,
+    categorias: {
+      Administrativos: -200000,
+      Proyectos: 280000,
+      Otros: -70000,
+    }
+  },
+  "2025-2": { // Marzo
+    ingresos: 780000,
+    egresos: 520000,
+    categorias: {
+      Administrativos: -220000,
+      Proyectos: 450000,
+      Otros: -70000,
+    }
+  },
+  "2025-3": { // Abril
+    ingresos: 620000,
+    egresos: 610000,
+    categorias: {
+      Administrativos: -240000,
+      Proyectos: 320000,
+      Otros: -50000,
+    }
+  },
+  "2025-4": { // Mayo
+    ingresos: 910000,
+    egresos: 700000,
+    categorias: {
+      Administrativos: -260000,
+      Proyectos: 500000,
+      Otros: -20000,
+    }
+  },
+  "2025-5": { // Junio
+    ingresos: 400000,
+    egresos: 650000,
+    categorias: {
+      Administrativos: -250000,
+      Proyectos: 150000,
+      Otros: -550000,
+    }
+  },
+  "2025-6": { // Julio
+    ingresos: 1050000,
+    egresos: 720000,
+    categorias: {
+      Administrativos: -270000,
+      Proyectos: 620000,
+      Otros: -10000,
+    }
+  },
+  "2025-7": { // Agosto
+    ingresos: 880000,
+    egresos: 830000,
+    categorias: {
+      Administrativos: -300000,
+      Proyectos: 520000,
+      Otros: -10000,
+    }
+  },
+  "2025-8": { // Septiembre
+    ingresos: 450970,
+    egresos: 900780,
+    categorias: {
+      Administrativos: -560000,
+      Proyectos: 275000,
+      Otros: -15000,
+    }
+  },
+  "2025-9": { // Octubre
+    ingresos: 780000,
+    egresos: 420000,
+    categorias: {
+      Administrativos: -210000,
+      Proyectos: 600000,
+      Otros: -30000,
+    }
+  },
+  "2025-10": { // Noviembre
+    ingresos: 1200000,
+    egresos: 650000,
+    categorias: {
+      Administrativos: -280000,
+      Proyectos: 750000,
+      Otros: -20000,
+    }
+  },
+  "2025-11": { // Diciembre
+    ingresos: 300000,
+    egresos: 550000,
+    categorias: {
+      Administrativos: -200000,
+      Proyectos: 50000,
+      Otros: -400000,
+    }
+  }
+};
+
+
 export default function DashboardConstructora() {
-  // Estado para manejo de fecha (Cronopedagogía aplicada)
-  const [mes, setMes] = useState("Octubre");
+  const [mesIndex, setMesIndex] = useState(9); // Octubre
   const [anio, setAnio] = useState(2025);
 
+  const key = `${anio}-${mesIndex}`;
+  const data = DATA[key] ?? {
+    ingresos: 0,
+    egresos: 0,
+    categorias: {}
+  };
+
+  const balance = data.ingresos - data.egresos;
+
+  /* =========================
+     Navegación de meses
+  ========================= */
+  const mesAnterior = () => {
+    if (mesIndex === 0) {
+      setMesIndex(11);
+      setAnio(a => a - 1);
+    } else {
+      setMesIndex(m => m - 1);
+    }
+  };
+
+  const mesSiguiente = () => {
+    if (mesIndex === 11) {
+      setMesIndex(0);
+      setAnio(a => a + 1);
+    } else {
+      setMesIndex(m => m + 1);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--color-primary-950)] text-white font-sans flex flex-col items-center justify-center p-6">
-      
-      {/* Selector de Fecha - Jerarquía Superior */}
+    <div className="min-h-screen bg-[var(--color-primary-950)] text-white flex flex-col items-center justify-center p-6">
+
+      {/* Selector de Fecha */}
       <div className="flex flex-col items-center mb-10">
         <span className="text-gray-500 text-sm font-medium mb-1">{anio}</span>
         <div className="flex items-center gap-8">
-          <button className="btn btn-ghost btn-circle btn-sm bg-[#1a2c3d] hover:bg-slate-800 border-none shadow-lg">
-            <ChevronLeft size={20} className="text-gray-400" />
+          <button onClick={mesAnterior}
+            className="btn btn-ghost btn-circle btn-sm bg-[#1a2c3d]">
+            <ChevronLeft size={20} />
           </button>
-          <h1 className="text-4xl font-black tracking-tight">{mes}</h1>
-          <button className="btn btn-ghost btn-circle btn-sm bg-[#1a2c3d] hover:bg-slate-800 border-none shadow-lg">
-            <ChevronRight size={20} className="text-gray-400" />
+
+          <h1 className="text-4xl font-black">{MESES[mesIndex]}</h1>
+
+          <button onClick={mesSiguiente}
+            className="btn btn-ghost btn-circle btn-sm bg-[#1a2c3d]">
+            <ChevronRight size={20} />
           </button>
         </div>
       </div>
 
-      {/* Card Principal de Control Financiero */}
-      <div className="w-full max-w-md bg-[#162534] rounded-[42px] p-7 shadow-2xl border border-white/5 space-y-7">
-        
-        {/* Fila de Indicadores: Egresos e Ingresos */}
+      {/* Card Principal */}
+      <div className="w-full max-w-md bg-[#162534] rounded-[42px] p-7 space-y-7">
+
+        {/* Ingresos / Egresos */}
         <div className="grid grid-cols-2 gap-5">
-          {/* Egresos: Basado en --error de globals.css */}
-          <div className="bg-[#261b26] p-5 rounded-[28px] flex flex-col items-center border border-[var(--error)]/20 shadow-xl">
-            <div className="flex items-center gap-2 text-[var(--error-content)] mb-1">
-              <TrendingDown size={14} strokeWidth={3} />
-              <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Egresos</span>
+          <div className="bg-[#261b26] p-5 rounded-[28px] text-center">
+            <div className="flex justify-center gap-2 text-[var(--error-content)]">
+              <TrendingDown size={14} />
+              <span className="text-[10px] uppercase font-black">Egresos</span>
             </div>
-            <span className="text-2xl font-black text-[var(--error-content)]">₵900 780</span>
+            <span className="text-2xl font-black">
+              ₵{data.egresos.toLocaleString()}
+            </span>
           </div>
-          
-          {/* Ingresos: Basado en --success de globals.css */}
-          <div className="bg-[#182623] p-5 rounded-[28px] flex flex-col items-center border border-[var(--success)]/20 shadow-xl">
-            <div className="flex items-center gap-2 text-[var(--success-content)] mb-1">
-              <TrendingUp size={14} strokeWidth={3} />
-              <span className="text-[10px] uppercase font-black tracking-widest opacity-80">Ingresos</span>
+
+          <div className="bg-[#182623] p-5 rounded-[28px] text-center">
+            <div className="flex justify-center gap-2 text-[var(--success-content)]">
+              <TrendingUp size={14} />
+              <span className="text-[10px] uppercase font-black">Ingresos</span>
             </div>
-            <span className="text-2xl font-black text-[var(--success-content)]">₵450 970</span>
+            <span className="text-2xl font-black">
+              ₵{data.ingresos.toLocaleString()}
+            </span>
           </div>
         </div>
 
-        {/* Balance Total Destacado (Centro de Gravedad UI) */}
-        <div className="bg-[#233344] rounded-[32px] p-8 flex flex-col items-center shadow-inner border border-white/5 relative overflow-hidden">
-          <span className="text-gray-400 text-[11px] uppercase font-black tracking-[0.25em] mb-3 z-10">Balance Total</span>
-          <span className="text-5xl font-black text-[var(--error-content)] tracking-tighter drop-shadow-2xl z-10">
-            ₵-449 810
+        {/* Balance */}
+        <div className="bg-[#233344] rounded-[32px] p-8 text-center">
+          <span className="text-gray-400 text-[11px] uppercase font-black">
+            Balance Total
           </span>
-          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
+          <span className={`text-5xl font-black ${
+            balance < 0 ? "text-[var(--error-content)]" : "text-[var(--success-content)]"
+          }`}>
+            ₵{balance.toLocaleString()}
+          </span>
         </div>
 
-        {/* Listado de Categorías de Gasto */}
-        <div className="space-y-4 px-4 pb-2">
-          <div className="flex justify-between items-center group">
-            <span className="text-gray-300 font-semibold group-hover:text-white transition-colors">Administrativos:</span>
-            <span className="font-bold text-[var(--error-content)]">₵-560 000</span>
-          </div>
-          <div className="flex justify-between items-center group">
-            <span className="text-gray-300 font-semibold group-hover:text-white transition-colors">Proyectos:</span>
-            <span className="font-bold text-[var(--success-content)]">₵+275 000</span>
-          </div>
-          <div className="flex justify-between items-center group border-t border-white/5 pt-4">
-            <span className="text-gray-300 font-semibold group-hover:text-white transition-colors">Otros:</span>
-            <span className="font-bold text-[var(--error-content)]">₵-15 000</span>
-          </div>
+        {/* Categorías */}
+        <div className="space-y-4 px-4">
+          {Object.entries(data.categorias).map(([cat, val]) => (
+            <div key={cat} className="flex justify-between">
+              <span className="text-gray-300 font-semibold">{cat}</span>
+              <span className={`font-bold ${
+                val < 0 ? "text-[var(--error-content)]" : "text-[var(--success-content)]"
+              }`}>
+                ₵{val.toLocaleString()}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Grid de Menú de Módulos (Estilo DaisyUI 5) */}
+      {/* Menú */}
       <div className="grid grid-cols-2 gap-5 w-full max-w-md mt-12">
-
-        <Link href={"/movs"} className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
-          <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
-            <Wallet size={28} />
-          </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-gray-200">Movimientos</span>
+        <Link href="/movs" className="btn h-32 bg-[#1a2c3d] rounded-[32px] flex flex-col items-center justify-center">
+          <Wallet size={28} />
+          <span className="text-[11px] font-black uppercase">Movimientos</span>
         </Link>
 
-        <Link href={"/plantillas"} className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
-          <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
-            <FileText size={28} />
-          </div>
-          <span  className="text-[11px] font-black uppercase tracking-widest text-gray-200">Plantillas</span>
+        <Link href="/plantillas" className="btn h-32 bg-[#1a2c3d] rounded-[32px] flex flex-col items-center justify-center">
+          <FileText size={28} />
+          <span className="text-[11px] font-black uppercase">Plantillas</span>
         </Link>
 
-        <Link href={"/stats"} className="btn h-32 bg-[#1a2c3d] border-none hover:bg-[#233344] rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.03] active:scale-95 shadow-2xl">
-          <div className="p-4 bg-[#233344] rounded-2xl text-[var(--color-primary-200)] shadow-inner">
-            <BarChart3 size={28} />
-          </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-gray-200">Gráficos</span>
+        <Link href="/stats" className="btn h-32 bg-[#1a2c3d] rounded-[32px] flex flex-col items-center justify-center">
+          <BarChart3 size={28} />
+          <span className="text-[11px] font-black uppercase">Gráficos</span>
         </Link>
       </div>
     </div>
