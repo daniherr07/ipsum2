@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ArrowLeft, Search } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
+import NavBar from "@/components/navbar/NavBar"
 
 export default function PlantillasPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -52,9 +53,11 @@ export default function PlantillasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
+    <>
+      <NavBar />
+      <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
         <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-center relative">
           <Link href="/dashboard" className="absolute left-4">
             <button className="btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)]">
@@ -161,5 +164,6 @@ export default function PlantillasPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

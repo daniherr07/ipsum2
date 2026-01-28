@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { Pencil, Trash } from "lucide-react";
 import Link from "next/link";
+import NavBar from "@/components/navbar/NavBar";
 
 export default function AddMovement() {
   const [filter, setFilter] = useState(0);
 
   return (
     <>
+      <NavBar />
       <nav className="w-full h-12 bg-primary flex justify-center items-center relative">
         <Link href={"/dashboard"} className="btn btn-primary btn-soft absolute left-3 top-2 text-primary-content"  >Atras</Link>
         <p>Movimientos</p>

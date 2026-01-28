@@ -1,4 +1,11 @@
+import NavBar from '@/components/navbar/NavBar';
+
 export default function LandingPage() {
   //Aqui tiene que ir la landing page, Todo
-  return <p>Página Landing</p>;
+  return (
+    <>
+      <NavBar />
+      <p>Página Landing</p>
+    </>
+  );
 }
