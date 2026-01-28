@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet } from "lucide-react"
 import Link from "next/link"
+import NavBar from "@/components/navbar/NavBar"
 
 type MonthData = { mes: string; ingresos: number; egresos: number }
 type CategoryData = { nombre: string; monto: number; tipo: "ingreso" | "egreso" }
@@ -328,8 +329,10 @@ export default function StatsPage() {
       : (Math.abs(cat.monto) / totalEgresos) * 100
 
   return (
-    <div className="h-svh flex flex-col bg-base-200 overflow-hidden">
-      <header className="navbar bg-primary text-primary-content shadow-lg shrink-0">
+    <>
+      <NavBar />
+      <div className="h-svh flex flex-col bg-base-200 overflow-hidden">
+        <header className="navbar bg-primary text-primary-content shadow-lg shrink-0">
         <div className="navbar-start">
           <Link href="/dashboard" className="btn btn-ghost btn-circle">
             <ArrowLeft className="size-5" />
@@ -408,6 +411,7 @@ export default function StatsPage() {
           </section>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   )
 }

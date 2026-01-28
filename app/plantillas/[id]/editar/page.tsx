@@ -5,6 +5,7 @@ import { ArrowLeft, Plus, X } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
+import NavBar from "@/components/navbar/NavBar"
 
 interface Item {
   id: number
@@ -70,7 +71,9 @@ export default function EditarPlantillaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
+    <>
+      <NavBar />
+      <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
       {/* Header */}
       <header className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
         <div className="max-w-5xl mx-auto h-14 px-4 flex items-center gap-3">
@@ -270,5 +273,6 @@ export default function EditarPlantillaPage() {
         </button>
       </main>
     </div>
+    </>
   )
 }

@@ -11,6 +11,7 @@ import {
   TrendingDown 
 } from "lucide-react";
 import Link from 'next/link';
+import NavBar from '@/components/navbar/NavBar';
 
 /* =========================
    Configuración de meses
@@ -171,9 +172,11 @@ export default function DashboardConstructora() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-primary-950)] text-white flex flex-col items-center justify-center p-6">
+    <>
+      <NavBar />
+      <div className="min-h-screen bg-[var(--color-primary-950)] text-white flex flex-col items-center justify-center p-6">
 
-      {/* Selector de Fecha */}
+        {/* Selector de Fecha */}
       <div className="flex flex-col items-center mb-10">
         <span className="text-gray-500 text-sm font-medium mb-1">{anio}</span>
         <div className="flex items-center gap-8">
@@ -196,22 +199,22 @@ export default function DashboardConstructora() {
 
         {/* Ingresos / Egresos */}
         <div className="grid grid-cols-2 gap-5">
-          <div className="bg-[#261b26] p-5 rounded-[28px] text-center">
+          <div className="bg-[#261b26] p-5 rounded-[28px] text-center flex flex-col items-center justify-center">
             <div className="flex justify-center gap-2 text-[var(--error-content)]">
               <TrendingDown size={14} />
               <span className="text-[10px] uppercase font-black">Egresos</span>
             </div>
-            <span className="text-2xl font-black">
+            <span className="font-black" style={{fontSize: 'clamp(1.25rem, 6vw, 2rem)'}}>
               ₵{data.egresos.toLocaleString()}
             </span>
           </div>
 
-          <div className="bg-[#182623] p-5 rounded-[28px] text-center">
+          <div className="bg-[#182623] p-5 rounded-[28px] text-center flex flex-col items-center justify-center">
             <div className="flex justify-center gap-2 text-[var(--success-content)]">
               <TrendingUp size={14} />
               <span className="text-[10px] uppercase font-black">Ingresos</span>
             </div>
-            <span className="text-2xl font-black">
+            <span className="font-black" style={{fontSize: 'clamp(1.25rem, 6vw, 2rem)'}}>
               ₵{data.ingresos.toLocaleString()}
             </span>
           </div>
@@ -222,9 +225,10 @@ export default function DashboardConstructora() {
           <span className="text-gray-400 text-[11px] uppercase font-black">
             Balance Total
           </span>
-          <span className={`text-5xl font-black ${
+          <span className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black line-clamp-1 ${
             balance < 0 ? "text-[var(--error-content)]" : "text-[var(--success-content)]"
-          }`}>
+          }`}
+          style={{fontSize: 'clamp(1.5rem, 8vw, 3rem)'}}>
             ₵{balance.toLocaleString()}
           </span>
         </div>
@@ -262,5 +266,6 @@ export default function DashboardConstructora() {
         </Link>
       </div>
     </div>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Search, Pencil, Plus, CircleUserRound, Bell } from "lucide-react";
-import { modifyData } from "../../../const";
+import { modifyData } from "./const";
 import Form from "next/form";
 import {newProjectAction} from "./newProjectAction";
 import CreateProjectButton from "./CreateProjectButton";
@@ -41,7 +41,7 @@ export default function NavBar() {
             </li>
             <li>
               <Link
-                href={"/protected/search"}
+                href="#"
                 className="flex flex-row items-center justify-start"
               >
                 <Search size={20} />
@@ -50,7 +50,7 @@ export default function NavBar() {
             </li>
             <li>
               <Link
-                href={"/protected/modify"}
+                href="#"
                 className="flex flex-row items-center justify-start"
               >
                 <Pencil size={20} />
@@ -60,7 +60,7 @@ export default function NavBar() {
                 {modifyData.map((item, index) => (
                   <li key={index}>
                     <Link
-                      href={`/protected/modify?type=${item.slug}`}
+                      href="#"
                       replace={true}
                       shallow={true}
                     >
@@ -88,7 +88,7 @@ export default function NavBar() {
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
           <li>
-            <Link href={"/protected/search"}>Buscar</Link>
+            <Link href="#">Buscar</Link>
           </li>
           <li>
             <details>
@@ -98,7 +98,7 @@ export default function NavBar() {
                   <li key={index}>
                     <Link
                       prefetch={false}
-                      href={`/protected/modify?type=${item.slug}`}
+                      href="#"
                     >
                       {item.label}
                     </Link>
