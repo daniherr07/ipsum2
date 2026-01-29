@@ -1,15 +1,25 @@
 import Link from "next/link";
-import { Search, Pencil, Plus, CircleUserRound, Bell } from "lucide-react";
+import {
+  Search,
+  Pencil,
+  Plus,
+  CircleUserRound,
+  Bell,
+  ChartColumn,
+  LayoutDashboard,
+  NotebookText,
+  ChartPie
+} from "lucide-react";
 import { modifyData } from "./const";
 import Form from "next/form";
-import {newProjectAction} from "./newProjectAction";
+import { newProjectAction } from "./newProjectAction";
 import CreateProjectButton from "./CreateProjectButton";
 
 export default function NavBar() {
   return (
     <div className="navbar bg-base-300 shadow-sm">
       {/** Menu Dropdown Mobiles */}
-      <div className="navbar-start">
+      <div className="navbar-start z-100">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
             <svg
@@ -41,7 +51,7 @@ export default function NavBar() {
             </li>
             <li>
               <Link
-                href="#"
+                href="/search"
                 className="flex flex-row items-center justify-start"
               >
                 <Search size={20} />
@@ -56,19 +66,46 @@ export default function NavBar() {
                 <Pencil size={20} />
                 <p>Modificar</p>
               </Link>
-              <ul className="p-2">
-                {modifyData.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      href="#"
-                      replace={true}
-                      shallow={true}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            </li>
+
+            <div className="divider m-0!"></div>
+
+            <li>
+              <Link
+                href="/dashboard"
+                className="flex flex-row items-center justify-start"
+              >
+                <LayoutDashboard size={20} />
+                <p>Dashboard</p>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/movs"
+                className="flex flex-row items-center justify-start"
+              >
+                <ChartColumn size={20} />
+                <p>Movimientos</p>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/plantillas"
+                className="flex flex-row items-center justify-start"
+              >
+                <NotebookText size={20} />
+                <p>Plantillas</p>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/stats"
+                className="flex flex-row items-center justify-start"
+              >
+                <ChartPie size={20} />
+                <p>Estadísticas</p>
+              </Link>
             </li>
             <li>
               <Link href={"#"} className="text-error">
@@ -96,10 +133,7 @@ export default function NavBar() {
               <ul className="p-2 bg-base-300 w-40 z-1">
                 {modifyData.map((item, index) => (
                   <li key={index}>
-                    <Link
-                      prefetch={false}
-                      href="#"
-                    >
+                    <Link prefetch={false} href="#">
                       {item.label}
                     </Link>
                   </li>
