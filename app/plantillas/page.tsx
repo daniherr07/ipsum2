@@ -27,6 +27,7 @@ export default function PlantillasPage() {
     const selected = plantillas.find(p => p.id === selectedRow)
 
     Swal.fire({
+      theme: "dark",
       title: "¿Estás seguro?",
       text: `¿Deseas borrar la plantilla "${selected?.nombre}"?`,
       icon: "warning",
@@ -54,35 +55,20 @@ export default function PlantillasPage() {
 
   return (
     <>
-      <NavBar />
       <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
-        <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-center relative">
-          <Link href="/dashboard" className="absolute left-4">
-            <button className="btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)]">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <h1 className="text-lg font-bold">Plantillas</h1>
-        </div>
-      </div>
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         {/* Search */}
         <div
           className="
             bg-white dark:bg-[var(--base-200)]
-            border-2 border-[var(--primary-200)]
             rounded-xl
-            shadow-md
-            p-4
           "
         >
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--primary)]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-base-content z-2" />
             <input
-              className="input input-bordered w-full pl-10 bg-[var(--base-100)] border-[var(--primary-100)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
+              className="input input-bordered w-full pl-10 bg-base-100 border-base-content focus:border-base-content/60 focus:ring-2 focus:ring-[var(--primary-100)]"
               placeholder="Buscar plantilla..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -93,10 +79,9 @@ export default function PlantillasPage() {
         {/* Table Card */}
         <div
           className="
-            bg-white dark:bg-[var(--base-200)]
-            border-2 border-[var(--primary-200)]
+          bg-base-200
+            border border-base-300
             rounded-xl
-            shadow-md
             p-4
           "
         >
@@ -138,15 +123,15 @@ export default function PlantillasPage() {
 
         {/* Primary action */}
         <Link href="/plantillas/crear">
-          <button className="btn w-full h-12 text-base font-bold bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-white hover:shadow-lg transition duration-200">
+          <button className="btn w-full h-12 text-base font-bold btn-primary text-white hover:shadow-lg transition duration-200">
             + Crear nueva plantilla
           </button>
         </Link>
 
         {/* Secondary actions */}
-        <div className="grid grid-cols-2 gap-4 pt-1">
+        <div className="grid grid-cols-2 gap-4 pt-1 mt-2">
           <button
-            className={`btn h-12 font-semibold bg-[var(--error)] text-white hover:bg-[#760202] transition duration-200 ${!selectedRow ? "opacity-50 cursor-not-allowed" : "hover:shadow-md"}`}
+            className={`btn btn-error h-12 font-semibold hover:bg-[#760202] transition duration-200 ${!selectedRow ? "opacity-50 cursor-not-allowed" : "hover:shadow-md"}`}
             disabled={!selectedRow}
             onClick={handleDelete}
           >
@@ -157,7 +142,7 @@ export default function PlantillasPage() {
             href={selectedRow ? `/plantillas/${selectedRow}/editar` : "#"}
             className={!selectedRow ? "pointer-events-none opacity-50" : ""}
           >
-            <button className="btn h-12 w-full font-semibold bg-[var(--warning)] text-white hover:bg-[#6d6f01] transition duration-200 hover:shadow-md">
+            <button className="btn btn-warning h-12 w-full font-semibold hover:bg-[#6d6f01] transition duration-200 hover:shadow-md">
               Ver y editar
             </button>
           </Link>
