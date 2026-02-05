@@ -72,23 +72,11 @@ export default function EditarPlantillaPage() {
 
   return (
     <>
-      <NavBar />
       <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
-        <div className="max-w-5xl mx-auto h-14 px-4 flex items-center gap-3">
-          <Link href="/plantillas">
-            <button className="btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)]">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-          </Link>
-          <h1 className="text-lg font-bold">Editar plantilla</h1>
-        </div>
-      </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* Main Card */}
-        <section className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md p-6 space-y-6">
+        <section className="bg-base-200 rounded-xl shadow-md p-6 space-y-6">
           {/* Info */}
           <div className="grid gap-4">
             <div>
@@ -224,10 +212,8 @@ export default function EditarPlantillaPage() {
             className="
               w-full
               h-11
-              rounded-lg
-              border-2
-              border-[var(--primary)]
-              text-[var(--primary)]
+              btn
+              btn-success
               flex
               items-center
               justify-center
@@ -245,7 +231,7 @@ export default function EditarPlantillaPage() {
         </section>
 
         {/* Totals */}
-        <section className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl p-6 space-y-2 shadow-md">
+        <section className="bg-base-200 border-1 rounded-xl p-6 space-y-2 shadow-md">
           <div className="flex justify-between text-sm">
             <span>Subtotal</span>
             <span className="font-semibold">₵{subtotal.toLocaleString()}</span>
@@ -266,7 +252,7 @@ export default function EditarPlantillaPage() {
         </section>
 
         <button
-          className="btn w-full h-12 text-lg font-bold bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-white hover:shadow-lg transition duration-200"
+          className="btn btn-primary w-full h-12 text-lg font-bold hover:shadow-lg transition duration-200"
           onClick={handleConfirmar}
         >
           Confirmar cambios

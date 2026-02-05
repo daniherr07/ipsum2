@@ -10,12 +10,8 @@ export default function AddMovement() {
 
   return (
     <>
-      <NavBar />
-      <nav className="w-full h-12 bg-primary flex justify-center items-center">
-        <Link href={"/movs"} className="btn btn-primary btn-soft absolute left-3 top-2 text-primary-content">Atras</Link>
-        <p>Ingresar Movimiento:</p>
-      </nav>
       <main className="w-full flex flex-col justify-center items-center p-3 lg:px-[25dvw]">
+        <h1 className="text-xl mb-3 font-black">Añadir Movimiento</h1>
         <div className="flex gap-5 w-full">
           <button
             type="button"
@@ -71,7 +67,7 @@ export function OutForm() {
       </fieldset>
 
       <fieldset className="fieldset">
-        <legend className="fieldset-legend">Fecha de Ingreso</legend>
+        <legend className="fieldset-legend">Fecha de Egreso</legend>
         <input type="date" className="input" />
       </fieldset>
 
