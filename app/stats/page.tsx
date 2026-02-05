@@ -72,12 +72,13 @@ function useDelayedState<T>(initialValue: T, targetValue: T, delay: number) {
   return value
 }
 
-function StatCard({ icon: Icon, label, value, colorClass, delay = 0 }: {
+function StatCard({ icon: Icon, label, value, colorClass, delay = 0, fullGrid = false }: {
   icon: typeof TrendingUp
   label: string
   value: number
   colorClass: string
   delay?: number
+  fullGrid?: boolean
 }) {
   const animatedValue = useAnimatedNumber(value)
   const [show, setShow] = useState(false)
@@ -89,7 +90,7 @@ function StatCard({ icon: Icon, label, value, colorClass, delay = 0 }: {
 
   return (
     <div 
-      className="card bg-base-100 shadow-md hover:shadow-xl transition-all duration-500"
+      className={`card bg-base-100 shadow-md hover:shadow-xl transition-all duration-500 ${fullGrid == true && "col-span-full"}`}
       style={{
         opacity: show ? 1 : 0,
         transform: show ? "translateY(0)" : "translateY(12px)",
@@ -330,23 +331,11 @@ export default function StatsPage() {
 
   return (
     <>
-      <NavBar />
       <div className="h-svh flex flex-col bg-base-200 overflow-hidden">
-        <header className="navbar bg-primary text-primary-content shadow-lg shrink-0">
-        <div className="navbar-start">
-          <Link href="/dashboard" className="btn btn-ghost btn-circle">
-            <ArrowLeft className="size-5" />
-          </Link>
-        </div>
-        <div className="navbar-center">
-          <span className="text-lg font-bold">Estadísticas</span>
-        </div>
-        <div className="navbar-end" />
-      </header>
 
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
         <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-5">
-          <section className="grid grid-cols-3 gap-3 lg:gap-5 shrink-0">
+          <section className="grid grid-cols-2 gap-3 lg:gap-5 shrink-0">
             <StatCard 
               icon={TrendingUp} 
               label="Ingresos" 
@@ -367,6 +356,7 @@ export default function StatsPage() {
               value={DATA.balance} 
               colorClass={DATA.balance >= 0 ? "text-success" : "text-error"}
               delay={160}
+              fullGrid={true}
             />
           </section>
 
