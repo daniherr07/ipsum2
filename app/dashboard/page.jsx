@@ -9,6 +9,7 @@ import {
   BarChart3,
   TrendingUp,
   TrendingDown,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import NavBar from "@/components/navbar/NavBar";
@@ -277,6 +278,53 @@ export default function DashboardConstructora() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="w-full max-w-md bg-base-200 flex flex-col gap-6 rounded-lg shadow-lg p-7 mt-3">
+          {/* Balance */}
+          <div className="text-center">
+            <span className="text-base-content text-lg uppercase font-black">
+              Proyectos del Mes
+            </span>
+          </div>
+
+          <ul className="list bg-base-100 rounded-box shadow-md">
+            <li className="list-row ">
+              <div className="list-col-grow">
+                <div>Clodomiro Picado</div>
+                <div className="text-xs uppercase font-semibold opacity-60">
+                  ART. 59
+                </div>
+              </div>
+              <button className="btn btn-square btn-primary ">
+                <ExternalLink></ExternalLink>
+              </button>
+            </li>
+
+            <li className="list-row ">
+              <div className="list-col-grow">
+                <div>Monseñor Sanabria</div>
+                <div className="text-xs uppercase font-semibold opacity-60">
+                  CLP
+                </div>
+              </div>
+              <button className="btn btn-square btn-primary ">
+                <ExternalLink></ExternalLink>
+              </button>
+            </li>
+
+            <li className="list-row ">
+              <div className="list-col-grow">
+                <div>Joaquín García</div>
+                <div className="text-xs uppercase font-semibold opacity-60">
+                  ART. 59
+                </div>
+              </div>
+              <button className="btn btn-square btn-primary ">
+                <ExternalLink></ExternalLink>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </>
