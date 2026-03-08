@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { ArrowLeft, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react"
 import Link from "next/link"
 import NavBar from "@/components/navbar/NavBar"
 
@@ -15,14 +15,12 @@ interface ComponentePago {
   id: string
   tipo: "pago-casa" | "administrativo"
   monto: string
-  mes?: number
-  ano?: number
-  proyecto?: string
+  mes: number
+  ano: number
   categoria?: string
   descripcion?: string
 }
 
-// Estilos globales para los options del select
 const styleSheet = typeof document !== 'undefined' ? (() => {
   const style = document.createElement('style')
   style.textContent = `
@@ -53,39 +51,27 @@ export default function NuevoMovimientoPage() {
   const [categoria, setCategoria] = useState("")
   const [nombreIngreso, setNombreIngreso] = useState("")
   const [descripcion, setDescripcion] = useState("")
-  
-  // Estados para fecha de pago (ingreso-casa)
+
   const today = new Date()
   const [fechaPagoDia, setFechaPagoDia] = useState(String(today.getDate()).padStart(2, "0"))
   const [fechaPagoMes, setFechaPagoMes] = useState(String(today.getMonth() + 1).padStart(2, "0"))
   const [fechaPagoAno, setFechaPagoAno] = useState(today.getFullYear().toString())
 
-  // Estados para pago compuesto
-  const [tipoComponenteSeleccionado, setTipoComponenteSeleccionado] = useState<"pago-casa" | "administrativo" | null>(null)
-  const [componentesTemporal, setComponentesTemporal] = useState<Partial<ComponentePago>>({
-    tipo: "pago-casa",
-    monto: "",
-    mes: 1,
-    ano: new Date().getFullYear(),
-  })
+  // Estados pago compuesto
   const [componentesAcumulados, setComponentesAcumulados] = useState<ComponentePago[]>([])
+  const [mostrarFormComponente, setMostrarFormComponente] = useState(false)
+  const [tipoComponente, setTipoComponente] = useState<"pago-casa" | "administrativo" | null>(null)
+  const [componenteMonto, setComponenteMonto] = useState("")
+  const [componenteMes, setComponenteMes] = useState(String(today.getMonth() + 1))
+  const [componenteAno, setComponenteAno] = useState(today.getFullYear().toString())
+  const [componenteCategoria, setComponenteCategoria] = useState("")
+  const [componenteDescripcion, setComponenteDescripcion] = useState("")
 
   const meses = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
   ]
 
-  // Proyectos con meses fijos para ingreso-casa
   const proyectosConMesFijo: Proyecto[] = [
     { id: "proj-1", nombre: "Proyecto Magna", mes: 1 },
     { id: "proj-2", nombre: "Centro Comercial", mes: 3 },
@@ -94,25 +80,18 @@ export default function NuevoMovimientoPage() {
     { id: "proj-5", nombre: "Plaza Principal", mes: 5 },
   ]
 
-  // Generar proyectos según tipo de movimiento
   const proyectos: Proyecto[] = useMemo(() => {
-    if (tipoMovimiento === "ingreso-casa") {
-      return proyectosConMesFijo
-    }
-    
+    if (tipoMovimiento === "ingreso-casa") return proyectosConMesFijo
+
     const proyectosBase = [
-      "Proyecto Magna",
-      "Centro Comercial",
-      "Residencial Vista",
-      "Oficinas Ejecutivas",
-      "Plaza Principal",
+      "Proyecto Magna", "Centro Comercial", "Residencial Vista",
+      "Oficinas Ejecutivas", "Plaza Principal",
     ]
 
-    // Simular que algunos proyectos están activos en ciertos meses
     return proyectosBase
       .filter((_, idx) => {
         const mesNum = parseInt(mesSeleccionado)
-        return (idx + mesNum) % 3 !== 0 // Filtro aleatorio basado en mes
+        return (idx + mesNum) % 3 !== 0
       })
       .map((nombre, idx) => ({
         id: `proj-${idx}`,
@@ -121,13 +100,7 @@ export default function NuevoMovimientoPage() {
       }))
   }, [mesSeleccionado, tipoMovimiento])
 
-  // Opciones de categoría según el tipo de movimiento
-  const opcionesCategoria = useMemo(() => {
-    if (tipoMovimiento === "pago-casa") {
-      return ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
-    }
-    return []
-  }, [tipoMovimiento])
+  const opcionesCategoria = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
 
   const formatCurrency = (value: string) => {
     const num = parseInt(value.replace(/\D/g, "")) || 0
@@ -143,9 +116,50 @@ export default function NuevoMovimientoPage() {
     setMonto(value)
   }
 
+  const handleComponenteMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "")
+    setComponenteMonto(value)
+  }
+
+  // Calcular restante
+  const totalNum = parseInt(monto) || 0
+  const sumaComponentes = componentesAcumulados.reduce((sum, c) => sum + (parseInt(c.monto) || 0), 0)
+  const restante = totalNum - sumaComponentes
+
+  const resetFormComponente = () => {
+    setTipoComponente(null)
+    setComponenteMonto("")
+    setComponenteMes(String(today.getMonth() + 1))
+    setComponenteAno(today.getFullYear().toString())
+    setComponenteCategoria("")
+    setComponenteDescripcion("")
+    setMostrarFormComponente(false)
+  }
+
+  const agregarComponente = () => {
+    if (!tipoComponente || !componenteMonto) return
+
+    const nuevo: ComponentePago = {
+      id: Date.now().toString(),
+      tipo: tipoComponente,
+      monto: componenteMonto,
+      mes: parseInt(componenteMes),
+      ano: parseInt(componenteAno),
+      categoria: tipoComponente === "pago-casa" ? componenteCategoria : undefined,
+      descripcion: componenteDescripcion,
+    }
+
+    setComponentesAcumulados([...componentesAcumulados, nuevo])
+    resetFormComponente()
+  }
+
+  const eliminarComponente = (id: string) => {
+    setComponentesAcumulados(componentesAcumulados.filter(c => c.id !== id))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (tipoMovimiento === "pago-compuesto") {
       if (componentesAcumulados.length === 0) {
         alert("Debes agregar al menos un componente de pago")
@@ -153,26 +167,22 @@ export default function NuevoMovimientoPage() {
       }
       console.log({
         tipoMovimiento: "pago-compuesto",
+        proyecto: proyectoSeleccionado,
+        montoTotal: totalNum,
         componentes: componentesAcumulados,
-        montoTotal: componentesAcumulados.reduce((sum, c) => sum + parseInt(c.monto), 0),
       })
     } else {
-      // Aquí irá la lógica para guardar el movimiento simple
       console.log({
-        tipoMovimiento,
-        monto,
+        tipoMovimiento, monto,
         mes: meses[parseInt(mesSeleccionado) - 1],
         proyecto: proyectoSeleccionado,
-        categoria,
-        nombreIngreso,
-        descripcion,
+        categoria, nombreIngreso, descripcion,
       })
     }
   }
 
   return (
     <>
-      <NavBar />
       <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
         {/* Header */}
         <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
@@ -187,9 +197,9 @@ export default function NuevoMovimientoPage() {
         </div>
 
         <div className="max-w-2xl mx-auto px-4 py-6">
-          {/* Formulario */}
           <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+
               {/* Tipo de Movimiento */}
               <div>
                 <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
@@ -202,14 +212,9 @@ export default function NuevoMovimientoPage() {
                     setCategoria("")
                     setNombreIngreso("")
                     setProyectoSeleccionado("")
+                    setMonto("")
                     setComponentesAcumulados([])
-                    setTipoComponenteSeleccionado(null)
-                    setComponentesTemporal({
-                      tipo: "pago-casa",
-                      monto: "",
-                      mes: 1,
-                      ano: new Date().getFullYear(),
-                    })
+                    resetFormComponente()
                   }}
                   className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
                 >
@@ -220,415 +225,423 @@ export default function NuevoMovimientoPage() {
                 </select>
               </div>
 
-              {/* Monto - Solo para movimientos simples */}
+              {/* ── CAMPOS MOVIMIENTOS SIMPLES ── */}
               {tipoMovimiento !== "pago-compuesto" && (
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Monto
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
-                    <input
-                      type="text"
-                      value={monto ? formatCurrency(monto) : ""}
-                      onChange={handleMontoChange}
-                      placeholder="0"
-                      className="input input-bordered w-full pl-8 bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Selector de Mes y Año */}
-              {tipoMovimiento === "ingreso-casa" ? (
-                // Mes mostrado como solo lectura para ingreso-casa
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Mes
-                  </label>
-                  <div className="w-full px-4 py-3 bg-[var(--base-50)] dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary-200)] rounded-lg font-semibold">
-                    {meses[parseInt(mesSeleccionado) - 1] || "Sin proyecto"}
-                  </div>
-                </div>
-              ) : (
-                // Selectores normales para otros tipos
-                <div className="grid grid-cols-2 gap-4">
+                <>
                   <div>
-                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                      Mes
-                    </label>
-                    <select
-                      value={mesSeleccionado}
-                      onChange={(e) => {
-                        setMesSeleccionado(e.target.value)
-                        setProyectoSeleccionado("")
-                      }}
-                      className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                    >
-                      {meses.map((mes, idx) => (
-                        <option key={idx} value={idx + 1}>
-                          {mes}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                      Año
-                    </label>
-                    <select
-                      value={anoSeleccionado}
-                      onChange={(e) => {
-                        setAnoSeleccionado(e.target.value)
-                        setProyectoSeleccionado("")
-                      }}
-                      className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                    >
-                      {[2024, 2025, 2026, 2027, 2028].map((ano) => (
-                        <option key={ano} value={ano}>
-                          {ano}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {/* Proyectos - Solo para Pago Casa e Ingreso Casa */}
-              {tipoMovimiento !== "administrativo" && (
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Proyecto
-                  </label>
-                  <select
-                    value={proyectoSeleccionado}
-                    onChange={(e) => {
-                      const idSeleccionado = e.target.value
-                      setProyectoSeleccionado(idSeleccionado)
-                      
-                      // Auto-cargar mes si es ingreso-casa
-                      if (tipoMovimiento === "ingreso-casa" && idSeleccionado) {
-                        const proyectoEncontrado = proyectosConMesFijo.find(p => p.id === idSeleccionado)
-                        if (proyectoEncontrado) {
-                          setMesSeleccionado(proyectoEncontrado.mes.toString())
-                        }
-                      }
-                    }}
-                    className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                  >
-                    <option value="">Seleccionar proyecto...</option>
-                    {proyectos.map((proyecto) => (
-                      <option key={proyecto.id} value={proyecto.id}>
-                        {proyecto.nombre}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Fecha de Pago - Solo para Ingreso Casa */}
-              {tipoMovimiento === "ingreso-casa" && (
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Fecha de Pago
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {/* Día */}
-                    <div>
-                      <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Día</label>
+                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Monto</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
                       <input
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={fechaPagoDia}
-                        onChange={(e) => {
-                          const val = Math.min(31, Math.max(1, parseInt(e.target.value) || 1))
-                          setFechaPagoDia(String(val).padStart(2, "0"))
-                        }}
-                        className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] font-semibold text-center"
+                        type="text"
+                        value={monto ? formatCurrency(monto) : ""}
+                        onChange={handleMontoChange}
+                        placeholder="0"
+                        className="input input-bordered w-full pl-8 bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
                       />
                     </div>
+                  </div>
 
-                    {/* Mes */}
+                  {tipoMovimiento === "ingreso-casa" ? (
                     <div>
-                      <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Mes</label>
+                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Mes</label>
+                      <div className="w-full px-4 py-3 bg-[var(--base-50)] dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary-200)] rounded-lg font-semibold">
+                        {meses[parseInt(mesSeleccionado) - 1] || "Sin proyecto"}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Mes</label>
+                        <select
+                          value={mesSeleccionado}
+                          onChange={(e) => { setMesSeleccionado(e.target.value); setProyectoSeleccionado("") }}
+                          className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                        >
+                          {meses.map((mes, idx) => (
+                            <option key={idx} value={idx + 1}>{mes}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Año</label>
+                        <select
+                          value={anoSeleccionado}
+                          onChange={(e) => { setAnoSeleccionado(e.target.value); setProyectoSeleccionado("") }}
+                          className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                        >
+                          {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                            <option key={ano} value={ano}>{ano}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {tipoMovimiento !== "administrativo" && (
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Proyecto</label>
                       <select
-                        value={fechaPagoMes}
-                        onChange={(e) => setFechaPagoMes(String(parseInt(e.target.value)).padStart(2, "0"))}
-                        className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold"
+                        value={proyectoSeleccionado}
+                        onChange={(e) => {
+                          const idSeleccionado = e.target.value
+                          setProyectoSeleccionado(idSeleccionado)
+                          if (tipoMovimiento === "ingreso-casa" && idSeleccionado) {
+                            const found = proyectosConMesFijo.find(p => p.id === idSeleccionado)
+                            if (found) setMesSeleccionado(found.mes.toString())
+                          }
+                        }}
+                        className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
                       >
-                        {meses.map((mes, idx) => (
-                          <option key={idx} value={String(idx + 1).padStart(2, "0")}>
-                            {mes}
-                          </option>
+                        <option value="">Seleccionar proyecto...</option>
+                        {proyectos.map((proyecto) => (
+                          <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
                         ))}
                       </select>
                     </div>
+                  )}
 
-                    {/* Año */}
+                  {tipoMovimiento === "ingreso-casa" && (
                     <div>
-                      <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Año</label>
+                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Fecha de Pago</label>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Día</label>
+                          <input
+                            type="number" min="1" max="31" value={fechaPagoDia}
+                            onChange={(e) => setFechaPagoDia(String(Math.min(31, Math.max(1, parseInt(e.target.value) || 1))).padStart(2, "0"))}
+                            className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] font-semibold text-center"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Mes</label>
+                          <select
+                            value={fechaPagoMes}
+                            onChange={(e) => setFechaPagoMes(String(parseInt(e.target.value)).padStart(2, "0"))}
+                            className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold"
+                          >
+                            {meses.map((mes, idx) => (
+                              <option key={idx} value={String(idx + 1).padStart(2, "0")}>{mes}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Año</label>
+                          <select
+                            value={fechaPagoAno}
+                            onChange={(e) => setFechaPagoAno(e.target.value)}
+                            className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold"
+                          >
+                            {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                              <option key={ano} value={ano}>{ano}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {tipoMovimiento === "pago-casa" && (
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Categoría</label>
                       <select
-                        value={fechaPagoAno}
-                        onChange={(e) => setFechaPagoAno(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold"
+                        value={categoria}
+                        onChange={(e) => setCategoria(e.target.value)}
+                        className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
                       >
-                        {[2024, 2025, 2026, 2027, 2028].map((ano) => (
-                          <option key={ano} value={ano}>
-                            {ano}
-                          </option>
+                        <option value="">Seleccionar categoría...</option>
+                        {opcionesCategoria.map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
                         ))}
                       </select>
+                    </div>
+                  )}
+
+                  {tipoMovimiento === "ingreso-casa" && (
+                    <div>
+                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Nombre del Ingreso</label>
+                      <input
+                        type="text" value={nombreIngreso}
+                        onChange={(e) => setNombreIngreso(e.target.value)}
+                        placeholder="Ej: Venta de materiales sobrantes"
+                        className="input input-bordered w-full bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Descripción</label>
+                    <textarea
+                      value={descripcion}
+                      onChange={(e) => setDescripcion(e.target.value)}
+                      placeholder="Agrega más detalles sobre este movimiento..."
+                      rows={4}
+                      className="textarea textarea-bordered w-full bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)] resize-none"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* ── PAGO COMPUESTO ── */}
+              {tipoMovimiento === "pago-compuesto" && (
+                <>
+                  {/* Total */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Total</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
+                      <input
+                        type="text"
+                        value={monto ? formatCurrency(monto) : ""}
+                        onChange={handleMontoChange}
+                        placeholder="0"
+                        className="input input-bordered w-full pl-8 bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
+                      />
                     </div>
                   </div>
-                </div>
-              )}
 
-              {/* Categoría o Nombre de Ingreso */}
-              {tipoMovimiento === "pago-casa" && (
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Categoría
-                  </label>
-                  <select
-                    value={categoria}
-                    onChange={(e) => setCategoria(e.target.value)}
-                    className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                  >
-                    <option value="">Seleccionar categoría...</option>
-                    {opcionesCategoria.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                  {/* Proyecto */}
+                  <div>
+                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Proyecto</label>
+                    <select
+                      value={proyectoSeleccionado}
+                      onChange={(e) => setProyectoSeleccionado(e.target.value)}
+                      className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                    >
+                      <option value="">Seleccionar proyecto...</option>
+                      {proyectosConMesFijo.map((proyecto) => (
+                        <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              {tipoMovimiento === "ingreso-casa" && (
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Nombre del Ingreso
-                  </label>
-                  <input
-                    type="text"
-                    value={nombreIngreso}
-                    onChange={(e) => setNombreIngreso(e.target.value)}
-                    placeholder="Ej: Venta de materiales sobrantes"
-                    className="input input-bordered w-full bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
-                  />
-                </div>
-              )}
+                  {/* Barra de progreso restante */}
+                  {totalNum > 0 && (
+                    <div className="bg-[var(--base-50)] dark:bg-[var(--base-300)] border-2 border-[var(--primary-200)] rounded-lg p-4 space-y-2">
+                      <div className="flex justify-between text-sm font-semibold">
+                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Asignado:</span>
+                        <span className="text-[var(--primary)]">{formatCurrency(sumaComponentes.toString())}</span>
+                      </div>
+                      <div className="w-full bg-[var(--base-200)] dark:bg-[var(--base-400)] rounded-full h-2.5">
+                        <div
+                          className="h-2.5 rounded-full transition-all"
+                          style={{
+                            width: `${Math.min((sumaComponentes / totalNum) * 100, 100)}%`,
+                            backgroundColor: sumaComponentes > totalNum ? '#ef4444' : '#035496',
+                          }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-sm font-semibold">
+                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Restante:</span>
+                        <span className={restante < 0 ? "text-red-500" : "text-green-600"}>
+                          {formatCurrency(Math.abs(restante).toString())}
+                          {restante < 0 && " (excedido)"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
-              {/* Descripción - Solo para movimientos simples */}
-              {tipoMovimiento !== "pago-compuesto" && (
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Descripción
-                  </label>
-                  <textarea
-                    value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder="Agrega más detalles sobre este movimiento..."
-                    rows={4}
-                    className="textarea textarea-bordered w-full bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)] resize-none"
-                  />
-                </div>
-              )}
+                  {/* Componentes agregados */}
+                  {componentesAcumulados.length > 0 && (
+                    <div className="space-y-3">
+                      <label className="block text-sm font-semibold text-[var(--foreground)]">
+                        Componentes ({componentesAcumulados.length})
+                      </label>
+                      {componentesAcumulados.map((comp, idx) => (
+                        <div
+                          key={comp.id}
+                          className="flex items-center justify-between bg-[var(--base-50)] dark:bg-[var(--base-300)] border border-[var(--primary-200)] rounded-lg px-4 py-3"
+                        >
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-semibold text-[var(--foreground)]">
+                              {idx + 1}. {comp.tipo === "pago-casa" ? "Pago Casa" : "Pago Administrativo"}
+                            </p>
+                            <p className="text-xs text-[var(--base-500)]">
+                              {meses[comp.mes - 1]} {comp.ano}
+                              {comp.categoria && ` · ${comp.categoria}`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-bold text-[var(--primary)]">{formatCurrency(comp.monto)}</span>
+                            <button
+                              type="button"
+                              onClick={() => eliminarComponente(comp.id)}
+                              className="btn btn-ghost btn-xs btn-circle text-red-400 hover:text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-              {/* SECCIÓN PAGO COMPUESTO */}
-              {tipoMovimiento === "pago-compuesto" && (
-                <div className="space-y-4">
-                  {/* Selector inicial de tipo */}
-                  {!tipoComponenteSeleccionado ? (
-                    <div className="bg-gradient-to-r from-[var(--primary-100)] to-[var(--primary-200)] dark:from-[var(--base-300)] dark:to-[var(--base-400)] border-2 border-[var(--primary)] rounded-lg p-6">
-                      <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 text-center">
-                        ¿Qué tipo de pago deseas agregar?
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
+                  {/* Botón agregar componente */}
+                  {!mostrarFormComponente && (
+                    <button
+                      type="button"
+                      onClick={() => setMostrarFormComponente(true)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[var(--primary)] rounded-lg text-[var(--primary)] font-semibold hover:bg-[var(--primary-50)] transition-all"
+                    >
+                      <Plus className="h-5 w-5" />
+                      Agregar Componente
+                    </button>
+                  )}
+
+                  {/* Formulario de componente */}
+                  {mostrarFormComponente && (
+                    <div className="border-2 border-[var(--primary-200)] rounded-xl p-4 space-y-4 bg-[var(--base-50)] dark:bg-[var(--base-300)]">
+                      <p className="text-sm font-bold text-[var(--foreground)]">¿Qué tipo de pago quieres agregar?</p>
+
+                      {/* Selector tipo componente */}
+                      <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
-                          onClick={() => {
-                            setTipoComponenteSeleccionado("pago-casa")
-                            setComponentesTemporal({
-                              tipo: "pago-casa",
-                              monto: "",
-                            })
-                          }}
-                          className="btn bg-[#035496] hover:bg-[#0470c8] text-white border-0 font-bold text-base transition-all transform hover:scale-105"
+                          onClick={() => setTipoComponente("pago-casa")}
+                          className={`px-4 py-3 rounded-lg border-2 font-semibold text-sm transition-all ${
+                            tipoComponente === "pago-casa"
+                              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                              : "border-[var(--primary-200)] text-[var(--foreground)] hover:border-[var(--primary)]"
+                          }`}
                         >
                           Pago Casa
                         </button>
                         <button
                           type="button"
-                          onClick={() => {
-                            setTipoComponenteSeleccionado("administrativo")
-                            setComponentesTemporal({
-                              tipo: "administrativo",
-                              monto: "",
-                            })
-                          }}
-                          className="btn bg-[#035496] hover:bg-[#0470c8] text-white border-0 font-bold text-base transition-all transform hover:scale-105"
+                          onClick={() => setTipoComponente("administrativo")}
+                          className={`px-4 py-3 rounded-lg border-2 font-semibold text-sm transition-all ${
+                            tipoComponente === "administrativo"
+                              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                              : "border-[var(--primary-200)] text-[var(--foreground)] hover:border-[var(--primary)]"
+                          }`}
                         >
-                          Administrativo
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Formulario expandido */
-                    <div className="bg-[var(--base-50)] dark:bg-[var(--base-300)] border-2 border-[var(--primary-200)] rounded-lg p-4 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-sm font-bold text-[var(--foreground)]">
-                          {tipoComponenteSeleccionado === "pago-casa" ? "Pago Casa" : "Pago Administrativo"}
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTipoComponenteSeleccionado(null)
-                            setComponentesTemporal({
-                              tipo: "pago-casa",
-                              monto: "",
-                            })
-                          }}
-                          className="text-[var(--base-600)] hover:text-[var(--foreground)] text-xl font-bold"
-                        >
-                          ✕
+                          Pago Administrativo
                         </button>
                       </div>
 
-                      {/* Monto */}
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
-                          Monto
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--primary)] text-sm">₵</span>
-                          <input
-                            type="text"
-                            value={componentesTemporal.monto ? formatCurrency(componentesTemporal.monto) : ""}
-                            onChange={(e) => {
-                              const val = e.target.value.replace(/\D/g, "")
-                              setComponentesTemporal({ ...componentesTemporal, monto: val })
-                            }}
-                            placeholder="0"
-                            className="w-full px-3 pl-6 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg text-sm"
-                          />
+                      {/* Campos del componente */}
+                      {tipoComponente && (
+                        <div className="space-y-4">
+                          {/* Monto con sugerencia */}
+                          <div>
+                            <div className="flex justify-between items-center mb-2">
+                              <label className="text-sm font-semibold text-[var(--foreground)]">Monto</label>
+                              {restante > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setComponenteMonto(restante.toString())}
+                                  className="text-xs text-[var(--primary)] font-semibold hover:underline"
+                                >
+                                  Usar restante: {formatCurrency(restante.toString())}
+                                </button>
+                              )}
+                            </div>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
+                              <input
+                                type="text"
+                                value={componenteMonto ? formatCurrency(componenteMonto) : ""}
+                                onChange={handleComponenteMontoChange}
+                                placeholder={restante > 0 ? formatCurrency(restante.toString()) : "0"}
+                                className="input input-bordered w-full pl-8 bg-white dark:bg-[var(--base-200)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Mes y Año */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Mes</label>
+                              <select
+                                value={componenteMes}
+                                onChange={(e) => setComponenteMes(e.target.value)}
+                                className="w-full px-4 py-3 bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                              >
+                                {meses.map((mes, idx) => (
+                                  <option key={idx} value={idx + 1}>{mes}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Año</label>
+                              <select
+                                value={componenteAno}
+                                onChange={(e) => setComponenteAno(e.target.value)}
+                                className="w-full px-4 py-3 bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                              >
+                                {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                                  <option key={ano} value={ano}>{ano}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Categoría - solo pago-casa */}
+                          {tipoComponente === "pago-casa" && (
+                            <div>
+                              <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Categoría</label>
+                              <select
+                                value={componenteCategoria}
+                                onChange={(e) => setComponenteCategoria(e.target.value)}
+                                className="w-full px-4 py-3 bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                              >
+                                <option value="">Seleccionar categoría...</option>
+                                {opcionesCategoria.map((cat) => (
+                                  <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          {/* Descripción */}
+                          <div>
+                            <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Descripción</label>
+                            <textarea
+                              value={componenteDescripcion}
+                              onChange={(e) => setComponenteDescripcion(e.target.value)}
+                              placeholder="Agrega más detalles..."
+                              rows={3}
+                              className="textarea textarea-bordered w-full bg-white dark:bg-[var(--base-200)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)] resize-none"
+                            />
+                          </div>
+
+                          {/* Botones del componente */}
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={agregarComponente}
+                              disabled={!componenteMonto}
+                              className="btn btn-primary flex-1 bg-[var(--primary)] hover:bg-[#0470c8] border-0 disabled:opacity-50"
+                            >
+                              Agregar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={resetFormComponente}
+                              className="btn btn-ghost flex-1"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      {/* Descripción */}
-                      <div>
-                        <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
-                          Descripción
-                        </label>
-                        <textarea
-                          value={componentesTemporal.descripcion || ""}
-                          onChange={(e) =>
-                            setComponentesTemporal({
-                              ...componentesTemporal,
-                              descripcion: e.target.value,
-                            })
-                          }
-                          placeholder="Detalles sobre este pago..."
-                          rows={2}
-                          className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg text-sm resize-none"
-                        />
-                      </div>
-
-                      {/* Botones acción */}
-                      <div className="flex gap-2 pt-2">
+                      {/* Cancelar sin tipo seleccionado */}
+                      {!tipoComponente && (
                         <button
                           type="button"
-                          onClick={() => {
-                            if (componentesTemporal.monto && componentesTemporal.monto !== "0") {
-                              const nuevoComponente: ComponentePago = {
-                                id: Date.now().toString(),
-                                tipo: tipoComponenteSeleccionado || "pago-casa",
-                                monto: componentesTemporal.monto || "0",
-                                descripcion: componentesTemporal.descripcion,
-                              }
-                              setComponentesAcumulados([
-                                ...componentesAcumulados,
-                                nuevoComponente,
-                              ])
-                              // Resetear al selector
-                              setTipoComponenteSeleccionado(null)
-                              setComponentesTemporal({
-                                tipo: "pago-casa",
-                                monto: "",
-                              })
-                            }
-                          }}
-                          className="flex-1 btn btn-sm btn-primary bg-[var(--primary)] hover:bg-[#0470c8] border-0 text-white"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Agregar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTipoComponenteSeleccionado(null)
-                            setComponentesTemporal({
-                              tipo: "pago-casa",
-                              monto: "",
-                            })
-                          }}
-                          className="flex-1 btn btn-sm btn-ghost"
+                          onClick={resetFormComponente}
+                          className="w-full btn btn-ghost"
                         >
                           Cancelar
                         </button>
-                      </div>
+                      )}
                     </div>
                   )}
-
-                  {/* Cards de componentes agregados */}
-                  {componentesAcumulados.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-bold text-[var(--foreground)]">
-                        Componentes Agregados ({componentesAcumulados.length})
-                      </h3>
-                      {componentesAcumulados.map((comp) => (
-                        <div
-                          key={comp.id}
-                          className="bg-white dark:bg-[var(--base-300)] border-2 border-[var(--primary-200)] rounded-lg p-4 flex justify-between items-start"
-                        >
-                          <div className="flex-1 text-sm space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-[var(--foreground)]">
-                                {comp.tipo === "pago-casa" ? "Pago Casa" : "Administrativo"}
-                              </span>
-                              <span className="text-[var(--primary)] font-bold">
-                                {formatCurrency(comp.monto)}
-                              </span>
-                            </div>
-                            {comp.descripcion && (
-                              <p className="text-[var(--base-600)] dark:text-[var(--base-400)] text-xs italic">
-                                "{comp.descripcion}"
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setComponentesAcumulados(
-                                componentesAcumulados.filter(
-                                  (c) => c.id !== comp.id
-                                )
-                              )
-                            }}
-                            className="ml-4 btn btn-sm btn-ghost btn-circle text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                </>
               )}
 
-              {/* Botones */}
+              {/* Botones principales */}
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
@@ -643,43 +656,41 @@ export default function NuevoMovimientoPage() {
             </form>
           </div>
 
-          {/* Resumen de Movimiento */}
-          {(monto || tipoMovimiento === "pago-compuesto" || tipoMovimiento) && (
+          {/* Resumen */}
+          {(monto || (tipoMovimiento === "pago-compuesto" && componentesAcumulados.length > 0)) && (
             <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md p-6 mt-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
               <div className="space-y-2 text-sm">
                 <p>
                   <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Tipo:</span>
                   <span className="font-semibold ml-2">
-                    {tipoMovimiento === "pago-casa"
-                      ? "Pago Casa"
-                      : tipoMovimiento === "ingreso-casa"
-                        ? "Ingreso Casa"
-                        : tipoMovimiento === "pago-compuesto"
-                          ? "Pago Compuesto"
-                          : "Pago Administrativo"}
+                    {tipoMovimiento === "pago-casa" ? "Pago Casa"
+                      : tipoMovimiento === "ingreso-casa" ? "Ingreso Casa"
+                      : tipoMovimiento === "pago-compuesto" ? "Pago Compuesto"
+                      : "Pago Administrativo"}
                   </span>
                 </p>
 
                 {tipoMovimiento === "pago-compuesto" ? (
                   <>
                     <p>
-                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">
-                        Componentes:
-                      </span>
+                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Total:</span>
+                      <span className="font-semibold ml-2 text-[var(--primary)]">{formatCurrency(monto)}</span>
+                    </p>
+                    <p>
+                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Componentes:</span>
                       <span className="font-semibold ml-2">{componentesAcumulados.length}</span>
                     </p>
-                    {componentesAcumulados.length > 0 && (
+                    <p>
+                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Asignado:</span>
+                      <span className="font-semibold ml-2 text-[var(--primary)]">{formatCurrency(sumaComponentes.toString())}</span>
+                    </p>
+                    {restante !== 0 && (
                       <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">
-                          Monto Total:
-                        </span>
-                        <span className="font-semibold ml-2 text-[var(--primary)]">
-                          {formatCurrency(
-                            componentesAcumulados
-                              .reduce((sum, c) => sum + parseInt(c.monto), 0)
-                              .toString()
-                          )}
+                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Restante:</span>
+                        <span className={`font-semibold ml-2 ${restante < 0 ? "text-red-500" : "text-green-600"}`}>
+                          {formatCurrency(Math.abs(restante).toString())}
+                          {restante < 0 && " (excedido)"}
                         </span>
                       </p>
                     )}
