@@ -149,7 +149,6 @@ export default function PruebaPage() {
 
   return (
     <>
-      <NavBar />
       <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
         {/* Header */}
         <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
