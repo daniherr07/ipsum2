@@ -23,12 +23,12 @@
   --color-secondary: #8e0396;
   --color-secondary-content: #f89bfd;
 
-  --success: #039603;
-  --warning: #969603;
-  --error: #960303;
-  --success-content: #9bfd9b;
-  --warning-content: #000000;
-  --error-content: #fd9b9b;
+  --color-success: #039603;
+  --color-warning: #969603;
+  --color-error: #960303;
+  --color-success-content: #9bfd9b;
+  --color-warning-content: #000000;
+  --color-error-content: #fd9b9b;
 }
 
 @plugin "daisyui/theme" {
@@ -53,12 +53,12 @@
   --color-secondary: #8e0396;
   --color-secondary-content: #f89bfd;
 
-  --success: #039603;
-  --warning: #969603;
-  --error: #960303;
-  --success-content: #9bfd9b;
-  --warning-content: #000000;
-  --error-content: #fd9b9b;
+  --color-success: #039603;
+  --color-warning: #969603;
+  --color-error: #960303;
+  --color-success-content: #9bfd9b;
+  --color-warning-content: #000000;
+  --color-error-content: #fd9b9b;
 }
 
 /*Configuración para que tailwind lo detecte*/
