@@ -296,9 +296,9 @@ export default function DashboardConstructora() {
                   ART. 59
                 </div>
               </div>
-              <button className="btn btn-square btn-primary ">
+              <Link href="/prueba" className="btn btn-square btn-primary ">
                 <ExternalLink></ExternalLink>
-              </button>
+              </Link>
             </li>
 
             <li className="list-row ">
@@ -308,9 +308,9 @@ export default function DashboardConstructora() {
                   CLP
                 </div>
               </div>
-              <button className="btn btn-square btn-primary ">
+              <Link href="/prueba" className="btn btn-square btn-primary ">
                 <ExternalLink></ExternalLink>
-              </button>
+              </Link>
             </li>
 
             <li className="list-row ">
@@ -320,9 +320,9 @@ export default function DashboardConstructora() {
                   ART. 59
                 </div>
               </div>
-              <button className="btn btn-square btn-primary ">
+              <Link href="/prueba" className="btn btn-square btn-primary ">
                 <ExternalLink></ExternalLink>
-              </button>
+              </Link>
             </li>
           </ul>
         </div>

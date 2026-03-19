@@ -8,7 +8,8 @@ import {
   ChartColumn,
   LayoutDashboard,
   NotebookText,
-  ChartPie
+  ChartPie,
+  Home
 } from "lucide-react";
 import { modifyData } from "./const";
 import Form from "next/form";
@@ -119,6 +120,10 @@ export default function NavBar() {
           <CircleUserRound size={30} />
           <p>Steven</p>
         </div>
+
+        <Link href="/dashboard" className="btn btn-ghost btn-circle">
+          <Home size={20} />
+        </Link>
       </div>
 
       {/** Menu Centro Escritorio */}
