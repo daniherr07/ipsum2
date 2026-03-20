@@ -48,7 +48,7 @@ export default function NavBar() {
           >
             <li className="bg-base-100 flex flex-row items-center justify-start">
               <CircleUserRound size={40} />
-              <p>Steven</p>
+              <p>Felipe</p>
             </li>
             <li>
               <Link
@@ -92,15 +92,6 @@ export default function NavBar() {
             </li>
             <li>
               <Link
-                href="/plantillas"
-                className="flex flex-row items-center justify-start"
-              >
-                <NotebookText size={20} />
-                <p>Plantillas</p>
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/stats"
                 className="flex flex-row items-center justify-start"
               >
@@ -118,10 +109,10 @@ export default function NavBar() {
 
         <div className="gap-2 items-center justify-center bg-base-100 p-2 rounded shadow-sm hidden lg:flex">
           <CircleUserRound size={30} />
-          <p>Steven</p>
+          <p>Felipe</p>
         </div>
 
-        <Link href="/dashboard" className="btn btn-ghost btn-circle">
+        <Link href="/" className="btn btn-ghost btn-circle">
           <Home size={20} />
         </Link>
       </div>
@@ -155,13 +146,30 @@ export default function NavBar() {
       </div>
 
       {/** Botón a la derecha */}
-      <div className="navbar-end flex gap-5 w-full">
+      <div className="navbar-end flex gap-3 w-full">
         <Bell size={30} className="text-primary" />
 
-        <label htmlFor="newProjectModal" className="btn btn-primary">
-          <Plus size={20} />
-          <p>Nuevo Proyecto</p>
-        </label>
+        {/* Dropdown con opciones de agregar */}
+        <div className="dropdown dropdown-end">
+          <div tabIndex={0} role="button" className="btn btn-primary">
+            <Plus size={20} />
+            <span className="hidden sm:inline">Agregar</span>
+          </div>
+          <ul tabIndex={0} className="dropdown-content menu bg-base-300 rounded-box z-10 w-52 p-2 shadow-lg mt-2">
+            <li>
+              <Link href="/movimientosIdeaFelipe" className="flex items-center gap-2">
+                <Plus size={16} />
+                Agregar Movimiento
+              </Link>
+            </li>
+            <li>
+              <label htmlFor="newProjectModal" className="flex items-center gap-2 cursor-pointer">
+                <Plus size={16} />
+                Nuevo Proyecto
+              </label>
+            </li>
+          </ul>
+        </div>
 
         {/* Put this part before </body> tag */}
         <input type="checkbox" id="newProjectModal" className="modal-toggle" />
