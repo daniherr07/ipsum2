@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { ArrowLeft, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react"
+import React, { useState, useMemo, useEffect } from "react"
+import { Plus, Trash2, FileText, DollarSign, Building2, Calendar } from "lucide-react"
 import Link from "next/link"
-import NavBar from "@/components/navbar/NavBar"
 
 interface Proyecto {
   id: string
@@ -21,26 +20,32 @@ interface ComponentePago {
   descripcion?: string
 }
 
-const styleSheet = typeof document !== 'undefined' ? (() => {
-  const style = document.createElement('style')
-  style.textContent = `
-    select option {
-      color: #000000 !important;
-      background-color: #ffffff !important;
-      padding: 8px;
-      font-weight: 500;
-    }
-    select option:checked {
-      background: linear-gradient(#035496, #035496) !important;
-      background-color: #035496 !important;
-      color: #ffffff !important;
-    }
-  `
-  if (document.head) {
-    document.head.appendChild(style)
-  }
-  return style
-})() : null
+// FadeIn animation component - estilo stats/prueba
+function FadeIn({ children, delay = 0, className = "" }: { 
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const tid = setTimeout(() => setShow(true), delay)
+    return () => clearTimeout(tid)
+  }, [delay])
+
+  return (
+    <div
+      className={className}
+      style={{
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+      }}
+    >
+      {children}
+    </div>
+  )
+}
 
 export default function NuevoMovimientoPage() {
   const [tipoMovimiento, setTipoMovimiento] = useState<"pago-casa" | "ingreso-casa" | "administrativo" | "pago-compuesto">("pago-casa")
@@ -182,155 +187,124 @@ export default function NuevoMovimientoPage() {
   }
 
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
-          <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-center relative">
-            <Link href="/prueba" className="absolute left-4">
-              <button className="btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)]">
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </Link>
-            <h1 className="text-lg font-bold">Nuevo Movimiento</h1>
-          </div>
-        </div>
-
-        <div className="max-w-2xl mx-auto px-4 py-6">
-          <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* Tipo de Movimiento */}
-              <div>
-                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                  Tipo de Movimiento
-                </label>
-                <select
-                  value={tipoMovimiento}
-                  onChange={(e) => {
-                    setTipoMovimiento(e.target.value as any)
-                    setCategoria("")
-                    setNombreIngreso("")
-                    setProyectoSeleccionado("")
-                    setMonto("")
-                    setComponentesAcumulados([])
-                    resetFormComponente()
-                  }}
-                  className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                >
-                  <option value="pago-casa">Pago Casa</option>
-                  <option value="ingreso-casa">Ingreso Casa</option>
-                  <option value="administrativo">Pago Administrativo</option>
-                  <option value="pago-compuesto">Pago Compuesto</option>
-                </select>
+    <div className="min-h-screen bg-base-200">
+      <main className="p-4 lg:p-6">
+        <div className="max-w-2xl mx-auto flex flex-col gap-4 lg:gap-5">
+          
+          {/* Header Card */}
+          <FadeIn delay={0} className="card bg-base-100 shadow-md">
+            <div className="card-body p-4 lg:p-6">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  tipoMovimiento === "ingreso-casa" ? "bg-success/10" :
+                  tipoMovimiento === "pago-compuesto" ? "bg-secondary/10" :
+                  tipoMovimiento === "administrativo" ? "bg-warning/10" : "bg-error/10"
+                }`}>
+                  <FileText className={`size-5 ${
+                    tipoMovimiento === "ingreso-casa" ? "text-success" :
+                    tipoMovimiento === "pago-compuesto" ? "text-secondary" :
+                    tipoMovimiento === "administrativo" ? "text-warning" : "text-error"
+                  }`} />
+                </div>
+                <div>
+                  <h1 className={`card-title text-xl lg:text-2xl ${
+                    tipoMovimiento === "ingreso-casa" ? "text-success" :
+                    tipoMovimiento === "pago-compuesto" ? "text-secondary" :
+                    tipoMovimiento === "administrativo" ? "text-warning" : "text-error"
+                  }`}>Nuevo Movimiento</h1>
+                  <p className="text-sm text-base-content/60">
+                    {tipoMovimiento === "ingreso-casa" ? "Registrar ingreso de casa" :
+                     tipoMovimiento === "pago-compuesto" ? "Pago con múltiples componentes" :
+                     tipoMovimiento === "administrativo" ? "Gasto administrativo" : "Pago de casa"}
+                  </p>
+                </div>
               </div>
+            </div>
+          </FadeIn>
 
-              {/* ── CAMPOS MOVIMIENTOS SIMPLES ── */}
-              {tipoMovimiento !== "pago-compuesto" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Monto</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
-                      <input
-                        type="text"
-                        value={monto ? formatCurrency(monto) : ""}
-                        onChange={handleMontoChange}
-                        placeholder="0"
-                        className="input input-bordered w-full pl-8 bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
-                      />
-                    </div>
-                  </div>
+          {/* Form Card */}
+          <FadeIn delay={100} className="card bg-base-100 shadow-md">
+            <div className="card-body p-4 lg:p-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
 
-                  {tipoMovimiento === "ingreso-casa" ? (
-                    <div>
-                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Mes</label>
-                      <div className="w-full px-4 py-3 bg-[var(--base-50)] dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary-200)] rounded-lg font-semibold">
-                        {meses[parseInt(mesSeleccionado) - 1] || "Sin proyecto"}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Mes</label>
-                        <select
-                          value={mesSeleccionado}
-                          onChange={(e) => { setMesSeleccionado(e.target.value); setProyectoSeleccionado("") }}
-                          className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                        >
-                          {meses.map((mes, idx) => (
-                            <option key={idx} value={idx + 1}>{mes}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Año</label>
-                        <select
-                          value={anoSeleccionado}
-                          onChange={(e) => { setAnoSeleccionado(e.target.value); setProyectoSeleccionado("") }}
-                          className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                        >
-                          {[2024, 2025, 2026, 2027, 2028].map((ano) => (
-                            <option key={ano} value={ano}>{ano}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  )}
+                {/* Tipo de Movimiento */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Tipo de Movimiento</span>
+                  </label>
+                  <select
+                    value={tipoMovimiento}
+                    onChange={(e) => {
+                      setTipoMovimiento(e.target.value as any)
+                      setCategoria("")
+                      setNombreIngreso("")
+                      setProyectoSeleccionado("")
+                      setMonto("")
+                      setComponentesAcumulados([])
+                      resetFormComponente()
+                    }}
+                    className="select select-bordered w-full"
+                  >
+                    <option value="pago-casa">Pago Casa</option>
+                    <option value="ingreso-casa">Ingreso Casa</option>
+                    <option value="administrativo">Pago Administrativo</option>
+                    <option value="pago-compuesto">Pago Compuesto</option>
+                  </select>
+                </div>
 
-                  {tipoMovimiento !== "administrativo" && (
-                    <div>
-                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Proyecto</label>
-                      <select
-                        value={proyectoSeleccionado}
-                        onChange={(e) => {
-                          const idSeleccionado = e.target.value
-                          setProyectoSeleccionado(idSeleccionado)
-                          if (tipoMovimiento === "ingreso-casa" && idSeleccionado) {
-                            const found = proyectosConMesFijo.find(p => p.id === idSeleccionado)
-                            if (found) setMesSeleccionado(found.mes.toString())
-                          }
-                        }}
-                        className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                      >
-                        <option value="">Seleccionar proyecto...</option>
-                        {proyectos.map((proyecto) => (
-                          <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
-                        ))}
-                      </select>
+                {/* ── CAMPOS MOVIMIENTOS SIMPLES ── */}
+                {tipoMovimiento !== "pago-compuesto" && (
+                  <>
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">Monto</span>
+                      </label>
+                      <label className="input input-bordered input-primary flex items-center gap-2">
+                        <DollarSign className="size-4 text-primary" />
+                        <input
+                          type="text"
+                          value={monto ? formatCurrency(monto) : ""}
+                          onChange={handleMontoChange}
+                          placeholder="₡0"
+                          className="grow"
+                        />
+                      </label>
                     </div>
-                  )}
 
-                  {tipoMovimiento === "ingreso-casa" && (
-                    <div>
-                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Fecha de Pago</label>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Día</label>
-                          <input
-                            type="number" min="1" max="31" value={fechaPagoDia}
-                            onChange={(e) => setFechaPagoDia(String(Math.min(31, Math.max(1, parseInt(e.target.value) || 1))).padStart(2, "0"))}
-                            className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] font-semibold text-center"
-                          />
+                    {tipoMovimiento === "ingreso-casa" ? (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Mes</span>
+                        </label>
+                        <div className="input input-bordered bg-base-200 flex items-center">
+                          <Calendar className="size-4 text-base-content/60 mr-2" />
+                          <span className="font-medium">{meses[parseInt(mesSeleccionado) - 1] || "Sin proyecto"}</span>
                         </div>
-                        <div>
-                          <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Mes</label>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="form-control">
+                          <label className="label">
+                            <span className="label-text font-semibold">Mes</span>
+                          </label>
                           <select
-                            value={fechaPagoMes}
-                            onChange={(e) => setFechaPagoMes(String(parseInt(e.target.value)).padStart(2, "0"))}
-                            className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold"
+                            value={mesSeleccionado}
+                            onChange={(e) => { setMesSeleccionado(e.target.value); setProyectoSeleccionado("") }}
+                            className="select select-bordered w-full"
                           >
                             {meses.map((mes, idx) => (
-                              <option key={idx} value={String(idx + 1).padStart(2, "0")}>{mes}</option>
+                              <option key={idx} value={idx + 1}>{mes}</option>
                             ))}
                           </select>
                         </div>
-                        <div>
-                          <label className="block text-xs font-medium text-[var(--base-600)] dark:text-[var(--base-400)] mb-1">Año</label>
+                        <div className="form-control">
+                          <label className="label">
+                            <span className="label-text font-semibold">Año</span>
+                          </label>
                           <select
-                            value={fechaPagoAno}
-                            onChange={(e) => setFechaPagoAno(e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold"
+                            value={anoSeleccionado}
+                            onChange={(e) => { setAnoSeleccionado(e.target.value); setProyectoSeleccionado("") }}
+                            className="select select-bordered w-full"
                           >
                             {[2024, 2025, 2026, 2027, 2028].map((ano) => (
                               <option key={ano} value={ano}>{ano}</option>
@@ -338,404 +312,509 @@ export default function NuevoMovimientoPage() {
                           </select>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {tipoMovimiento === "pago-casa" && (
-                    <div>
-                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Categoría</label>
+                    {tipoMovimiento !== "administrativo" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Proyecto</span>
+                        </label>
+                        <select
+                          value={proyectoSeleccionado}
+                          onChange={(e) => {
+                            const idSeleccionado = e.target.value
+                            setProyectoSeleccionado(idSeleccionado)
+                            if (tipoMovimiento === "ingreso-casa" && idSeleccionado) {
+                              const found = proyectosConMesFijo.find(p => p.id === idSeleccionado)
+                              if (found) setMesSeleccionado(found.mes.toString())
+                            }
+                          }}
+                          className="select select-bordered w-full"
+                        >
+                          <option value="">Seleccionar proyecto...</option>
+                          {proyectos.map((proyecto) => (
+                            <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {tipoMovimiento === "ingreso-casa" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Fecha de Pago</span>
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="label py-1">
+                              <span className="label-text text-xs text-base-content/60">Día</span>
+                            </label>
+                            <input
+                              type="number" min="1" max="31" value={fechaPagoDia}
+                              onChange={(e) => setFechaPagoDia(String(Math.min(31, Math.max(1, parseInt(e.target.value) || 1))).padStart(2, "0"))}
+                              className="input input-bordered input-success w-full text-center"
+                            />
+                          </div>
+                          <div>
+                            <label className="label py-1">
+                              <span className="label-text text-xs text-base-content/60">Mes</span>
+                            </label>
+                            <select
+                              value={fechaPagoMes}
+                              onChange={(e) => setFechaPagoMes(String(parseInt(e.target.value)).padStart(2, "0"))}
+                              className="select select-bordered select-success w-full"
+                            >
+                              {meses.map((mes, idx) => (
+                                <option key={idx} value={String(idx + 1).padStart(2, "0")}>{mes}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="label py-1">
+                              <span className="label-text text-xs text-base-content/60">Año</span>
+                            </label>
+                            <select
+                              value={fechaPagoAno}
+                              onChange={(e) => setFechaPagoAno(e.target.value)}
+                              className="select select-bordered select-success w-full"
+                            >
+                              {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                                <option key={ano} value={ano}>{ano}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {tipoMovimiento === "pago-casa" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Categoría</span>
+                        </label>
+                        <select
+                          value={categoria}
+                          onChange={(e) => setCategoria(e.target.value)}
+                          className="select select-bordered w-full"
+                        >
+                          <option value="">Seleccionar categoría...</option>
+                          {opcionesCategoria.map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {tipoMovimiento === "ingreso-casa" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Nombre del Ingreso</span>
+                        </label>
+                        <input
+                          type="text" value={nombreIngreso}
+                          onChange={(e) => setNombreIngreso(e.target.value)}
+                          placeholder="Ej: Venta de materiales sobrantes"
+                          className="input input-bordered input-success w-full"
+                        />
+                      </div>
+                    )}
+
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">Descripción</span>
+                      </label>
+                      <textarea
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        placeholder="Agrega más detalles sobre este movimiento..."
+                        rows={4}
+                        className="textarea textarea-bordered w-full resize-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* ── PAGO COMPUESTO ── */}
+                {tipoMovimiento === "pago-compuesto" && (
+                  <>
+                    {/* Total */}
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">Total</span>
+                      </label>
+                      <label className="input input-bordered input-secondary flex items-center gap-2">
+                        <DollarSign className="size-4 text-secondary" />
+                        <input
+                          type="text"
+                          value={monto ? formatCurrency(monto) : ""}
+                          onChange={handleMontoChange}
+                          placeholder="₡0"
+                          className="grow"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Proyecto */}
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">Proyecto</span>
+                      </label>
                       <select
-                        value={categoria}
-                        onChange={(e) => setCategoria(e.target.value)}
-                        className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
+                        value={proyectoSeleccionado}
+                        onChange={(e) => setProyectoSeleccionado(e.target.value)}
+                        className="select select-bordered w-full"
                       >
-                        <option value="">Seleccionar categoría...</option>
-                        {opcionesCategoria.map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
+                        <option value="">Seleccionar proyecto...</option>
+                        {proyectosConMesFijo.map((proyecto) => (
+                          <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
                         ))}
                       </select>
                     </div>
-                  )}
 
-                  {tipoMovimiento === "ingreso-casa" && (
-                    <div>
-                      <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Nombre del Ingreso</label>
-                      <input
-                        type="text" value={nombreIngreso}
-                        onChange={(e) => setNombreIngreso(e.target.value)}
-                        placeholder="Ej: Venta de materiales sobrantes"
-                        className="input input-bordered w-full bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Descripción</label>
-                    <textarea
-                      value={descripcion}
-                      onChange={(e) => setDescripcion(e.target.value)}
-                      placeholder="Agrega más detalles sobre este movimiento..."
-                      rows={4}
-                      className="textarea textarea-bordered w-full bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)] resize-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* ── PAGO COMPUESTO ── */}
-              {tipoMovimiento === "pago-compuesto" && (
-                <>
-                  {/* Total */}
-                  <div>
-                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Total</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
-                      <input
-                        type="text"
-                        value={monto ? formatCurrency(monto) : ""}
-                        onChange={handleMontoChange}
-                        placeholder="0"
-                        className="input input-bordered w-full pl-8 bg-[var(--base-50)] dark:bg-[var(--base-300)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Proyecto */}
-                  <div>
-                    <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Proyecto</label>
-                    <select
-                      value={proyectoSeleccionado}
-                      onChange={(e) => setProyectoSeleccionado(e.target.value)}
-                      className="w-full px-4 py-3 bg-white dark:bg-[var(--base-300)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                    >
-                      <option value="">Seleccionar proyecto...</option>
-                      {proyectosConMesFijo.map((proyecto) => (
-                        <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Barra de progreso restante */}
-                  {totalNum > 0 && (
-                    <div className="bg-[var(--base-50)] dark:bg-[var(--base-300)] border-2 border-[var(--primary-200)] rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between text-sm font-semibold">
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Asignado:</span>
-                        <span className="text-[var(--primary)]">{formatCurrency(sumaComponentes.toString())}</span>
-                      </div>
-                      <div className="w-full bg-[var(--base-200)] dark:bg-[var(--base-400)] rounded-full h-2.5">
-                        <div
-                          className="h-2.5 rounded-full transition-all"
-                          style={{
-                            width: `${Math.min((sumaComponentes / totalNum) * 100, 100)}%`,
-                            backgroundColor: sumaComponentes > totalNum ? '#ef4444' : '#035496',
-                          }}
+                    {/* Barra de progreso restante */}
+                    {totalNum > 0 && (
+                      <div className="bg-base-200 rounded-lg p-4 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-base-content/60">Asignado:</span>
+                          <span className="font-semibold text-secondary">{formatCurrency(sumaComponentes.toString())}</span>
+                        </div>
+                        <progress 
+                          className={`progress w-full h-2 ${sumaComponentes > totalNum ? 'progress-error' : 'progress-secondary'}`}
+                          value={sumaComponentes} 
+                          max={totalNum}
                         />
+                        <div className="flex justify-between text-sm">
+                          <span className="text-base-content/60">Restante:</span>
+                          <span className={`font-semibold ${restante < 0 ? "text-error" : "text-success"}`}>
+                            {formatCurrency(Math.abs(restante).toString())}
+                            {restante < 0 && " (excedido)"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-sm font-semibold">
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Restante:</span>
-                        <span className={restante < 0 ? "text-red-500" : "text-green-600"}>
-                          {formatCurrency(Math.abs(restante).toString())}
-                          {restante < 0 && " (excedido)"}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Componentes agregados */}
-                  {componentesAcumulados.length > 0 && (
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-[var(--foreground)]">
-                        Componentes ({componentesAcumulados.length})
-                      </label>
-                      {componentesAcumulados.map((comp, idx) => (
-                        <div
-                          key={comp.id}
-                          className="flex items-center justify-between bg-[var(--base-50)] dark:bg-[var(--base-300)] border border-[var(--primary-200)] rounded-lg px-4 py-3"
-                        >
-                          <div className="space-y-0.5">
-                            <p className="text-sm font-semibold text-[var(--foreground)]">
-                              {idx + 1}. {comp.tipo === "pago-casa" ? "Pago Casa" : "Pago Administrativo"}
-                            </p>
-                            <p className="text-xs text-[var(--base-500)]">
-                              {meses[comp.mes - 1]} {comp.ano}
-                              {comp.categoria && ` · ${comp.categoria}`}
-                            </p>
+                    {/* Componentes agregados */}
+                    {componentesAcumulados.length > 0 && (
+                      <div className="space-y-3">
+                        <label className="label">
+                          <span className="label-text font-semibold">Componentes ({componentesAcumulados.length})</span>
+                        </label>
+                        {componentesAcumulados.map((comp, idx) => (
+                          <div
+                            key={comp.id}
+                            className="flex items-center justify-between bg-base-200 rounded-lg px-4 py-3"
+                          >
+                            <div className="space-y-0.5">
+                              <p className="text-sm font-semibold">
+                                {idx + 1}. {comp.tipo === "pago-casa" ? "Pago Casa" : "Pago Administrativo"}
+                              </p>
+                              <p className="text-xs text-base-content/60">
+                                {meses[comp.mes - 1]} {comp.ano}
+                                {comp.categoria && ` · ${comp.categoria}`}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-secondary">{formatCurrency(comp.monto)}</span>
+                              <button
+                                type="button"
+                                onClick={() => eliminarComponente(comp.id)}
+                                className="btn btn-ghost btn-xs btn-circle text-error hover:bg-error/10"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-bold text-[var(--primary)]">{formatCurrency(comp.monto)}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Botón agregar componente */}
+                    {!mostrarFormComponente && (
+                      <button
+                        type="button"
+                        onClick={() => setMostrarFormComponente(true)}
+                        className="btn btn-outline btn-secondary w-full gap-2"
+                      >
+                        <Plus className="size-5" />
+                        Agregar Componente
+                      </button>
+                    )}
+
+                    {/* Formulario de componente */}
+                    {mostrarFormComponente && (
+                      <div className="card bg-base-200">
+                        <div className="card-body p-4 space-y-4">
+                          <p className="font-semibold">¿Qué tipo de pago quieres agregar?</p>
+
+                          {/* Selector tipo componente */}
+                          <div className="grid grid-cols-2 gap-3">
                             <button
                               type="button"
-                              onClick={() => eliminarComponente(comp.id)}
-                              className="btn btn-ghost btn-xs btn-circle text-red-400 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => setTipoComponente("pago-casa")}
+                              className={`btn ${tipoComponente === "pago-casa" ? "btn-error" : "btn-outline btn-error"}`}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              Pago Casa
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTipoComponente("administrativo")}
+                              className={`btn ${tipoComponente === "administrativo" ? "btn-warning" : "btn-outline btn-warning"}`}
+                            >
+                              Pago Administrativo
                             </button>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
 
-                  {/* Botón agregar componente */}
-                  {!mostrarFormComponente && (
-                    <button
-                      type="button"
-                      onClick={() => setMostrarFormComponente(true)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[var(--primary)] rounded-lg text-[var(--primary)] font-semibold hover:bg-[var(--primary-50)] transition-all"
-                    >
-                      <Plus className="h-5 w-5" />
-                      Agregar Componente
-                    </button>
-                  )}
+                          {/* Campos del componente */}
+                          {tipoComponente && (
+                            <div className="space-y-4">
+                              {/* Monto con sugerencia */}
+                              <div className="form-control">
+                                <label className="label">
+                                  <span className="label-text font-semibold">Monto</span>
+                                  {restante > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setComponenteMonto(restante.toString())}
+                                      className="label-text-alt link link-secondary"
+                                    >
+                                      Usar restante: {formatCurrency(restante.toString())}
+                                    </button>
+                                  )}
+                                </label>
+                                <label className="input input-bordered flex items-center gap-2">
+                                  <DollarSign className="size-4 text-base-content/60" />
+                                  <input
+                                    type="text"
+                                    value={componenteMonto ? formatCurrency(componenteMonto) : ""}
+                                    onChange={handleComponenteMontoChange}
+                                    placeholder={restante > 0 ? formatCurrency(restante.toString()) : "₡0"}
+                                    className="grow"
+                                  />
+                                </label>
+                              </div>
 
-                  {/* Formulario de componente */}
-                  {mostrarFormComponente && (
-                    <div className="border-2 border-[var(--primary-200)] rounded-xl p-4 space-y-4 bg-[var(--base-50)] dark:bg-[var(--base-300)]">
-                      <p className="text-sm font-bold text-[var(--foreground)]">¿Qué tipo de pago quieres agregar?</p>
+                              {/* Mes y Año */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="form-control">
+                                  <label className="label">
+                                    <span className="label-text font-semibold">Mes</span>
+                                  </label>
+                                  <select
+                                    value={componenteMes}
+                                    onChange={(e) => setComponenteMes(e.target.value)}
+                                    className="select select-bordered w-full"
+                                  >
+                                    {meses.map((mes, idx) => (
+                                      <option key={idx} value={idx + 1}>{mes}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="form-control">
+                                  <label className="label">
+                                    <span className="label-text font-semibold">Año</span>
+                                  </label>
+                                  <select
+                                    value={componenteAno}
+                                    onChange={(e) => setComponenteAno(e.target.value)}
+                                    className="select select-bordered w-full"
+                                  >
+                                    {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                                      <option key={ano} value={ano}>{ano}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
 
-                      {/* Selector tipo componente */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setTipoComponente("pago-casa")}
-                          className={`px-4 py-3 rounded-lg border-2 font-semibold text-sm transition-all ${
-                            tipoComponente === "pago-casa"
-                              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                              : "border-[var(--primary-200)] text-[var(--foreground)] hover:border-[var(--primary)]"
-                          }`}
-                        >
-                          Pago Casa
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTipoComponente("administrativo")}
-                          className={`px-4 py-3 rounded-lg border-2 font-semibold text-sm transition-all ${
-                            tipoComponente === "administrativo"
-                              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
-                              : "border-[var(--primary-200)] text-[var(--foreground)] hover:border-[var(--primary)]"
-                          }`}
-                        >
-                          Pago Administrativo
-                        </button>
-                      </div>
+                              {/* Categoría - solo pago-casa */}
+                              {tipoComponente === "pago-casa" && (
+                                <div className="form-control">
+                                  <label className="label">
+                                    <span className="label-text font-semibold">Categoría</span>
+                                  </label>
+                                  <select
+                                    value={componenteCategoria}
+                                    onChange={(e) => setComponenteCategoria(e.target.value)}
+                                    className="select select-bordered w-full"
+                                  >
+                                    <option value="">Seleccionar categoría...</option>
+                                    {opcionesCategoria.map((cat) => (
+                                      <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
 
-                      {/* Campos del componente */}
-                      {tipoComponente && (
-                        <div className="space-y-4">
-                          {/* Monto con sugerencia */}
-                          <div>
-                            <div className="flex justify-between items-center mb-2">
-                              <label className="text-sm font-semibold text-[var(--foreground)]">Monto</label>
-                              {restante > 0 && (
+                              {/* Descripción */}
+                              <div className="form-control">
+                                <label className="label">
+                                  <span className="label-text font-semibold">Descripción</span>
+                                </label>
+                                <textarea
+                                  value={componenteDescripcion}
+                                  onChange={(e) => setComponenteDescripcion(e.target.value)}
+                                  placeholder="Agrega más detalles..."
+                                  rows={3}
+                                  className="textarea textarea-bordered w-full resize-none"
+                                />
+                              </div>
+
+                              {/* Botones del componente */}
+                              <div className="flex gap-3">
                                 <button
                                   type="button"
-                                  onClick={() => setComponenteMonto(restante.toString())}
-                                  className="text-xs text-[var(--primary)] font-semibold hover:underline"
+                                  onClick={agregarComponente}
+                                  disabled={!componenteMonto}
+                                  className="btn btn-secondary flex-1"
                                 >
-                                  Usar restante: {formatCurrency(restante.toString())}
+                                  Agregar
                                 </button>
-                              )}
-                            </div>
-                            <div className="relative">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]">₵</span>
-                              <input
-                                type="text"
-                                value={componenteMonto ? formatCurrency(componenteMonto) : ""}
-                                onChange={handleComponenteMontoChange}
-                                placeholder={restante > 0 ? formatCurrency(restante.toString()) : "0"}
-                                className="input input-bordered w-full pl-8 bg-white dark:bg-[var(--base-200)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)]"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Mes y Año */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Mes</label>
-                              <select
-                                value={componenteMes}
-                                onChange={(e) => setComponenteMes(e.target.value)}
-                                className="w-full px-4 py-3 bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                              >
-                                {meses.map((mes, idx) => (
-                                  <option key={idx} value={idx + 1}>{mes}</option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Año</label>
-                              <select
-                                value={componenteAno}
-                                onChange={(e) => setComponenteAno(e.target.value)}
-                                className="w-full px-4 py-3 bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                              >
-                                {[2024, 2025, 2026, 2027, 2028].map((ano) => (
-                                  <option key={ano} value={ano}>{ano}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          {/* Categoría - solo pago-casa */}
-                          {tipoComponente === "pago-casa" && (
-                            <div>
-                              <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Categoría</label>
-                              <select
-                                value={componenteCategoria}
-                                onChange={(e) => setComponenteCategoria(e.target.value)}
-                                className="w-full px-4 py-3 bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] border-2 border-[var(--primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary-200)] cursor-pointer font-semibold hover:border-[#0470c8] transition-all"
-                              >
-                                <option value="">Seleccionar categoría...</option>
-                                {opcionesCategoria.map((cat) => (
-                                  <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                              </select>
+                                <button
+                                  type="button"
+                                  onClick={resetFormComponente}
+                                  className="btn btn-ghost flex-1"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
                             </div>
                           )}
 
-                          {/* Descripción */}
-                          <div>
-                            <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">Descripción</label>
-                            <textarea
-                              value={componenteDescripcion}
-                              onChange={(e) => setComponenteDescripcion(e.target.value)}
-                              placeholder="Agrega más detalles..."
-                              rows={3}
-                              className="textarea textarea-bordered w-full bg-white dark:bg-[var(--base-200)] border-[var(--primary-200)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-100)] resize-none"
-                            />
-                          </div>
-
-                          {/* Botones del componente */}
-                          <div className="flex gap-3">
-                            <button
-                              type="button"
-                              onClick={agregarComponente}
-                              disabled={!componenteMonto}
-                              className="btn btn-primary flex-1 bg-[var(--primary)] hover:bg-[#0470c8] border-0 disabled:opacity-50"
-                            >
-                              Agregar
-                            </button>
+                          {/* Cancelar sin tipo seleccionado */}
+                          {!tipoComponente && (
                             <button
                               type="button"
                               onClick={resetFormComponente}
-                              className="btn btn-ghost flex-1"
+                              className="btn btn-ghost w-full"
                             >
                               Cancelar
                             </button>
-                          </div>
+                          )}
                         </div>
-                      )}
-
-                      {/* Cancelar sin tipo seleccionado */}
-                      {!tipoComponente && (
-                        <button
-                          type="button"
-                          onClick={resetFormComponente}
-                          className="w-full btn btn-ghost"
-                        >
-                          Cancelar
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Botones principales */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  className="btn btn-primary flex-1 bg-[var(--primary)] hover:bg-[#0470c8] border-0"
-                >
-                  Guardar Movimiento
-                </button>
-                <Link href="/prueba" className="btn btn-ghost flex-1">
-                  Cancelar
-                </Link>
-              </div>
-            </form>
-          </div>
-
-          {/* Resumen */}
-          {(monto || (tipoMovimiento === "pago-compuesto" && componentesAcumulados.length > 0)) && (
-            <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md p-6 mt-6">
-              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Tipo:</span>
-                  <span className="font-semibold ml-2">
-                    {tipoMovimiento === "pago-casa" ? "Pago Casa"
-                      : tipoMovimiento === "ingreso-casa" ? "Ingreso Casa"
-                      : tipoMovimiento === "pago-compuesto" ? "Pago Compuesto"
-                      : "Pago Administrativo"}
-                  </span>
-                </p>
-
-                {tipoMovimiento === "pago-compuesto" ? (
-                  <>
-                    <p>
-                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Total:</span>
-                      <span className="font-semibold ml-2 text-[var(--primary)]">{formatCurrency(monto)}</span>
-                    </p>
-                    <p>
-                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Componentes:</span>
-                      <span className="font-semibold ml-2">{componentesAcumulados.length}</span>
-                    </p>
-                    <p>
-                      <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Asignado:</span>
-                      <span className="font-semibold ml-2 text-[var(--primary)]">{formatCurrency(sumaComponentes.toString())}</span>
-                    </p>
-                    {restante !== 0 && (
-                      <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Restante:</span>
-                        <span className={`font-semibold ml-2 ${restante < 0 ? "text-red-500" : "text-green-600"}`}>
-                          {formatCurrency(Math.abs(restante).toString())}
-                          {restante < 0 && " (excedido)"}
-                        </span>
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {monto && (
-                      <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Monto:</span>
-                        <span className="font-semibold ml-2 text-[var(--primary)]">{formatCurrency(monto)}</span>
-                      </p>
-                    )}
-                    {tipoMovimiento !== "ingreso-casa" && (
-                      <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Mes y Año:</span>
-                        <span className="font-semibold ml-2">{meses[parseInt(mesSeleccionado) - 1]} {anoSeleccionado}</span>
-                      </p>
-                    )}
-                    {proyectoSeleccionado && (
-                      <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Proyecto:</span>
-                        <span className="font-semibold ml-2">
-                          {proyectos.find((p) => p.id === proyectoSeleccionado)?.nombre}
-                        </span>
-                      </p>
-                    )}
-                    {categoria && (
-                      <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Categoría:</span>
-                        <span className="font-semibold ml-2">{categoria}</span>
-                      </p>
-                    )}
-                    {nombreIngreso && (
-                      <p>
-                        <span className="text-[var(--base-600)] dark:text-[var(--base-400)]">Ingreso:</span>
-                        <span className="font-semibold ml-2">{nombreIngreso}</span>
-                      </p>
+                      </div>
                     )}
                   </>
                 )}
-              </div>
+
+                {/* Botones principales */}
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="submit"
+                    className={`btn flex-1 ${
+                      tipoMovimiento === "ingreso-casa" ? "btn-success" :
+                      tipoMovimiento === "pago-compuesto" ? "btn-secondary" :
+                      tipoMovimiento === "administrativo" ? "btn-warning" : "btn-error"
+                    }`}
+                  >
+                    Guardar Movimiento
+                  </button>
+                  <Link href="/prueba" className="btn btn-ghost flex-1">
+                    Cancelar
+                  </Link>
+                </div>
+              </form>
             </div>
+          </FadeIn>
+
+          {/* Resumen Card */}
+          {(monto || (tipoMovimiento === "pago-compuesto" && componentesAcumulados.length > 0)) && (
+            <FadeIn delay={200} className="card bg-base-100 shadow-md">
+              <div className="card-body p-4 lg:p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    tipoMovimiento === "ingreso-casa" ? "bg-success/10" :
+                    tipoMovimiento === "pago-compuesto" ? "bg-secondary/10" :
+                    tipoMovimiento === "administrativo" ? "bg-warning/10" : "bg-error/10"
+                  }`}>
+                    <Building2 className={`size-4 ${
+                      tipoMovimiento === "ingreso-casa" ? "text-success" :
+                      tipoMovimiento === "pago-compuesto" ? "text-secondary" :
+                      tipoMovimiento === "administrativo" ? "text-warning" : "text-error"
+                    }`} />
+                  </div>
+                  <h3 className="card-title text-base">Resumen</h3>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between py-1 border-b border-base-200">
+                    <span className="text-base-content/60">Tipo</span>
+                    <span className="font-semibold">
+                      {tipoMovimiento === "pago-casa" ? "Pago Casa"
+                        : tipoMovimiento === "ingreso-casa" ? "Ingreso Casa"
+                        : tipoMovimiento === "pago-compuesto" ? "Pago Compuesto"
+                        : "Pago Administrativo"}
+                    </span>
+                  </div>
+
+                  {tipoMovimiento === "pago-compuesto" ? (
+                    <>
+                      <div className="flex justify-between py-1 border-b border-base-200">
+                        <span className="text-base-content/60">Total</span>
+                        <span className="font-semibold text-secondary">{formatCurrency(monto)}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-base-200">
+                        <span className="text-base-content/60">Componentes</span>
+                        <span className="badge badge-secondary badge-sm">{componentesAcumulados.length}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-base-200">
+                        <span className="text-base-content/60">Asignado</span>
+                        <span className="font-semibold text-secondary">{formatCurrency(sumaComponentes.toString())}</span>
+                      </div>
+                      {restante !== 0 && (
+                        <div className="flex justify-between py-1">
+                          <span className="text-base-content/60">Restante</span>
+                          <span className={`font-semibold ${restante < 0 ? "text-error" : "text-success"}`}>
+                            {formatCurrency(Math.abs(restante).toString())}
+                            {restante < 0 && " (excedido)"}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {monto && (
+                        <div className="flex justify-between py-1 border-b border-base-200">
+                          <span className="text-base-content/60">Monto</span>
+                          <span className={`font-semibold ${
+                            tipoMovimiento === "ingreso-casa" ? "text-success" :
+                            tipoMovimiento === "administrativo" ? "text-warning" : "text-error"
+                          }`}>{formatCurrency(monto)}</span>
+                        </div>
+                      )}
+                      {tipoMovimiento !== "ingreso-casa" && (
+                        <div className="flex justify-between py-1 border-b border-base-200">
+                          <span className="text-base-content/60">Mes y Año</span>
+                          <span className="font-semibold">{meses[parseInt(mesSeleccionado) - 1]} {anoSeleccionado}</span>
+                        </div>
+                      )}
+                      {proyectoSeleccionado && (
+                        <div className="flex justify-between py-1 border-b border-base-200">
+                          <span className="text-base-content/60">Proyecto</span>
+                          <span className="font-semibold">
+                            {proyectos.find((p) => p.id === proyectoSeleccionado)?.nombre}
+                          </span>
+                        </div>
+                      )}
+                      {categoria && (
+                        <div className="flex justify-between py-1 border-b border-base-200">
+                          <span className="text-base-content/60">Categoría</span>
+                          <span className="badge badge-ghost badge-sm">{categoria}</span>
+                        </div>
+                      )}
+                      {nombreIngreso && (
+                        <div className="flex justify-between py-1">
+                          <span className="text-base-content/60">Ingreso</span>
+                          <span className="font-semibold">{nombreIngreso}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            </FadeIn>
           )}
+
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   )
 }
