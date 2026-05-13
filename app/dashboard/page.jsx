@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,6 +13,31 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import NavBar from "@/components/navbar/NavBar";
+
+/* =========================
+   FadeIn animation component
+========================= */
+function FadeIn({ children, delay = 0, className = "" }) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(id);
+  }, [delay]);
+
+  return (
+    <div
+      className={className}
+      style={{
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 /* =========================
    Configuración de meses
@@ -197,7 +222,7 @@ export default function DashboardConstructora() {
     <>
       <div className=" text-white flex flex-col items-center p-3 mt-3">
         {/* Selector de Fecha */}
-        <div className="flex flex-col items-center mb-10">
+        <FadeIn delay={0} className="flex flex-col items-center mb-10">
           <span className="text-gray-500 text-sm font-medium mb-1">{anio}</span>
           <div className="flex items-center gap-8">
             <button
@@ -216,10 +241,10 @@ export default function DashboardConstructora() {
               <ChevronRight size={20} />
             </button>
           </div>
-        </div>
+        </FadeIn>
 
         {/* Card Principal */}
-        <div className="w-full max-w-md bg-base-200 flex flex-col gap-6 rounded-lg shadow-lg p-7">
+        <FadeIn delay={100} className="w-full max-w-md bg-base-200 flex flex-col gap-6 rounded-lg shadow-lg p-7">
           {/* Ingresos / Egresos */}
           <div className="grid grid-cols-2 gap-5">
             <div className=" text-center flex flex-col items-center justify-center">
@@ -278,9 +303,9 @@ export default function DashboardConstructora() {
               </div>
             ))}
           </div>
-        </div>
+        </FadeIn>
 
-        <div className="w-full max-w-md bg-base-200 flex flex-col gap-6 rounded-lg shadow-lg p-7 mt-3">
+        <FadeIn delay={200} className="w-full max-w-md bg-base-200 flex flex-col gap-6 rounded-lg shadow-lg p-7 mt-3">
           {/* Balance */}
           <div className="text-center">
             <span className="text-base-content text-lg uppercase font-black">
@@ -325,7 +350,7 @@ export default function DashboardConstructora() {
               </Link>
             </li>
           </ul>
-        </div>
+        </FadeIn>
       </div>
     </>
   );
