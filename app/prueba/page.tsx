@@ -1,9 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { ArrowLeft, TrendingDown, TrendingUp, DollarSign, Plus } from "lucide-react"
-import Link from "next/link"
-import NavBar from "@/components/navbar/NavBar"
+import React, { useState, useMemo, useEffect } from "react"
+import { TrendingDown, TrendingUp, DollarSign, Building2 } from "lucide-react"
 
 interface Transaccion {
   id: string
@@ -15,78 +13,146 @@ interface Transaccion {
   estado: "pago cuota" | "pendiente" | "completado"
 }
 
+// Animated number hook
+function useAnimatedNumber(target: number, duration = 1000) {
+  const [value, setValue] = useState(0)
+
+  useEffect(() => {
+    const steps = 30
+    const increment = target / steps
+    let current = 0
+    
+    const timer = setInterval(() => {
+      current += increment
+      const done = increment > 0 ? current >= target : current <= target
+      
+      if (done) {
+        setValue(target)
+        clearInterval(timer)
+      } else {
+        setValue(Math.round(current))
+      }
+    }, duration / steps)
+    
+    return () => clearInterval(timer)
+  }, [target, duration])
+
+  return value
+}
+
+// FadeIn animation component
+function FadeIn({ children, delay = 0, className = "" }: { 
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const tid = setTimeout(() => setShow(true), delay)
+    return () => clearTimeout(tid)
+  }, [delay])
+
+  return (
+    <div
+      className={className}
+      style={{
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Stat Card component - estilo de /stats
+function StatCard({ icon: Icon, label, value, colorClass, delay = 0, subtitle }: {
+  icon: typeof TrendingUp
+  label: string
+  value: number
+  colorClass: string
+  delay?: number
+  subtitle?: string
+}) {
+  const animatedValue = useAnimatedNumber(value)
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const id = setTimeout(() => setShow(true), delay)
+    return () => clearTimeout(id)
+  }, [delay])
+
+  const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat("es-CR", {
+      style: "currency",
+      currency: "CRC",
+      minimumFractionDigits: 0,
+    }).format(val)
+  }
+
+  return (
+    <div 
+      className="card bg-base-100 shadow-md hover:shadow-xl transition-all duration-500"
+      style={{
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(12px)",
+        transition: "opacity 0.4s ease-out, transform 0.4s ease-out, box-shadow 0.3s",
+      }}
+    >
+      <div className="card-body p-4 lg:p-5">
+        <div className={`flex items-center gap-2 ${colorClass}`}>
+          <Icon className="size-5" />
+          <span className="text-sm font-medium uppercase tracking-wide">{label}</span>
+        </div>
+        <span className={`text-xl lg:text-2xl font-bold ${colorClass}`}>
+          {formatCurrency(animatedValue)}
+        </span>
+        {subtitle && <p className="text-xs text-base-content/60">{subtitle}</p>}
+      </div>
+    </div>
+  )
+}
+
 export default function PruebaPage() {
   const [activeTab, setActiveTab] = useState<"ingresos" | "egresos">("ingresos")
-  const [egresoSubTab, setEgresoSubTab] = useState<"mano-obra" | "materiales">("mano-obra")
-  const [searchTerm, setSearchTerm] = useState("")
+  const [mounted, setMounted] = useState(false)
 
-  // Generar datos aleatorios al cargar
-  const [proyecto] = useState(() => {
-    const nombres = [
-      "Proyecto Magna",
-      "Centro Comercial",
-      "Residencial Vista",
-      "Oficinas Ejecutivas",
-      "Plaza Principal",
-    ]
-    const descripcionesProyecto = [
-      "Desarrollo inmobiliario de alto estándar",
-      "Construcción de centro comercial moderno",
-      "Complejo residencial de lujo",
-      "Torre de oficinas en zona central",
-      "Centro comercial y vivienda",
-    ]
-
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      nombre: nombres[Math.floor(Math.random() * nombres.length)],
-      descripcion:
-        descripcionesProyecto[Math.floor(Math.random() * descripcionesProyecto.length)],
-      ubicacion: "San José, Costa Rica",
-      estado: "En Construcción",
-      porcentajeCompletion: Math.floor(Math.random() * 80) + 20,
-    }
+  const [proyecto, setProyecto] = useState({
+    id: "",
+    nombre: "",
+    descripcion: "",
+    ubicacion: "San José, Costa Rica",
+    estado: "En Construcción",
   })
 
-  const [transacciones] = useState<Transaccion[]>(() => {
-    const transacciones: Transaccion[] = []
-    
-    const descManoObra = [
-      "Pago nómina constructores",
-      "Salarios operarios",
-      "Mano de obra especializada",
-      "Contratistas de fundación",
-      "Carpinteros y acabados",
-      "Electricistas",
-      "Plomeros",
-      "Maestro de obra",
-    ]
-    
-    const descMateriales = [
-      "Compra de cemento y acero",
-      "Alquiler de maquinaria",
-      "Transporte de materiales",
-      "Suministro eléctrico",
-      "Tuberías y accesorios",
-      "Ladrillos y bloques",
-      "Arena y grava",
-      "Pintura y acabados",
-      "Vidrios y ventanas",
-      "Puertas y marcos",
-    ]
+  const [transacciones, setTransacciones] = useState<Transaccion[]>([])
 
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"]
+  useEffect(() => {
+    const nombres = ["Plaza Principal", "Centro Comercial", "Residencial Vista", "Oficinas Ejecutivas", "Proyecto Magna"]
+    const descripciones = ["Torre de oficinas en zona central", "Centro comercial moderno", "Complejo residencial de lujo", "Edificio corporativo", "Desarrollo inmobiliario"]
 
-    // Generar egresos aleatorios (8-12 por mes, separados en mano de obra y materiales)
+    setProyecto({
+      id: Math.random().toString(36).substr(2, 9),
+      nombre: nombres[Math.floor(Math.random() * nombres.length)],
+      descripcion: descripciones[Math.floor(Math.random() * descripciones.length)],
+      ubicacion: "San José, Costa Rica",
+      estado: "En Construcción",
+    })
+
+    const txns: Transaccion[] = []
+    
+    const descManoObra = ["Pago nómina constructores", "Salarios operarios", "Mano de obra especializada", "Contratistas", "Electricistas", "Plomeros"]
+    const descMateriales = ["Compra de cemento y acero", "Alquiler de maquinaria", "Transporte de materiales", "Suministro eléctrico", "Tuberías", "Ladrillos"]
+
     for (let mes = 0; mes < 6; mes++) {
       const numEgresos = Math.floor(Math.random() * 5) + 8
       for (let i = 0; i < numEgresos; i++) {
         const esManoObra = Math.random() > 0.5
-        transacciones.push({
+        txns.push({
           id: `egreso-${mes}-${i}`,
-          descripcion: esManoObra
-            ? descManoObra[Math.floor(Math.random() * descManoObra.length)]
-            : descMateriales[Math.floor(Math.random() * descMateriales.length)],
+          descripcion: esManoObra ? descManoObra[Math.floor(Math.random() * descManoObra.length)] : descMateriales[Math.floor(Math.random() * descMateriales.length)],
           monto: Math.floor(Math.random() * 5000000) + 500000,
           tipo: "egreso",
           categoria: esManoObra ? "Mano de Obra" : "Materiales",
@@ -95,11 +161,10 @@ export default function PruebaPage() {
         })
       }
 
-      // Generar ingresos marcados como "pago cuota" (4-6 por mes)
       const numIngresos = Math.floor(Math.random() * 3) + 4
       for (let i = 0; i < numIngresos; i++) {
         const unidad = Math.floor(Math.random() * 50) + 1
-        transacciones.push({
+        txns.push({
           id: `ingreso-${mes}-${i}`,
           descripcion: `Pago cuota Unidad ${unidad}`,
           monto: Math.floor(Math.random() * 80000000) + 20000000,
@@ -111,351 +176,178 @@ export default function PruebaPage() {
       }
     }
 
-    return transacciones.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-  })
+    setTransacciones(txns.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()))
+    setMounted(true)
+  }, [])
 
-  // Calcular totales
   const totales = useMemo(() => {
-    const totalIngresos = transacciones
-      .filter((t) => t.tipo === "ingreso")
-      .reduce((sum, t) => sum + t.monto, 0)
-    const totalEgresos = transacciones
-      .filter((t) => t.tipo === "egreso")
-      .reduce((sum, t) => sum + t.monto, 0)
+    const totalIngresos = transacciones.filter((t) => t.tipo === "ingreso").reduce((sum, t) => sum + t.monto, 0)
+    const totalEgresos = transacciones.filter((t) => t.tipo === "egreso").reduce((sum, t) => sum + t.monto, 0)
+    const presupuesto = Math.round(totalEgresos * 1.35 / 1000000) * 1000000
 
-    return {
-      ingresos: totalIngresos,
-      egresos: totalEgresos,
-      saldo: totalIngresos - totalEgresos,
-    }
+    return { ingresos: totalIngresos, egresos: totalEgresos, saldo: totalIngresos - totalEgresos, presupuesto }
   }, [transacciones])
 
+  const transaccionesFiltradas = useMemo(() => {
+    const tipoFiltro = activeTab === "ingresos" ? "ingreso" : "egreso"
+    return transacciones.filter((t) => t.tipo === tipoFiltro)
+  }, [transacciones, activeTab])
+
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-CR", {
-      style: "currency",
-      currency: "CRC",
-      minimumFractionDigits: 0,
-    }).format(value)
+    return new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", minimumFractionDigits: 0 }).format(value)
   }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + "T00:00:00")
-    return new Intl.DateTimeFormat("es-CR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(date)
+    return new Intl.DateTimeFormat("es-CR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date)
   }
 
   return (
     <>
-      <NavBar />
-      <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-[var(--primary-foreground)] shadow-lg">
-          <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-center relative">
-            <Link href="/dashboard" className="absolute left-4">
-              <button className="btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)]">
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </Link>
-            <h1 className="text-lg font-bold">Proyecto Base - Prueba</h1>
-            <button
-              onClick={() => {}}
-              className="absolute right-4 btn btn-ghost btn-sm btn-circle hover:bg-[var(--primary-600)] flex items-center justify-center"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+      <div className="min-h-screen bg-base-200">
 
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-          {/* Información del Proyecto */}
-          <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md p-6">
-            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-4">{proyecto.nombre}</h2>
-            <p className="text-[var(--base-500)] mb-4">{proyecto.descripcion}</p>
+        {!mounted ? (
+          <main className="flex items-center justify-center min-h-[50vh]">
+            <span className="loading loading-spinner loading-lg text-primary"></span>
+          </main>
+        ) : (
+          <main className="p-4 lg:p-6">
+            <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-5">
+              
+              {/* Card del Proyecto - estilo stats */}
+              <FadeIn delay={0} className="card bg-base-100 shadow-md">
+                <div className="card-body p-4 lg:p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Building2 className="size-5 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="card-title text-primary text-xl lg:text-2xl">{proyecto.nombre}</h2>
+                        <p className="text-sm text-base-content/60">{proyecto.descripcion}</p>
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <p className="text-sm text-[var(--base-600)] dark:text-[var(--base-400)]">
-                  Ubicación
-                </p>
-                <p className="font-semibold text-[var(--foreground)]">{proyecto.ubicacion}</p>
-              </div>
-              <div>
-                <p className="text-sm text-[var(--base-600)] dark:text-[var(--base-400)]">Estado</p>
-                <p className="font-semibold text-[var(--primary)]">{proyecto.estado}</p>
-              </div>
-            </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <p className="text-xs text-base-content/60 uppercase tracking-wide">Ubicación</p>
+                      <p className="font-semibold text-base-content">{proyecto.ubicacion}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-base-content/60 uppercase tracking-wide">Estado</p>
+                      <p className="font-semibold text-primary">{proyecto.estado}</p>
+                    </div>
+                  </div>
 
-            {/* Progress Bar */}
-            <div>
-              <div className="flex justify-between mb-2">
-                <p className="text-sm text-[var(--base-600)] dark:text-[var(--base-400)]">
-                  Progreso
-                </p>
-                <p className="text-sm font-semibold text-[var(--primary)]">
-                  {proyecto.porcentajeCompletion}%
-                </p>
-              </div>
-              <div className="w-full bg-[var(--base-300)] rounded-full h-3 overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-[var(--primary)] to-[#0470c8] h-full transition-all"
-                  style={{ width: `${proyecto.porcentajeCompletion}%` }}
+                  {/* Progress */}
+                  <div className="mt-4">
+                    <div className="flex justify-between mb-1">
+                      <p className="text-xs text-base-content/60">Presupuesto utilizado</p>
+                      <p className="text-xs font-semibold">{Math.round((totales.egresos / totales.presupuesto) * 100)}%</p>
+                    </div>
+                    <progress 
+                      className="progress progress-primary w-full h-2"
+                      value={totales.egresos} 
+                      max={totales.presupuesto}
+                    />
+                  </div>
+                </div>
+              </FadeIn>
+
+              {/* Stat Cards - estilo stats */}
+              <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-5 shrink-0">
+                <StatCard 
+                  icon={TrendingUp} 
+                  label="Total Ingresos" 
+                  value={totales.ingresos} 
+                  colorClass="text-success"
+                  delay={100}
+                  subtitle={`${transacciones.filter((t) => t.tipo === "ingreso").length} transacciones`}
                 />
-              </div>
-            </div>
-          </div>
+                <StatCard 
+                  icon={TrendingDown} 
+                  label="Total Egresos" 
+                  value={totales.egresos} 
+                  colorClass="text-error"
+                  delay={180}
+                  subtitle={`${transacciones.filter((t) => t.tipo === "egreso").length} transacciones`}
+                />
+                <StatCard 
+                  icon={DollarSign} 
+                  label="Saldo" 
+                  value={totales.saldo} 
+                  colorClass={totales.saldo >= 0 ? "text-success" : "text-error"}
+                  delay={260}
+                  subtitle={totales.saldo >= 0 ? "Superávit" : "Déficit"}
+                />
+              </section>
 
-          {/* Resumen Financiero */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Ingresos */}
-            <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--success)] rounded-xl shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)] uppercase">
-                  Total Ingresos
-                </h3>
-                <TrendingUp className="h-5 w-5 text-[var(--success)]" />
-              </div>
-              <p className="text-2xl font-bold text-[var(--success)]">{formatCurrency(totales.ingresos)}</p>
-              <p className="text-xs text-[var(--base-500)] mt-2">
-                {transacciones.filter((t) => t.tipo === "ingreso").length} transacciones
-              </p>
-            </div>
+              {/* Tabs y Tabla - estilo stats */}
+              <FadeIn delay={340} className="card bg-base-100 shadow-md">
+                <div className="card-body p-0">
+                  {/* Tabs */}
+                  <div role="tablist" className="tabs tabs-bordered">
+                    <button 
+                      role="tab" 
+                      className={`tab gap-2 ${activeTab === "ingresos" ? "tab-active text-success" : "text-base-content/60"}`}
+                      onClick={() => setActiveTab("ingresos")}
+                    >
+                      <TrendingUp className="size-4" />
+                      Ingresos - Pagos de Cuota
+                    </button>
+                    <button 
+                      role="tab" 
+                      className={`tab gap-2 ${activeTab === "egresos" ? "tab-active text-error" : "text-base-content/60"}`}
+                      onClick={() => setActiveTab("egresos")}
+                    >
+                      <TrendingDown className="size-4" />
+                      Egresos - Gastos de Proyecto
+                    </button>
+                  </div>
 
-            {/* Egresos */}
-            <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--error)] rounded-xl shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)] uppercase">
-                  Total Egresos
-                </h3>
-                <TrendingDown className="h-5 w-5 text-[var(--error)]" />
-              </div>
-              <p className="text-2xl font-bold text-[var(--error)]">{formatCurrency(totales.egresos)}</p>
-              <p className="text-xs text-[var(--base-500)] mt-2">
-                {transacciones.filter((t) => t.tipo === "egreso").length} transacciones
-              </p>
-            </div>
-
-            {/* Saldo */}
-            <div
-              className={`border-2 rounded-xl shadow-md p-6 ${
-                totales.saldo >= 0
-                  ? "bg-white dark:bg-[var(--base-200)] border-[var(--success)]"
-                  : "bg-white dark:bg-[var(--base-200)] border-[var(--error)]"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)] uppercase">
-                  Saldo
-                </h3>
-                <DollarSign className={`h-5 w-5 ${totales.saldo >= 0 ? "text-[var(--success)]" : "text-[var(--error)]"}`} />
-              </div>
-              <p
-                className={`text-2xl font-bold ${
-                  totales.saldo >= 0 ? "text-[var(--success)]" : "text-[var(--error)]"
-                }`}
-              >
-                {formatCurrency(totales.saldo)}
-              </p>
-              <p className="text-xs text-[var(--base-500)] mt-2">
-                {totales.saldo >= 0 ? "Superávit" : "Déficit"}
-              </p>
-            </div>
-          </div>
-
-          {/* Tabla con Tabs */}
-          <div className="bg-white dark:bg-[var(--base-200)] border-2 border-[var(--primary-200)] rounded-xl shadow-md overflow-hidden">
-            {/* Tabs */}
-            <div className="flex border-b-2 border-[var(--primary-200)]">
-              <button
-                onClick={() => setActiveTab("ingresos")}
-                className={`flex-1 py-4 px-6 text-center font-semibold transition-all ${
-                  activeTab === "ingresos"
-                    ? "bg-[var(--success)] text-white border-b-4 border-[var(--success)]"
-                    : "bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] hover:bg-[var(--base-50)] dark:hover:bg-[var(--base-300)]"
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  <span>Ingresos - Pagos de Cuota</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab("egresos")}
-                className={`flex-1 py-4 px-6 text-center font-semibold transition-all ${
-                  activeTab === "egresos"
-                    ? "bg-[var(--error)] text-white border-b-4 border-[var(--error)]"
-                    : "bg-white dark:bg-[var(--base-200)] text-[var(--foreground)] hover:bg-[var(--base-50)] dark:hover:bg-[var(--base-300)]"
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <TrendingDown className="h-5 w-5" />
-                  <span>Egresos - Gastos de Proyecto</span>
-                </div>
-              </button>
-            </div>
-
-            {/* Contenido de Tabs */}
-            <div className="p-6">
-              {activeTab === "ingresos" && (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b-2 border-[var(--success)]">
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                          Fecha
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                          Descripción
-                        </th>
-                        <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                          Categoría
-                        </th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                          Monto
-                        </th>
-                        <th className="text-center py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                          Estado
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transacciones
-                        .filter((t) => t.tipo === "ingreso")
-                        .map((transaccion, idx) => (
-                          <tr
-                            key={transaccion.id}
-                            className={`border-b border-[var(--base-300)] hover:bg-[var(--success-50)] dark:hover:bg-[var(--base-300)] transition-colors ${
-                              idx % 2 === 0 ? "bg-[var(--base-50)] dark:bg-[var(--base-200)]" : ""
-                            }`}
-                          >
-                            <td className="py-3 px-4 text-sm text-[var(--foreground)]">
-                              {formatDate(transaccion.fecha)}
+                  {/* Tabla */}
+                  <div className="overflow-x-auto">
+                    <table className="table table-zebra table-sm sm:table-md">
+                      <thead>
+                        <tr className="text-base-content/60">
+                          <th className="whitespace-nowrap">Fecha</th>
+                          <th>Descripción</th>
+                          <th className="whitespace-nowrap">Categoría</th>
+                          <th className="text-right whitespace-nowrap">Monto</th>
+                          <th className="whitespace-nowrap">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transaccionesFiltradas.slice(0, 10).map((txn) => (
+                          <tr key={txn.id} className="hover">
+                            <td className="text-sm whitespace-nowrap">{formatDate(txn.fecha)}</td>
+                            <td className="text-sm font-medium">{txn.descripcion}</td>
+                            <td className="whitespace-nowrap">
+                              <span className="badge badge-ghost badge-sm">{txn.categoria}</span>
                             </td>
-                            <td className="py-3 px-4 text-sm text-[var(--foreground)]">
-                              {transaccion.descripcion}
+                            <td className={`text-right font-semibold whitespace-nowrap ${txn.tipo === "ingreso" ? "text-success" : "text-error"}`}>
+                              {txn.tipo === "ingreso" ? "+" : "-"}{formatCurrency(txn.monto)}
                             </td>
-                            <td className="py-3 px-4 text-sm">
-                              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--success-100)] dark:bg-[var(--success-900)] text-[var(--success)]">
-                                {transaccion.categoria}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-sm font-bold text-right text-[var(--success)]">
-                              +{formatCurrency(transaccion.monto)}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-center">
-                              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--primary-100)] dark:bg-[var(--primary-900)] text-[var(--primary)]">
-                                Pago Cuota
+                            <td className="whitespace-nowrap">
+                              <span className={`badge badge-sm ${
+                                txn.estado === "pago cuota" ? "badge-success" : 
+                                txn.estado === "pendiente" ? "badge-warning" : "badge-ghost"
+                              }`}>
+                                {txn.estado === "pago cuota" ? "Pago Cuota" : txn.estado.charAt(0).toUpperCase() + txn.estado.slice(1)}
                               </span>
                             </td>
                           </tr>
                         ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {activeTab === "egresos" && (
-                <div>
-                  {/* Subtabs de Egresos */}
-                  <div className="flex gap-4 mb-6 border-b-2 border-[var(--error-200)] pb-4">
-                    <button
-                      onClick={() => setEgresoSubTab("mano-obra")}
-                      className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                        egresoSubTab === "mano-obra"
-                          ? "bg-[var(--error)] text-white"
-                          : "bg-[var(--base-100)] dark:bg-[var(--base-300)] text-[var(--foreground)] hover:bg-[var(--base-200)]"
-                      }`}
-                    >
-                      Mano de Obra
-                    </button>
-                    <button
-                      onClick={() => setEgresoSubTab("materiales")}
-                      className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                        egresoSubTab === "materiales"
-                          ? "bg-[var(--error)] text-white"
-                          : "bg-[var(--base-100)] dark:bg-[var(--base-300)] text-[var(--foreground)] hover:bg-[var(--base-200)]"
-                      }`}
-                    >
-                      Materiales
-                    </button>
-                  </div>
-
-                  {/* Filtro de búsqueda */}
-                  <div className="mb-6">
-                    <input
-                      type="text"
-                      placeholder="Buscar por descripción..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[var(--error-200)] bg-[var(--base-50)] dark:bg-[var(--base-300)] text-[var(--foreground)] placeholder-[var(--base-400)] focus:border-[var(--error)] focus:outline-none focus:ring-2 focus:ring-[var(--error-100)]"
-                    />
-                  </div>
-
-                  {/* Tabla de Egresos */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b-2 border-[var(--error)]">
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                            Fecha
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                            Descripción
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                            Categoría
-                          </th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                            Monto
-                          </th>
-                          <th className="text-center py-3 px-4 text-sm font-semibold text-[var(--base-600)] dark:text-[var(--base-400)]">
-                            Estado
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {transacciones
-                          .filter((t) => t.tipo === "egreso")
-                          .filter((t) => egresoSubTab === "mano-obra" ? t.categoria === "Mano de Obra" : t.categoria === "Materiales")
-                          .filter((t) => t.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
-                          .map((transaccion, idx) => (
-                            <tr
-                              key={transaccion.id}
-                              className={`border-b border-[var(--base-300)] hover:bg-[var(--error-50)] dark:hover:bg-[var(--base-300)] transition-colors ${
-                                idx % 2 === 0 ? "bg-[var(--base-50)] dark:bg-[var(--base-200)]" : ""
-                              }`}
-                            >
-                              <td className="py-3 px-4 text-sm text-[var(--foreground)]">
-                                {formatDate(transaccion.fecha)}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-[var(--foreground)]">
-                                {transaccion.descripcion}
-                              </td>
-                              <td className="py-3 px-4 text-sm">
-                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--error-100)] dark:bg-[var(--error-900)] text-[var(--error)]">
-                                  {transaccion.categoria}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-sm font-bold text-right text-[var(--error)]">
-                                -{formatCurrency(transaccion.monto)}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-center">
-                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--warning-100)] dark:bg-[var(--warning-900)] text-[var(--warning)]">
-                                  Completado
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
-              )}
+              </FadeIn>
+
             </div>
-          </div>
-        </div>
+          </main>
+        )}
       </div>
     </>
   )

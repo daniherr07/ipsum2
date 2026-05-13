@@ -1,10 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Trash } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Pencil, Trash, X } from "lucide-react";
 import Link from "next/link";
 
-const data = [
+// FadeIn animation component
+function FadeIn({ children, delay = 0, className = "" }) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(id);
+  }, [delay]);
+
+  return (
+    <div
+      className={className}
+      style={{
+        opacity: show ? 1 : 0,
+        transform: show ? "translateY(0)" : "translateY(16px)",
+        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+const initialData = [
   {
     id: 1,
     mount: 3500,
@@ -278,13 +301,54 @@ const data = [
   },
 ];
 
+// Parse date from dd/mm/yyyy format
+const parseDate = (dateStr) => {
+  const [day, month, year] = dateStr.split("/").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 export default function AddMovement() {
   const [filter, setFilter] = useState(0);
+  const [movimientos, setMovimientos] = useState(initialData);
+  const [sortBy, setSortBy] = useState("monto");
+  const [editingItem, setEditingItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sort movements
+  const sortedMovimientos = [...movimientos].sort((a, b) => {
+    if (sortBy === "monto") {
+      return b.mount - a.mount;
+    } else {
+      return parseDate(b.created_at) - parseDate(a.created_at);
+    }
+  });
+
+  const openEditModal = (item) => {
+    setEditingItem({ ...item });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleSave = () => {
+    if (!editingItem) return;
+    setMovimientos((prev) =>
+      prev.map((item) => (item.id === editingItem.id ? editingItem : item))
+    );
+    closeModal();
+  };
+
+  const handleInputChange = (field, value) => {
+    setEditingItem((prev) => ({ ...prev, [field]: value }));
+  };
 
   return (
     <>
       <main className="w-full flex flex-col justify-center items-center p-3 gap-5 lg:px-[25dvw]">
-        <div className="flex w-full gap-1">
+        <FadeIn delay={0} className="flex w-full gap-1">
           <button
             type="button"
             className={`btn flex-1 btn-primary ${filter != 0 && "btn-soft"}`}
@@ -306,48 +370,54 @@ export default function AddMovement() {
           >
             Todos
           </button>
-        </div>
+        </FadeIn>
 
-        <fieldset className="fieldset w-full">
+        <FadeIn delay={100} className="fieldset w-full">
           <legend className="fieldset-legend">Ordenar por:</legend>
-          <select defaultValue="Monto" className="select w-full">
-            <option disabled={true}>Monto</option>
-            <option>Fecha</option>
+          <select 
+            value={sortBy} 
+            className="select w-full"
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="monto">Monto</option>
+            <option value="fecha">Fecha</option>
           </select>
-        </fieldset>
+        </FadeIn>
 
-        <div className="flex flex-col w-full gap-3">
-          <Link href={"/stats"} type="button" className={`btn btn-primary`}>
-            Mostrar Gráficos
-          </Link>
-          <Link href={"/addMov"} type="button" className={`btn btn-secondary`}>
+        <FadeIn delay={200} className="flex flex-col w-full gap-3">
+          <Link href={"/movimientosIdeaFelipe"} type="button" className={`btn btn-secondary`}>
             Añadir Movimiento
           </Link>
-        </div>
+        </FadeIn>
 
+        <FadeIn delay={300} className="w-full">
         <ul className="list bg-base-100 rounded-box shadow-md max-h-dvh overflow-scroll">
-          {data.map((item) =>
+          {sortedMovimientos.map((item) =>
             filter == 0 ? (
               item.type == "egreso" && (
                 <li className="list-row" key={item.id}>
                   <div>
                     <h1 className="font-bold text-md">{item.title}</h1>
-                    <div>₵{item.mount}</div>
+                    <div>₵{item.mount.toLocaleString("es-CR")}</div>
                     <div
                       className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
                     >
                       {item.type}
                     </div>
-                    <span className="font-bold">
+                    <div className="text-xs opacity-60">{item.created_at}</div>
+                    <span className="font-bold text-xs">
                       Plantilla: {item.template || "Sin plantilla"}
                     </span>
                   </div>
                   <p className="list-col-wrap text-xs">{item.description}</p>
-                  <button className="btn btn-square btn-ghost">
-                    <Pencil size={16}></Pencil>
+                  <button 
+                    className="btn btn-square btn-ghost btn-sm"
+                    onClick={() => openEditModal(item)}
+                  >
+                    <Pencil size={14}></Pencil>
                   </button>
-                  <button className="btn btn-square btn-ghost text-error">
-                    <Trash size={16}></Trash>
+                  <button className="btn btn-square btn-ghost btn-sm text-error">
+                    <Trash size={14}></Trash>
                   </button>
                 </li>
               )
@@ -356,22 +426,26 @@ export default function AddMovement() {
                 <li className="list-row" key={item.id}>
                   <div>
                     <h1 className="font-bold text-md">{item.title}</h1>
-                    <div>₵{item.mount}</div>
+                    <div>₵{item.mount.toLocaleString("es-CR")}</div>
                     <div
                       className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
                     >
                       {item.type}
                     </div>
-                    <span className="font-bold">
+                    <div className="text-xs opacity-60">{item.created_at}</div>
+                    <span className="font-bold text-xs">
                       Plantilla: {item.template || "Sin plantilla"}
                     </span>
                   </div>
                   <p className="list-col-wrap text-xs">{item.description}</p>
-                  <button className="btn btn-square btn-ghost">
-                    <Pencil size={16}></Pencil>
+                  <button 
+                    className="btn btn-square btn-ghost btn-sm"
+                    onClick={() => openEditModal(item)}
+                  >
+                    <Pencil size={14}></Pencil>
                   </button>
-                  <button className="btn btn-square btn-ghost text-error">
-                    <Trash size={16}></Trash>
+                  <button className="btn btn-square btn-ghost btn-sm text-error">
+                    <Trash size={14}></Trash>
                   </button>
                 </li>
               )
@@ -379,29 +453,129 @@ export default function AddMovement() {
               <li className="list-row" key={item.id}>
                 <div>
                   <h1 className="font-bold text-md">{item.title}</h1>
-                  <div>₵{item.mount}</div>
+                  <div>₵{item.mount.toLocaleString("es-CR")}</div>
                   <div
                     className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
                   >
                     {item.type}
                   </div>
-
-                  <span className="font-bold">
+                  <div className="text-xs opacity-60">{item.created_at}</div>
+                  <span className="font-bold text-xs">
                     Plantilla: {item.template || "Sin plantilla"}
                   </span>
                 </div>
                 <p className="list-col-wrap text-xs">{item.description}</p>
-                <button className="btn btn-square btn-ghost">
-                  <Pencil size={16}></Pencil>
+                <button 
+                  className="btn btn-square btn-ghost btn-sm"
+                  onClick={() => openEditModal(item)}
+                >
+                  <Pencil size={14}></Pencil>
                 </button>
-                <button className="btn btn-square btn-ghost text-error">
-                  <Trash size={16}></Trash>
+                <button className="btn btn-square btn-ghost btn-sm text-error">
+                  <Trash size={14}></Trash>
                 </button>
               </li>
             ),
           )}
         </ul>
+        </FadeIn>
       </main>
+
+      {/* Modal de Edición - Responsive para iPhone SE */}
+      {isModalOpen && editingItem && (
+        <div className="modal modal-open">
+          <div className="modal-box w-11/12 max-w-md p-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-bold text-base">Editar Movimiento</h3>
+              <button 
+                className="btn btn-xs btn-circle btn-ghost"
+                onClick={closeModal}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <fieldset className="fieldset w-full">
+                <legend className="fieldset-legend text-xs">Título</legend>
+                <input
+                  type="text"
+                  className="input input-sm w-full"
+                  value={editingItem.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                />
+              </fieldset>
+
+              <fieldset className="fieldset w-full">
+                <legend className="fieldset-legend text-xs">Descripción</legend>
+                <input
+                  type="text"
+                  className="input input-sm w-full"
+                  value={editingItem.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                />
+              </fieldset>
+
+              <div className="grid grid-cols-2 gap-2">
+                <fieldset className="fieldset w-full">
+                  <legend className="fieldset-legend text-xs">Monto (₵)</legend>
+                  <input
+                    type="number"
+                    className="input input-sm w-full"
+                    value={editingItem.mount}
+                    onChange={(e) => handleInputChange("mount", Number(e.target.value))}
+                  />
+                </fieldset>
+
+                <fieldset className="fieldset w-full">
+                  <legend className="fieldset-legend text-xs">Tipo</legend>
+                  <select
+                    className="select select-sm w-full"
+                    value={editingItem.type}
+                    onChange={(e) => handleInputChange("type", e.target.value)}
+                  >
+                    <option value="ingreso">Ingreso</option>
+                    <option value="egreso">Egreso</option>
+                  </select>
+                </fieldset>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <fieldset className="fieldset w-full">
+                  <legend className="fieldset-legend text-xs">Plantilla</legend>
+                  <input
+                    type="text"
+                    className="input input-sm w-full"
+                    value={editingItem.template || ""}
+                    placeholder="Opcional"
+                    onChange={(e) => handleInputChange("template", e.target.value || null)}
+                  />
+                </fieldset>
+
+                <fieldset className="fieldset w-full">
+                  <legend className="fieldset-legend text-xs">Fecha</legend>
+                  <input
+                    type="text"
+                    className="input input-sm w-full"
+                    value={editingItem.created_at}
+                    onChange={(e) => handleInputChange("created_at", e.target.value)}
+                  />
+                </fieldset>
+              </div>
+            </div>
+
+            <div className="modal-action mt-3">
+              <button className="btn btn-sm btn-ghost" onClick={closeModal}>
+                Cancelar
+              </button>
+              <button className="btn btn-sm btn-primary" onClick={handleSave}>
+                Guardar
+              </button>
+            </div>
+          </div>
+          <div className="modal-backdrop bg-black/50" onClick={closeModal}></div>
+        </div>
+      )}
     </>
   );
 }
