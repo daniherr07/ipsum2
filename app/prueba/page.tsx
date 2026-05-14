@@ -115,6 +115,92 @@ function StatCard({ icon: Icon, label, value, colorClass, delay = 0, subtitle }:
   )
 }
 
+const DONUT_COLORS = [
+  { stroke: "#f87272", bg: "bg-error", text: "text-error" },
+  { stroke: "#fbbd23", bg: "bg-warning", text: "text-warning" },
+  { stroke: "#38bdf8", bg: "bg-info", text: "text-info" },
+  { stroke: "#36d399", bg: "bg-success", text: "text-success" },
+  { stroke: "#661ae6", bg: "bg-primary", text: "text-primary" },
+]
+
+function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
+  const [progress, setProgress] = useState(0)
+  const animKey = data.map(d => d.monto).join(",")
+
+  useEffect(() => {
+    setProgress(0)
+    let start: number | null = null
+    let animId: number
+    const duration = 900
+    const animate = (ts: number) => {
+      if (!start) start = ts
+      const t = Math.min((ts - start) / duration, 1)
+      setProgress(1 - Math.pow(1 - t, 3))
+      if (t < 1) animId = requestAnimationFrame(animate)
+    }
+    const tid = setTimeout(() => { animId = requestAnimationFrame(animate) }, 200)
+    return () => { clearTimeout(tid); cancelAnimationFrame(animId) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animKey])
+
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", minimumFractionDigits: 0 }).format(v)
+
+  const total = data.reduce((s, d) => s + d.monto, 0)
+  if (total === 0) return null
+
+  const R = 36
+  const C = 2 * Math.PI * R
+  let cumulative = 0
+  const segments = data.map((d, i) => {
+    const pct = d.monto / total
+    const startAngle = cumulative * 360
+    cumulative += pct
+    return { ...d, pct, startAngle, color: DONUT_COLORS[i % DONUT_COLORS.length] }
+  })
+
+  return (
+    <div className="flex flex-col items-center gap-3 pt-2">
+      <svg width="140" height="140" viewBox="0 0 96 96">
+        <circle cx="48" cy="48" r={R} fill="none" className="stroke-base-200" strokeWidth="14" />
+        {segments.map((seg, i) => (
+          <circle
+            key={i}
+            cx="48" cy="48" r={R}
+            fill="none"
+            style={{ stroke: seg.color.stroke }}
+            strokeWidth="14"
+            strokeDasharray={`${seg.pct * C * progress} ${C}`}
+            transform={`rotate(${seg.startAngle - 90} 48 48)`}
+          />
+        ))}
+        <text x="48" y="45" textAnchor="middle" className="fill-base-content/50" style={{ fontSize: 7 }}>Total</text>
+        <text x="48" y="54" textAnchor="middle" className="fill-base-content font-bold" style={{ fontSize: 8, fontWeight: 700 }}>
+          {(total / 1000000).toFixed(1)}M
+        </text>
+      </svg>
+      <ul className="w-full space-y-2">
+        {segments.map((seg) => (
+          <li key={seg.nombre} className="flex items-center justify-between gap-2 text-xs">
+            <span className="flex items-center gap-2 min-w-0">
+              <span className={`shrink-0 w-2.5 h-2.5 rounded-full ${seg.color.bg}`} />
+              <span className="font-medium truncate">{seg.nombre}</span>
+            </span>
+            <span className="flex items-center gap-2 shrink-0">
+              <span className="text-base-content/50">{fmt(seg.monto)}</span>
+              <span className={`font-bold w-9 text-right ${seg.color.text}`}>{Math.round(seg.pct * 100)}%</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="w-full border-t border-base-200 pt-2 flex justify-between text-xs font-semibold">
+        <span className="text-base-content/60">Total egresos</span>
+        <span className="text-error">{fmt(total)}</span>
+      </div>
+    </div>
+  )
+}
+
 export default function PruebaPage() {
   const [activeTab, setActiveTab] = useState<"ingresos" | "egresos">("ingresos")
   const [mounted, setMounted] = useState(false)
@@ -145,17 +231,24 @@ export default function PruebaPage() {
     
     const descManoObra = ["Pago nómina constructores", "Salarios operarios", "Mano de obra especializada", "Contratistas", "Electricistas", "Plomeros"]
     const descMateriales = ["Compra de cemento y acero", "Alquiler de maquinaria", "Transporte de materiales", "Suministro eléctrico", "Tuberías", "Ladrillos"]
+    const descGastosVarios = ["Permisos municipales", "Seguro de obra", "Gastos notariales", "Servicios profesionales", "Viáticos", "Imprevistos"]
 
     for (let mes = 0; mes < 6; mes++) {
       const numEgresos = Math.floor(Math.random() * 5) + 8
       for (let i = 0; i < numEgresos; i++) {
-        const esManoObra = Math.random() > 0.5
+        const rand = Math.random()
+        const esGastosVarios = rand < 0.2
+        const esManoObra = !esGastosVarios && rand < 0.6
         txns.push({
           id: `egreso-${mes}-${i}`,
-          descripcion: esManoObra ? descManoObra[Math.floor(Math.random() * descManoObra.length)] : descMateriales[Math.floor(Math.random() * descMateriales.length)],
+          descripcion: esGastosVarios
+            ? descGastosVarios[Math.floor(Math.random() * descGastosVarios.length)]
+            : esManoObra
+              ? descManoObra[Math.floor(Math.random() * descManoObra.length)]
+              : descMateriales[Math.floor(Math.random() * descMateriales.length)],
           monto: Math.floor(Math.random() * 5000000) + 500000,
           tipo: "egreso",
-          categoria: esManoObra ? "Mano de Obra" : "Materiales",
+          categoria: esGastosVarios ? "Gastos Varios" : esManoObra ? "Mano de Obra" : "Materiales",
           fecha: `2025-${String(mes + 1).padStart(2, "0")}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, "0")}`,
           estado: "completado",
         })
@@ -192,6 +285,23 @@ export default function PruebaPage() {
     const tipoFiltro = activeTab === "ingresos" ? "ingreso" : "egreso"
     return transacciones.filter((t) => t.tipo === tipoFiltro)
   }, [transacciones, activeTab])
+
+  const categoriaStats = useMemo(() => {
+    const map: Record<string, { monto: number; count: number; tipo: "ingreso" | "egreso" }> = {}
+    transacciones.forEach((t) => {
+      if (!map[t.categoria]) map[t.categoria] = { monto: 0, count: 0, tipo: t.tipo }
+      map[t.categoria].monto += t.monto
+      map[t.categoria].count += 1
+    })
+    return Object.entries(map).map(([nombre, d]) => ({ nombre, ...d }))
+  }, [transacciones])
+
+  const egresosCategories = useMemo(() =>
+    categoriaStats.filter(c => c.tipo === "egreso"), [categoriaStats])
+
+  const donutData = useMemo(() =>
+    egresosCategories.map(c => ({ nombre: c.nombre, monto: c.monto })),
+  [egresosCategories])
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", minimumFractionDigits: 0 }).format(value)
@@ -283,8 +393,53 @@ export default function PruebaPage() {
                 />
               </section>
 
+              {/* Desglose + Distribución */}
+              <section className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-5 shrink-0">
+                <FadeIn delay={340} className="card bg-base-100 shadow-md">
+                  <div className="card-body p-4 lg:p-5">
+                    <h2 className="card-title text-sm lg:text-base">Desglose por Tipo de Movimiento</h2>
+                    <ul className="space-y-3 mt-2">
+                      {categoriaStats.map((cat) => {
+                        const totalTipo = categoriaStats
+                          .filter(c => c.tipo === cat.tipo)
+                          .reduce((s, c) => s + c.monto, 0)
+                        const pct = Math.round((cat.monto / totalTipo) * 100)
+                        return (
+                          <li key={cat.nombre}>
+                            <div className="flex justify-between text-xs lg:text-sm mb-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`w-2 h-2 rounded-full ${cat.tipo === "ingreso" ? "bg-success" : "bg-error"}`} />
+                                <span className="font-medium">{cat.nombre}</span>
+                                <span className="text-base-content/40 text-xs">({cat.count} mov.)</span>
+                              </div>
+                              <span className={`font-semibold ${cat.tipo === "ingreso" ? "text-success" : "text-error"}`}>
+                                {formatCurrency(cat.monto)}
+                              </span>
+                            </div>
+                            <progress
+                              className={`progress w-full h-1.5 ${cat.tipo === "ingreso" ? "progress-success" : "progress-error"}`}
+                              value={pct}
+                              max="100"
+                            />
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                </FadeIn>
+
+                <FadeIn delay={420} className="card bg-base-100 shadow-md">
+                  <div className="card-body p-4 lg:p-5">
+                    <h2 className="card-title text-sm lg:text-base">Distribución de Tipos de Gastos</h2>
+                    {donutData.length > 0 && (
+                      <DonutChart data={donutData} />
+                    )}
+                  </div>
+                </FadeIn>
+              </section>
+
               {/* Tabs y Tabla - estilo stats */}
-              <FadeIn delay={340} className="card bg-base-100 shadow-md">
+              <FadeIn delay={540} className="card bg-base-100 shadow-md">
                 <div className="card-body p-0">
                   {/* Tabs */}
                   <div role="tablist" className="tabs tabs-bordered">

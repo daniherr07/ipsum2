@@ -30,6 +30,35 @@ const DATA = {
   ] as MonthData[],
 }
 
+const AÑOS = ["2023", "2024", "2025", "2026"]
+const TIPOS_BONO = ["Todos", "RAMT", "Lote Propio", "Hipoteca", "Articulo 76"]
+
+const YEAR_SCALE: Record<string, number> = { "2023": 0.72, "2024": 0.88, "2025": 1.0, "2026": 1.18 }
+const BONO_ING_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.45, "Lote Propio": 0.25, "Hipoteca": 0.20, "Articulo 76": 0.10 }
+const BONO_EGR_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.48, "Lote Propio": 0.22, "Hipoteca": 0.19, "Articulo 76": 0.11 }
+
+function getFilteredData(año: string, tipoBono: string) {
+  const ys = YEAR_SCALE[año] ?? 1.0
+  const bi = BONO_ING_SCALE[tipoBono] ?? 1.0
+  const be = BONO_EGR_SCALE[tipoBono] ?? 1.0
+  const ingresos = Math.round(DATA.ingresos * ys * bi)
+  const egresos = Math.round(DATA.egresos * ys * be)
+  return {
+    ingresos,
+    egresos,
+    balance: ingresos - egresos,
+    categorias: DATA.categorias.map(c => ({
+      ...c,
+      monto: Math.round(c.monto * ys * (c.tipo === "ingreso" ? bi : be)),
+    })) as CategoryData[],
+    mensual: DATA.mensual.map(m => ({
+      ...m,
+      ingresos: Math.round(m.ingresos * ys * bi),
+      egresos: Math.round(m.egresos * ys * be),
+    })) as MonthData[],
+  }
+}
+
 const formatCurrency = (value: number) => {
   const prefix = value >= 0 ? "+" : ""
   return `₵ ${prefix}${Math.abs(value).toLocaleString("es-CR")}`
@@ -269,47 +298,26 @@ function LineChart({ data }: { data: MonthData[] }) {
   )
 }
 
-function CategoryItem({ category, percentage, index }: {
-  category: CategoryData
-  percentage: number
-  index: number
-}) {
-  const isIngreso = category.tipo === "ingreso"
-  const width = useDelayedState(0, percentage, 100 + index * 100)
-
-  return (
-    <li>
-      <div className="flex justify-between text-xs lg:text-sm mb-1">
-        <span className="font-medium">{category.nombre}</span>
-        <span className={`font-semibold ${isIngreso ? "text-success" : "text-error"}`}>
-          {formatCurrency(category.monto)}
-        </span>
-      </div>
-      <progress
-        className={`progress w-full h-1.5 lg:h-2 ${isIngreso ? "progress-success" : "progress-error"}`}
-        value={width}
-        max="100"
-      />
-    </li>
-  )
-}
-
-function SummaryStats() {
+function SummaryStats({ mensual }: { mensual: MonthData[] }) {
+  const nets = mensual.map(m => ({ mes: m.mes, net: m.ingresos - m.egresos }))
+  const best = nets.reduce((a, b) => a.net > b.net ? a : b, nets[0])
+  const worst = nets.reduce((a, b) => a.net < b.net ? a : b, nets[0])
+  const avgIngresos = Math.round(mensual.reduce((s, m) => s + m.ingresos, 0) / mensual.length)
   return (
     <div className="stats stats-vertical w-full bg-base-100 mt-2">
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Mejor mes</div>
-        <div className="stat-value text-success text-base lg:text-lg">Nov</div>
-        <div className="stat-desc text-xs">+₵70,000 neto</div>
+        <div className="stat-value text-success text-base lg:text-lg">{best?.mes ?? "—"}</div>
+        <div className="stat-desc text-xs">{formatCurrency(best?.net ?? 0)} neto</div>
       </div>
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Peor mes</div>
-        <div className="stat-value text-error text-base lg:text-lg">Ene</div>
-        <div className="stat-desc text-xs">-₵449,810 neto</div>
+        <div className="stat-value text-error text-base lg:text-lg">{worst?.mes ?? "—"}</div>
+        <div className="stat-desc text-xs">{formatCurrency(worst?.net ?? 0)} neto</div>
       </div>
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Promedio mensual</div>
-        <div className="stat-value text-primary text-base lg:text-lg">₵401K</div>
+        <div className="stat-value text-primary text-base lg:text-lg">₵{(avgIngresos / 1000).toFixed(0)}K</div>
         <div className="stat-desc text-xs">Ingresos</div>
       </div>
     </div>
@@ -317,17 +325,13 @@ function SummaryStats() {
 }
 
 export default function StatsPage() {
-  const totalEgresos = useMemo(() => 
-    DATA.categorias
-      .filter(c => c.tipo === "egreso")
-      .reduce((acc, c) => acc + Math.abs(c.monto), 0),
-    []
-  )
+  const [filtroAño, setFiltroAño] = useState("2025")
+  const [filtroTipoBono, setFiltroTipoBono] = useState("Todos")
 
-  const getPercentage = (cat: CategoryData) =>
-    cat.tipo === "ingreso"
-      ? (cat.monto / DATA.ingresos) * 100
-      : (Math.abs(cat.monto) / totalEgresos) * 100
+  const filteredData = useMemo(
+    () => getFilteredData(filtroAño, filtroTipoBono),
+    [filtroAño, filtroTipoBono]
+  )
 
   return (
     <>
@@ -335,32 +339,65 @@ export default function StatsPage() {
 
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
         <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-5">
+
+          {/* Filtros */}
+          <FadeIn delay={0} className="card bg-base-100 shadow-sm shrink-0">
+            <div className="card-body p-3 lg:p-4">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-base-content/60 uppercase tracking-wide whitespace-nowrap">Año</label>
+                  <select
+                    className="select select-sm select-bordered"
+                    value={filtroAño}
+                    onChange={e => setFiltroAño(e.target.value)}
+                  >
+                    {AÑOS.map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium text-base-content/60 uppercase tracking-wide whitespace-nowrap">Tipo de Bono</label>
+                  <select
+                    className="select select-sm select-bordered"
+                    value={filtroTipoBono}
+                    onChange={e => setFiltroTipoBono(e.target.value)}
+                  >
+                    {TIPOS_BONO.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
           <section className="grid grid-cols-2 gap-3 lg:gap-5 shrink-0">
             <StatCard 
               icon={TrendingUp} 
               label="Ingresos" 
-              value={DATA.ingresos} 
+              value={filteredData.ingresos} 
               colorClass="text-success"
-              delay={0}
+              delay={80}
             />
             <StatCard 
               icon={TrendingDown} 
               label="Egresos" 
-              value={-DATA.egresos} 
+              value={-filteredData.egresos} 
               colorClass="text-error"
-              delay={80}
+              delay={160}
             />
             <StatCard 
               icon={Wallet} 
               label="Balance" 
-              value={DATA.balance} 
-              colorClass={DATA.balance >= 0 ? "text-success" : "text-error"}
-              delay={160}
+              value={filteredData.balance} 
+              colorClass={filteredData.balance >= 0 ? "text-success" : "text-error"}
+              delay={240}
               fullGrid={true}
             />
           </section>
 
-          <FadeIn delay={200} className="card bg-base-100 shadow-md shrink-0">
+          <FadeIn delay={280} className="card bg-base-100 shadow-md shrink-0">
             <div className="card-body p-4 lg:p-5">
               <div className="flex items-center justify-between">
                 <h2 className="card-title text-sm lg:text-base">Comparación Mensual</h2>
@@ -370,35 +407,17 @@ export default function StatsPage() {
                 </div>
               </div>
               <div className="h-40 lg:h-52 mt-3">
-                <LineChart data={DATA.mensual} />
+                <LineChart data={filteredData.mensual} />
               </div>
             </div>
           </FadeIn>
 
-          <section className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-5 shrink-0">
-            <FadeIn delay={300} className="card bg-base-100 shadow-md">
-              <div className="card-body p-4 lg:p-5">
-                <h2 className="card-title text-sm lg:text-base">Distribución por Categoría</h2>
-                <ul className="space-y-2 lg:space-y-3 mt-2">
-                  {DATA.categorias.map((cat, i) => (
-                    <CategoryItem
-                      key={cat.nombre}
-                      category={cat}
-                      percentage={getPercentage(cat)}
-                      index={i}
-                    />
-                  ))}
-                </ul>
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={400} className="card bg-base-100 shadow-md">
-              <div className="card-body p-4 lg:p-5">
-                <h2 className="card-title text-sm lg:text-base">Resumen del Período</h2>
-                <SummaryStats />
-              </div>
-            </FadeIn>
-          </section>
+          <FadeIn delay={380} className="card bg-base-100 shadow-md shrink-0">
+            <div className="card-body p-4 lg:p-5">
+              <h2 className="card-title text-sm lg:text-base">Resumen del Período</h2>
+              <SummaryStats mensual={filteredData.mensual} />
+            </div>
+          </FadeIn>
         </div>
       </main>
       </div>
