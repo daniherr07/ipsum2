@@ -9,7 +9,7 @@ import {
   LayoutDashboard,
   NotebookText,
   ChartPie,
-  Home
+  Home,
 } from "lucide-react";
 import { modifyData } from "./const";
 import Form from "next/form";
@@ -61,7 +61,7 @@ export default function NavBar() {
             </li>
             <li>
               <Link
-                href="#"
+                href="/settings"
                 className="flex flex-row items-center justify-start"
               >
                 <Pencil size={20} />
@@ -99,6 +99,18 @@ export default function NavBar() {
                 <p>Estadísticas</p>
               </Link>
             </li>
+
+            <div className="divider m-0!"></div>
+
+            <li>
+              <Link
+                href="/newproject"
+                className="flex flex-row items-center justify-start"
+              >
+                <Plus size={20} />
+                <p>Agregar Proyecto</p>
+              </Link>
+            </li>
             <li>
               <Link href={"#"} className="text-error">
                 Cerrar Sesión
@@ -119,24 +131,59 @@ export default function NavBar() {
 
       {/** Menu Centro Escritorio */}
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
+        <ul className="menu menu-horizontal px-1 gap-2">
           <li>
-            <Link href="#">Buscar</Link>
+            <Link
+              href="/search"
+              className="flex flex-row items-center justify-start"
+            >
+              <Search size={20} />
+              <p>Buscar</p>
+            </Link>
           </li>
           <li>
-            <details>
-              <summary>Modificar</summary>
-              <ul className="p-2 bg-base-300 w-40 z-1">
-                {modifyData.map((item, index) => (
-                  <li key={index}>
-                    <Link prefetch={false} href="#">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </details>
+            <Link
+              href="/settings"
+              className="flex flex-row items-center justify-start"
+            >
+              <Pencil size={20} />
+              <p>Modificar</p>
+            </Link>
           </li>
+
+          <div className="divider divider-horizontal m-0!"></div>
+
+          <li>
+            <Link
+              href="/dashboard"
+              className="flex flex-row items-center justify-start"
+            >
+              <LayoutDashboard size={20} />
+              <p>Dashboard</p>
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              href="/movs"
+              className="flex flex-row items-center justify-start"
+            >
+              <ChartColumn size={20} />
+              <p>Movimientos</p>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/stats"
+              className="flex flex-row items-center justify-start"
+            >
+              <ChartPie size={20} />
+              <p>Estadísticas</p>
+            </Link>
+          </li>
+
+          <div className="divider divider-horizontal m-0!"></div>
+
           <li>
             <Link href={"#"} className="text-error">
               Cerrar Sesión
@@ -155,49 +202,26 @@ export default function NavBar() {
             <Plus size={20} />
             <span className="hidden sm:inline">Agregar</span>
           </div>
-          <ul tabIndex={0} className="dropdown-content menu bg-base-300 rounded-box z-10 w-52 p-2 shadow-lg mt-2">
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu bg-base-300 rounded-box z-10 w-52 p-2 shadow-lg mt-2"
+          >
             <li>
-              <Link href="/movimientosIdeaFelipe" className="flex items-center gap-2">
+              <Link
+                href="/movimientosIdeaFelipe"
+                className="flex items-center gap-2"
+              >
                 <Plus size={16} />
                 Agregar Movimiento
               </Link>
             </li>
             <li>
-              <label htmlFor="newProjectModal" className="flex items-center gap-2 cursor-pointer">
+              <Link href="/newproject" className="flex items-center gap-2">
                 <Plus size={16} />
-                Nuevo Proyecto
-              </label>
+                Agregar Proyecto
+              </Link>
             </li>
           </ul>
-        </div>
-
-        {/* Put this part before </body> tag */}
-        <input type="checkbox" id="newProjectModal" className="modal-toggle" />
-        <div className="modal" role="dialog">
-          <div className="modal-box">
-            <h3 className="text-lg font-bold">Nuevo Proyecto</h3>
-
-            <Form
-              className="flex flex-col gap-5 w-full"
-              action={newProjectAction}
-            >
-              <fieldset className="fieldset mt-3">
-                <label className="label">Nombre del Proyecto</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Proyecto Max Peralta"
-                  name="projectName"
-                />
-              </fieldset>
-
-              <div className="modal-action">
-                <label htmlFor="newProjectModal">
-                  <CreateProjectButton></CreateProjectButton>
-                </label>
-              </div>
-            </Form>
-          </div>
         </div>
       </div>
     </div>

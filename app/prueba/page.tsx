@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState, useMemo, useEffect } from "react"
-import { TrendingDown, TrendingUp, DollarSign, Building2 } from "lucide-react"
+import { TrendingDown, TrendingUp, DollarSign, Building2, ChevronLeft } from "lucide-react"
+import Link from "next/link"
 
 interface Transaccion {
   id: string
@@ -214,6 +215,13 @@ export default function PruebaPage() {
           <main className="p-4 lg:p-6">
             <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-5">
               
+              {/* Back Button */}
+              <FadeIn delay={0}>
+                <Link href="/" className="btn btn-ghost btn-circle w-fit">
+                  <ChevronLeft size={24} />
+                </Link>
+              </FadeIn>
+
               {/* Card del Proyecto - estilo stats */}
               <FadeIn delay={0} className="card bg-base-100 shadow-md">
                 <div className="card-body p-4 lg:p-6">
