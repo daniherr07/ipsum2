@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState, useMemo, useEffect } from "react"
-import { Plus, Trash2, FileText, DollarSign, Building2, Calendar } from "lucide-react"
+import { Plus, Trash2, FileText, DollarSign, Building2, Calendar, ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import Swal from "sweetalert2"
 
 interface Proyecto {
   id: string
@@ -16,6 +17,7 @@ interface ComponentePago {
   monto: string
   mes: number
   ano: number
+  proyecto?: string
   categoria?: string
   descripcion?: string
 }
@@ -49,6 +51,7 @@ function FadeIn({ children, delay = 0, className = "" }: {
 
 export default function NuevoMovimientoPage() {
   const [tipoMovimiento, setTipoMovimiento] = useState<"pago-casa" | "ingreso-casa" | "administrativo" | "pago-compuesto">("pago-casa")
+  const [isChanging, setIsChanging] = useState(false)
   const [monto, setMonto] = useState("")
   const [mesSeleccionado, setMesSeleccionado] = useState("1")
   const [anoSeleccionado, setAnoSeleccionado] = useState(new Date().getFullYear().toString())
@@ -56,13 +59,12 @@ export default function NuevoMovimientoPage() {
   const [categoria, setCategoria] = useState("")
   const [nombreIngreso, setNombreIngreso] = useState("")
   const [descripcion, setDescripcion] = useState("")
+  const [ordenCompra, setOrdenCompra] = useState("")
 
   const today = new Date()
   const [fechaPagoDia, setFechaPagoDia] = useState(String(today.getDate()).padStart(2, "0"))
   const [fechaPagoMes, setFechaPagoMes] = useState(String(today.getMonth() + 1).padStart(2, "0"))
   const [fechaPagoAno, setFechaPagoAno] = useState(today.getFullYear().toString())
-
-  // Estados pago compuesto
   const [componentesAcumulados, setComponentesAcumulados] = useState<ComponentePago[]>([])
   const [mostrarFormComponente, setMostrarFormComponente] = useState(false)
   const [tipoComponente, setTipoComponente] = useState<"pago-casa" | "administrativo" | null>(null)
@@ -71,6 +73,16 @@ export default function NuevoMovimientoPage() {
   const [componenteAno, setComponenteAno] = useState(today.getFullYear().toString())
   const [componenteCategoria, setComponenteCategoria] = useState("")
   const [componenteDescripcion, setComponenteDescripcion] = useState("")
+
+  // Effect para fade animation al cambiar tipo de movimiento
+  useEffect(() => {
+    if (isChanging) {
+      const timer = setTimeout(() => {
+        setIsChanging(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isChanging])
 
   const meses = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -150,6 +162,7 @@ export default function NuevoMovimientoPage() {
       monto: componenteMonto,
       mes: parseInt(componenteMes),
       ano: parseInt(componenteAno),
+      proyecto: tipoComponente === "pago-casa" ? proyectoSeleccionado : undefined,
       categoria: tipoComponente === "pago-casa" ? componenteCategoria : undefined,
       descripcion: componenteDescripcion,
     }
@@ -167,9 +180,28 @@ export default function NuevoMovimientoPage() {
 
     if (tipoMovimiento === "pago-compuesto") {
       if (componentesAcumulados.length === 0) {
-        alert("Debes agregar al menos un componente de pago")
+        Swal.fire({
+          icon: "warning",
+          title: "Componentes requeridos",
+          text: "Debes agregar al menos un componente de pago",
+          confirmButtonColor: "#7c5dce",
+        })
         return
       }
+      
+      Swal.fire({
+        icon: "success",
+        title: "¡Movimiento guardado!",
+        html: `
+          <div className="text-left">
+            <p><strong>Tipo:</strong> Pago Compuesto</p>
+            <p><strong>Total:</strong> ${formatCurrency(monto)}</p>
+            <p><strong>Componentes:</strong> ${componentesAcumulados.length}</p>
+          </div>
+        `,
+        confirmButtonColor: "#7c5dce",
+      })
+      
       console.log({
         tipoMovimiento: "pago-compuesto",
         proyecto: proyectoSeleccionado,
@@ -177,6 +209,24 @@ export default function NuevoMovimientoPage() {
         componentes: componentesAcumulados,
       })
     } else {
+      Swal.fire({
+        icon: "success",
+        title: "¡Movimiento guardado!",
+        html: `
+          <div style="text-align: left;">
+            <p><strong>Tipo:</strong> ${
+              tipoMovimiento === "pago-casa" ? "Pago Casa"
+                : tipoMovimiento === "ingreso-casa" ? "Ingreso Casa"
+                : "Pago Administrativo"
+            }</p>
+            <p><strong>Monto:</strong> ${formatCurrency(monto)}</p>
+            <p><strong>Mes:</strong> ${meses[parseInt(mesSeleccionado) - 1]}</p>
+          </div>
+        `,
+        confirmButtonColor: tipoMovimiento === "ingreso-casa" ? "#16a34a" : 
+                           tipoMovimiento === "administrativo" ? "#ca8a04" : "#dc2626",
+      })
+      
       console.log({
         tipoMovimiento, monto,
         mes: meses[parseInt(mesSeleccionado) - 1],
@@ -191,6 +241,13 @@ export default function NuevoMovimientoPage() {
       <main className="p-4 lg:p-6">
         <div className="max-w-2xl mx-auto flex flex-col gap-4 lg:gap-5">
           
+          {/* Back Button */}
+          <FadeIn delay={0}>
+            <Link href="/" className="btn btn-ghost btn-circle w-fit">
+              <ChevronLeft size={24} />
+            </Link>
+          </FadeIn>
+
           {/* Header Card */}
           <FadeIn delay={0} className="card bg-base-100 shadow-md">
             <div className="card-body p-4 lg:p-6">
@@ -236,10 +293,12 @@ export default function NuevoMovimientoPage() {
                     value={tipoMovimiento}
                     onChange={(e) => {
                       setTipoMovimiento(e.target.value as any)
+                      setIsChanging(true)
                       setCategoria("")
                       setNombreIngreso("")
                       setProyectoSeleccionado("")
                       setMonto("")
+                      setOrdenCompra("")
                       setComponentesAcumulados([])
                       resetFormComponente()
                     }}
@@ -254,67 +313,12 @@ export default function NuevoMovimientoPage() {
 
                 {/* ── CAMPOS MOVIMIENTOS SIMPLES ── */}
                 {tipoMovimiento !== "pago-compuesto" && (
-                  <>
-                    <div className="form-control">
-                      <label className="label">
-                        <span className="label-text font-semibold">Monto</span>
-                      </label>
-                      <label className="input input-bordered input-primary flex items-center gap-2">
-                        <DollarSign className="size-4 text-primary" />
-                        <input
-                          type="text"
-                          value={monto ? formatCurrency(monto) : ""}
-                          onChange={handleMontoChange}
-                          placeholder="₡0"
-                          className="grow"
-                        />
-                      </label>
-                    </div>
-
-                    {tipoMovimiento === "ingreso-casa" ? (
-                      <div className="form-control">
-                        <label className="label">
-                          <span className="label-text font-semibold">Mes</span>
-                        </label>
-                        <div className="input input-bordered bg-base-200 flex items-center">
-                          <Calendar className="size-4 text-base-content/60 mr-2" />
-                          <span className="font-medium">{meses[parseInt(mesSeleccionado) - 1] || "Sin proyecto"}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text font-semibold">Mes</span>
-                          </label>
-                          <select
-                            value={mesSeleccionado}
-                            onChange={(e) => { setMesSeleccionado(e.target.value); setProyectoSeleccionado("") }}
-                            className="select select-bordered w-full"
-                          >
-                            {meses.map((mes, idx) => (
-                              <option key={idx} value={idx + 1}>{mes}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text font-semibold">Año</span>
-                          </label>
-                          <select
-                            value={anoSeleccionado}
-                            onChange={(e) => { setAnoSeleccionado(e.target.value); setProyectoSeleccionado("") }}
-                            className="select select-bordered w-full"
-                          >
-                            {[2024, 2025, 2026, 2027, 2028].map((ano) => (
-                              <option key={ano} value={ano}>{ano}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
-
-                    {tipoMovimiento !== "administrativo" && (
+                  <div key={tipoMovimiento} style={{
+                    opacity: 1,
+                    animation: "fadeIn 0.5s ease-in",
+                  }} className="space-y-5">
+                    {/* Proyecto - PRIMERO para Pago Casa e Ingreso Casa */}
+                    {(tipoMovimiento === "pago-casa" || tipoMovimiento === "ingreso-casa") && (
                       <div className="form-control">
                         <label className="label">
                           <span className="label-text font-semibold">Proyecto</span>
@@ -339,6 +343,132 @@ export default function NuevoMovimientoPage() {
                       </div>
                     )}
 
+                    {/* Monto - ANCHO COMPLETO */}
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-semibold">Monto</span>
+                      </label>
+                      <label className="input input-bordered input-primary flex items-center gap-2">
+                        <DollarSign className="size-4 text-primary" />
+                        <input
+                          type="text"
+                          value={monto ? formatCurrency(monto) : ""}
+                          onChange={handleMontoChange}
+                          placeholder="₡0"
+                          className="grow"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Mes y Año - SOLO para Pago Administrativo (autofilled) */}
+                    {tipoMovimiento === "administrativo" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="form-control">
+                          <label className="label">
+                            <span className="label-text font-semibold">Mes</span>
+                          </label>
+                          <select
+                            value={mesSeleccionado}
+                            onChange={(e) => { setMesSeleccionado(e.target.value) }}
+                            className="select select-bordered w-full"
+                          >
+                            {meses.map((mes, idx) => (
+                              <option key={idx} value={idx + 1}>{mes}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="form-control">
+                          <label className="label">
+                            <span className="label-text font-semibold">Año</span>
+                          </label>
+                          <select
+                            value={anoSeleccionado}
+                            onChange={(e) => { setAnoSeleccionado(e.target.value) }}
+                            className="select select-bordered w-full"
+                          >
+                            {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                              <option key={ano} value={ano}>{ano}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mes y Año - SOLO para Pago Casa (NO se muestra) */}
+                    {/* Ingreso Casa mostra Fecha de Pago después */}
+
+                    {/* Orden de Compra - SOLO para Pago Casa */}
+                    {tipoMovimiento === "pago-casa" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Orden de Compra</span>
+                        </label>
+                        <select
+                          value={ordenCompra}
+                          onChange={(e) => {
+                            if (e.target.value === "agregar-nuevo") {
+                              Swal.fire({
+                                title: "Nueva Orden de Compra",
+                                input: "text",
+                                inputLabel: "Ingrese el nombre de la nueva OC",
+                                inputPlaceholder: "Ej: OC4",
+                                confirmButtonText: "Crear",
+                                showCancelButton: true,
+                              }).then((result) => {
+                                if (result.isConfirmed && result.value) {
+                                  setOrdenCompra(result.value)
+                                }
+                              })
+                            } else {
+                              setOrdenCompra(e.target.value)
+                            }
+                          }}
+                          className="select select-bordered w-full"
+                        >
+                          <option value="">Seleccionar OC...</option>
+                          <option value="OC1">OC1</option>
+                          <option value="OC2">OC2</option>
+                          <option value="OC3">OC3</option>
+                          <option value="agregar-nuevo">+ Agregar nuevo</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Categoría - SOLO para Pago Casa */}
+                    {tipoMovimiento === "pago-casa" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Categoría</span>
+                        </label>
+                        <select
+                          value={categoria}
+                          onChange={(e) => setCategoria(e.target.value)}
+                          className="select select-bordered w-full"
+                        >
+                          <option value="">Seleccionar categoría...</option>
+                          {opcionesCategoria.map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Nombre del Ingreso - SOLO para Ingreso Casa */}
+                    {tipoMovimiento === "ingreso-casa" && (
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text font-semibold">Nombre del Ingreso</span>
+                        </label>
+                        <input
+                          type="text" value={nombreIngreso}
+                          onChange={(e) => setNombreIngreso(e.target.value)}
+                          placeholder="Ej: Venta de materiales sobrantes"
+                          className="input input-bordered input-success w-full"
+                        />
+                      </div>
+                    )}
+
+                    {/* Fecha de Pago - SOLO para Ingreso Casa */}
                     {tipoMovimiento === "ingreso-casa" && (
                       <div className="form-control">
                         <label className="label">
@@ -387,38 +517,7 @@ export default function NuevoMovimientoPage() {
                       </div>
                     )}
 
-                    {tipoMovimiento === "pago-casa" && (
-                      <div className="form-control">
-                        <label className="label">
-                          <span className="label-text font-semibold">Categoría</span>
-                        </label>
-                        <select
-                          value={categoria}
-                          onChange={(e) => setCategoria(e.target.value)}
-                          className="select select-bordered w-full"
-                        >
-                          <option value="">Seleccionar categoría...</option>
-                          {opcionesCategoria.map((cat) => (
-                            <option key={cat} value={cat}>{cat}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {tipoMovimiento === "ingreso-casa" && (
-                      <div className="form-control">
-                        <label className="label">
-                          <span className="label-text font-semibold">Nombre del Ingreso</span>
-                        </label>
-                        <input
-                          type="text" value={nombreIngreso}
-                          onChange={(e) => setNombreIngreso(e.target.value)}
-                          placeholder="Ej: Venta de materiales sobrantes"
-                          className="input input-bordered input-success w-full"
-                        />
-                      </div>
-                    )}
-
+                    {/* Descripción - TODOS */}
                     <div className="form-control">
                       <label className="label">
                         <span className="label-text font-semibold">Descripción</span>
@@ -431,7 +530,7 @@ export default function NuevoMovimientoPage() {
                         className="textarea textarea-bordered w-full resize-none"
                       />
                     </div>
-                  </>
+                  </div>
                 )}
 
                 {/* ── PAGO COMPUESTO ── */}
@@ -452,23 +551,6 @@ export default function NuevoMovimientoPage() {
                           className="grow"
                         />
                       </label>
-                    </div>
-
-                    {/* Proyecto */}
-                    <div className="form-control">
-                      <label className="label">
-                        <span className="label-text font-semibold">Proyecto</span>
-                      </label>
-                      <select
-                        value={proyectoSeleccionado}
-                        onChange={(e) => setProyectoSeleccionado(e.target.value)}
-                        className="select select-bordered w-full"
-                      >
-                        <option value="">Seleccionar proyecto...</option>
-                        {proyectosConMesFijo.map((proyecto) => (
-                          <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
-                        ))}
-                      </select>
                     </div>
 
                     {/* Barra de progreso restante */}
@@ -509,8 +591,17 @@ export default function NuevoMovimientoPage() {
                                 {idx + 1}. {comp.tipo === "pago-casa" ? "Pago Casa" : "Pago Administrativo"}
                               </p>
                               <p className="text-xs text-base-content/60">
-                                {meses[comp.mes - 1]} {comp.ano}
-                                {comp.categoria && ` · ${comp.categoria}`}
+                                {comp.tipo === "pago-casa" ? (
+                                  <>
+                                    {comp.proyecto && `${proyectosConMesFijo.find(p => p.id === comp.proyecto)?.nombre || comp.proyecto}`}
+                                    {comp.proyecto && comp.categoria && " · "}
+                                    {comp.categoria && `${comp.categoria}`}
+                                  </>
+                                ) : (
+                                  <>
+                                    {meses[comp.mes - 1]} {comp.ano}
+                                  </>
+                                )}
                               </p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -593,55 +684,75 @@ export default function NuevoMovimientoPage() {
                                 </label>
                               </div>
 
-                              {/* Mes y Año */}
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="form-control">
-                                  <label className="label">
-                                    <span className="label-text font-semibold">Mes</span>
-                                  </label>
-                                  <select
-                                    value={componenteMes}
-                                    onChange={(e) => setComponenteMes(e.target.value)}
-                                    className="select select-bordered w-full"
-                                  >
-                                    {meses.map((mes, idx) => (
-                                      <option key={idx} value={idx + 1}>{mes}</option>
-                                    ))}
-                                  </select>
+                              {/* Mes y Año - solo para administrativo */}
+                              {tipoComponente === "administrativo" && (
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="form-control">
+                                    <label className="label">
+                                      <span className="label-text font-semibold">Mes</span>
+                                    </label>
+                                    <select
+                                      value={componenteMes}
+                                      onChange={(e) => setComponenteMes(e.target.value)}
+                                      className="select select-bordered w-full"
+                                    >
+                                      {meses.map((mes, idx) => (
+                                        <option key={idx} value={idx + 1}>{mes}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="form-control">
+                                    <label className="label">
+                                      <span className="label-text font-semibold">Año</span>
+                                    </label>
+                                    <select
+                                      value={componenteAno}
+                                      onChange={(e) => setComponenteAno(e.target.value)}
+                                      className="select select-bordered w-full"
+                                    >
+                                      {[2024, 2025, 2026, 2027, 2028].map((ano) => (
+                                        <option key={ano} value={ano}>{ano}</option>
+                                      ))}
+                                    </select>
+                                  </div>
                                 </div>
-                                <div className="form-control">
-                                  <label className="label">
-                                    <span className="label-text font-semibold">Año</span>
-                                  </label>
-                                  <select
-                                    value={componenteAno}
-                                    onChange={(e) => setComponenteAno(e.target.value)}
-                                    className="select select-bordered w-full"
-                                  >
-                                    {[2024, 2025, 2026, 2027, 2028].map((ano) => (
-                                      <option key={ano} value={ano}>{ano}</option>
-                                    ))}
-                                  </select>
-                                </div>
-                              </div>
+                              )}
 
                               {/* Categoría - solo pago-casa */}
                               {tipoComponente === "pago-casa" && (
-                                <div className="form-control">
-                                  <label className="label">
-                                    <span className="label-text font-semibold">Categoría</span>
-                                  </label>
-                                  <select
-                                    value={componenteCategoria}
-                                    onChange={(e) => setComponenteCategoria(e.target.value)}
-                                    className="select select-bordered w-full"
-                                  >
-                                    <option value="">Seleccionar categoría...</option>
-                                    {opcionesCategoria.map((cat) => (
-                                      <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                  </select>
-                                </div>
+                                <>
+                                  <div className="form-control">
+                                    <label className="label">
+                                      <span className="label-text font-semibold">Proyecto</span>
+                                    </label>
+                                    <select
+                                      value={proyectoSeleccionado}
+                                      onChange={(e) => setProyectoSeleccionado(e.target.value)}
+                                      className="select select-bordered w-full"
+                                    >
+                                      <option value="">Seleccionar proyecto...</option>
+                                      {proyectosConMesFijo.map((proyecto) => (
+                                        <option key={proyecto.id} value={proyecto.id}>{proyecto.nombre}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div className="form-control">
+                                    <label className="label">
+                                      <span className="label-text font-semibold">Categoría</span>
+                                    </label>
+                                    <select
+                                      value={componenteCategoria}
+                                      onChange={(e) => setComponenteCategoria(e.target.value)}
+                                      className="select select-bordered w-full"
+                                    >
+                                      <option value="">Seleccionar categoría...</option>
+                                      {opcionesCategoria.map((cat) => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </>
                               )}
 
                               {/* Descripción */}
@@ -798,6 +909,12 @@ export default function NuevoMovimientoPage() {
                         <div className="flex justify-between py-1 border-b border-base-200">
                           <span className="text-base-content/60">Categoría</span>
                           <span className="badge badge-ghost badge-sm">{categoria}</span>
+                        </div>
+                      )}
+                      {ordenCompra && (
+                        <div className="flex justify-between py-1 border-b border-base-200">
+                          <span className="text-base-content/60">Orden de Compra</span>
+                          <span className="badge badge-ghost badge-sm">{ordenCompra}</span>
                         </div>
                       )}
                       {nombreIngreso && (

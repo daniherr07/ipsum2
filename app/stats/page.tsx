@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet } from "lucide-react"
+import { ArrowLeft, TrendingUp, TrendingDown, Wallet, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import NavBar from "@/components/navbar/NavBar"
 
@@ -335,6 +335,13 @@ export default function StatsPage() {
 
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
         <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-5">
+          {/* Back Button */}
+          <FadeIn delay={0}>
+            <Link href="/" className="btn btn-ghost btn-circle w-fit">
+              <ChevronLeft size={24} />
+            </Link>
+          </FadeIn>
+
           <section className="grid grid-cols-2 gap-3 lg:gap-5 shrink-0">
             <StatCard 
               icon={TrendingUp} 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Pencil, Trash, X } from "lucide-react";
+import { Pencil, Trash, X, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 // FadeIn animation component
@@ -336,7 +336,7 @@ export default function AddMovement() {
   const handleSave = () => {
     if (!editingItem) return;
     setMovimientos((prev) =>
-      prev.map((item) => (item.id === editingItem.id ? editingItem : item))
+      prev.map((item) => (item.id === editingItem.id ? editingItem : item)),
     );
     closeModal();
   };
@@ -348,6 +348,13 @@ export default function AddMovement() {
   return (
     <>
       <main className="w-full flex flex-col justify-center items-center p-3 gap-5 lg:px-[25dvw]">
+        {/* Back Button */}
+        <FadeIn delay={0} className="w-full">
+          <Link href="/" className="btn btn-ghost btn-circle w-fit">
+            <ChevronLeft size={24} />
+          </Link>
+        </FadeIn>
+
         <FadeIn delay={0} className="flex w-full gap-1">
           <button
             type="button"
@@ -374,8 +381,8 @@ export default function AddMovement() {
 
         <FadeIn delay={100} className="fieldset w-full">
           <legend className="fieldset-legend">Ordenar por:</legend>
-          <select 
-            value={sortBy} 
+          <select
+            value={sortBy}
             className="select w-full"
             onChange={(e) => setSortBy(e.target.value)}
           >
@@ -385,16 +392,79 @@ export default function AddMovement() {
         </FadeIn>
 
         <FadeIn delay={200} className="flex flex-col w-full gap-3">
-          <Link href={"/movimientosIdeaFelipe"} type="button" className={`btn btn-secondary`}>
+          <Link
+            href={"/movimientosIdeaFelipe"}
+            type="button"
+            className={`btn btn-secondary`}
+          >
             Añadir Movimiento
           </Link>
         </FadeIn>
 
         <FadeIn delay={300} className="w-full">
-        <ul className="list bg-base-100 rounded-box shadow-md max-h-dvh overflow-scroll">
-          {sortedMovimientos.map((item) =>
-            filter == 0 ? (
-              item.type == "egreso" && (
+          <ul className="list bg-base-100 rounded-box shadow-md max-h-dvh overflow-scroll">
+            {sortedMovimientos.map((item) =>
+              filter == 0 ? (
+                item.type == "egreso" && (
+                  <li className="list-row" key={item.id}>
+                    <div>
+                      <h1 className="font-bold text-md">{item.title}</h1>
+                      <div>₵{item.mount.toLocaleString("es-CR")}</div>
+                      <div
+                        className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
+                      >
+                        {item.type}
+                      </div>
+                      <div className="text-xs opacity-60">
+                        {item.created_at}
+                      </div>
+                      <span className="font-bold text-xs">
+                        Plantilla: {item.template || "Sin plantilla"}
+                      </span>
+                    </div>
+                    <p className="list-col-wrap text-xs">{item.description}</p>
+                    <button
+                      className="btn btn-square btn-ghost btn-sm"
+                      onClick={() => openEditModal(item)}
+                    >
+                      <Pencil size={14}></Pencil>
+                    </button>
+                    <button className="btn btn-square btn-ghost btn-sm text-error">
+                      <Trash size={14}></Trash>
+                    </button>
+                  </li>
+                )
+              ) : filter == 1 ? (
+                item.type == "ingreso" && (
+                  <li className="list-row" key={item.id}>
+                    <div>
+                      <h1 className="font-bold text-md">{item.title}</h1>
+                      <div>₵{item.mount.toLocaleString("es-CR")}</div>
+                      <div
+                        className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
+                      >
+                        {item.type}
+                      </div>
+                      <div className="text-xs opacity-60">
+                        {item.created_at}
+                      </div>
+                      <span className="font-bold text-xs">
+                        Plantilla: {item.template || "Sin plantilla"}
+                      </span>
+                    </div>
+                    <p className="list-col-wrap text-xs">{item.description}</p>
+                    <button
+                      className="btn btn-square btn-ghost btn-sm"
+                      onClick={() => openEditModal(item)}
+                    >
+                      <Pencil size={14}></Pencil>
+                    </button>
+                    <button className="btn btn-square btn-ghost btn-sm text-error">
+                      <Trash size={14}></Trash>
+                    </button>
+                  </li>
+                )
+              ) : (
                 <li className="list-row" key={item.id}>
                   <div>
                     <h1 className="font-bold text-md">{item.title}</h1>
@@ -410,7 +480,7 @@ export default function AddMovement() {
                     </span>
                   </div>
                   <p className="list-col-wrap text-xs">{item.description}</p>
-                  <button 
+                  <button
                     className="btn btn-square btn-ghost btn-sm"
                     onClick={() => openEditModal(item)}
                   >
@@ -420,64 +490,9 @@ export default function AddMovement() {
                     <Trash size={14}></Trash>
                   </button>
                 </li>
-              )
-            ) : filter == 1 ? (
-              item.type == "ingreso" && (
-                <li className="list-row" key={item.id}>
-                  <div>
-                    <h1 className="font-bold text-md">{item.title}</h1>
-                    <div>₵{item.mount.toLocaleString("es-CR")}</div>
-                    <div
-                      className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
-                    >
-                      {item.type}
-                    </div>
-                    <div className="text-xs opacity-60">{item.created_at}</div>
-                    <span className="font-bold text-xs">
-                      Plantilla: {item.template || "Sin plantilla"}
-                    </span>
-                  </div>
-                  <p className="list-col-wrap text-xs">{item.description}</p>
-                  <button 
-                    className="btn btn-square btn-ghost btn-sm"
-                    onClick={() => openEditModal(item)}
-                  >
-                    <Pencil size={14}></Pencil>
-                  </button>
-                  <button className="btn btn-square btn-ghost btn-sm text-error">
-                    <Trash size={14}></Trash>
-                  </button>
-                </li>
-              )
-            ) : (
-              <li className="list-row" key={item.id}>
-                <div>
-                  <h1 className="font-bold text-md">{item.title}</h1>
-                  <div>₵{item.mount.toLocaleString("es-CR")}</div>
-                  <div
-                    className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
-                  >
-                    {item.type}
-                  </div>
-                  <div className="text-xs opacity-60">{item.created_at}</div>
-                  <span className="font-bold text-xs">
-                    Plantilla: {item.template || "Sin plantilla"}
-                  </span>
-                </div>
-                <p className="list-col-wrap text-xs">{item.description}</p>
-                <button 
-                  className="btn btn-square btn-ghost btn-sm"
-                  onClick={() => openEditModal(item)}
-                >
-                  <Pencil size={14}></Pencil>
-                </button>
-                <button className="btn btn-square btn-ghost btn-sm text-error">
-                  <Trash size={14}></Trash>
-                </button>
-              </li>
-            ),
-          )}
-        </ul>
+              ),
+            )}
+          </ul>
         </FadeIn>
       </main>
 
@@ -487,7 +502,7 @@ export default function AddMovement() {
           <div className="modal-box w-11/12 max-w-md p-4 max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-bold text-base">Editar Movimiento</h3>
-              <button 
+              <button
                 className="btn btn-xs btn-circle btn-ghost"
                 onClick={closeModal}
               >
@@ -512,7 +527,9 @@ export default function AddMovement() {
                   type="text"
                   className="input input-sm w-full"
                   value={editingItem.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                 />
               </fieldset>
 
@@ -523,7 +540,9 @@ export default function AddMovement() {
                     type="number"
                     className="input input-sm w-full"
                     value={editingItem.mount}
-                    onChange={(e) => handleInputChange("mount", Number(e.target.value))}
+                    onChange={(e) =>
+                      handleInputChange("mount", Number(e.target.value))
+                    }
                   />
                 </fieldset>
 
@@ -548,7 +567,9 @@ export default function AddMovement() {
                     className="input input-sm w-full"
                     value={editingItem.template || ""}
                     placeholder="Opcional"
-                    onChange={(e) => handleInputChange("template", e.target.value || null)}
+                    onChange={(e) =>
+                      handleInputChange("template", e.target.value || null)
+                    }
                   />
                 </fieldset>
 
@@ -558,7 +579,9 @@ export default function AddMovement() {
                     type="text"
                     className="input input-sm w-full"
                     value={editingItem.created_at}
-                    onChange={(e) => handleInputChange("created_at", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("created_at", e.target.value)
+                    }
                   />
                 </fieldset>
               </div>
@@ -573,7 +596,10 @@ export default function AddMovement() {
               </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-black/50" onClick={closeModal}></div>
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={closeModal}
+          ></div>
         </div>
       )}
     </>

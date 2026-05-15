@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowLeft, Search } from "lucide-react"
+import { ArrowLeft, Search, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
 import NavBar from "@/components/navbar/NavBar"
@@ -58,6 +58,11 @@ export default function PlantillasPage() {
       <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+        {/* Back Button */}
+        <Link href="/" className="btn btn-ghost btn-circle w-fit">
+          <ChevronLeft size={24} />
+        </Link>
+
         {/* Search */}
         <div
           className="
