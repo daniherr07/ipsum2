@@ -52,15 +52,6 @@ export default function NavBar() {
             </li>
             <li>
               <Link
-                href="/search"
-                className="flex flex-row items-center justify-start"
-              >
-                <Search size={20} />
-                <p>Buscar</p>
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/settings"
                 className="flex flex-row items-center justify-start"
               >
@@ -132,15 +123,6 @@ export default function NavBar() {
       {/** Menu Centro Escritorio */}
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 gap-2">
-          <li>
-            <Link
-              href="/search"
-              className="flex flex-row items-center justify-start"
-            >
-              <Search size={20} />
-              <p>Buscar</p>
-            </Link>
-          </li>
           <li>
             <Link
               href="/settings"
