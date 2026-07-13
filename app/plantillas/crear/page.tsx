@@ -15,6 +15,7 @@ interface Item {
   valor: string
 }
 
+// CrearPlantillaPage permite construir una plantilla de compra dinámica con cálculo de totales.
 export default function CrearPlantillaPage() {
   const router = useRouter()
 
@@ -24,12 +25,14 @@ export default function CrearPlantillaPage() {
     { id: 1, cantidad: "", medida: "Unidad", articulo: "", valor: "" },
   ])
 
+  // addItem agrega una nueva fila vacía de artículo al detalle de la plantilla.
   const addItem = () =>
     setItems([
       ...items,
       { id: Date.now(), cantidad: "", medida: "Unidad", articulo: "", valor: "" },
     ])
 
+  // removeItem elimina una fila del detalle por su id.
   const removeItem = (id: number) =>
     setItems(items.filter(i => i.id !== id))
 
@@ -43,6 +46,7 @@ export default function CrearPlantillaPage() {
   const iva = subtotal * 0.13
   const total = subtotal + flete + iva
 
+  // handleGuardar solicita confirmación, simula persistencia y regresa al listado de plantillas.
   const handleGuardar = () => {
     Swal.fire({
       title: "¿Guardar plantilla?",

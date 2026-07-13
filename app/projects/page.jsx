@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, Plus, MapPin, Calendar, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
+// FadeIn aplica una transición suave al cargar tarjetas y secciones de la vista.
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
 
@@ -26,6 +27,7 @@ function FadeIn({ children, delay = 0, className = "" }) {
   );
 }
 
+// ProjectsPage muestra el catálogo de proyectos con su progreso presupuestario y acceso al detalle.
 export default function ProjectsPage() {
   const [projects] = useState([
     {
@@ -75,10 +77,12 @@ export default function ProjectsPage() {
     },
   ]);
 
+  // getEstadoColor define la clase visual del badge de estado según el tipo de estado del proyecto.
   const getEstadoColor = (estado) => {
     return "badge-warning";
   };
 
+  // getBudgetPercentage calcula el porcentaje de presupuesto consumido para la barra de progreso.
   const getBudgetPercentage = (gastos, presupuesto) => {
     return (gastos / presupuesto) * 100;
   };

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// FadeIn animation component
+// FadeIn aplica una animación de entrada por opacidad y desplazamiento vertical usando un retraso configurable.
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
 
@@ -35,6 +35,7 @@ function FadeIn({ children, delay = 0, className = "" }) {
   );
 }
 
+// Menu renderiza la pantalla principal de navegación con accesos directos a los módulos del sistema.
 export default function Menu() {
   return (
     <div className="min-h-[calc(100svh-64px)] bg-base-200 p-4 flex flex-col items-center justify-center">

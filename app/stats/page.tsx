@@ -37,6 +37,7 @@ const YEAR_SCALE: Record<string, number> = { "2023": 0.72, "2024": 0.88, "2025":
 const BONO_ING_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.45, "Lote Propio": 0.25, "Hipoteca": 0.20, "Articulo 76": 0.10 }
 const BONO_EGR_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.48, "Lote Propio": 0.22, "Hipoteca": 0.19, "Articulo 76": 0.11 }
 
+// getFilteredData aplica escalas por año y tipo de bono para derivar métricas comparables desde DATA.
 function getFilteredData(año: string, tipoBono: string) {
   const ys = YEAR_SCALE[año] ?? 1.0
   const bi = BONO_ING_SCALE[tipoBono] ?? 1.0
@@ -59,11 +60,13 @@ function getFilteredData(año: string, tipoBono: string) {
   }
 }
 
+// formatCurrency transforma números a formato monetario CRC con signo explícito para valores positivos.
 const formatCurrency = (value: number) => {
   const prefix = value >= 0 ? "+" : ""
   return `₵ ${prefix}${Math.abs(value).toLocaleString("es-CR")}`
 }
 
+// useAnimatedNumber interpola un número hasta su valor final para animar KPIs.
 function useAnimatedNumber(target: number, duration = 1000) {
   const [value, setValue] = useState(0)
 
@@ -90,6 +93,7 @@ function useAnimatedNumber(target: number, duration = 1000) {
   return value
 }
 
+// useDelayedState actualiza un valor después de un retraso; útil para transiciones controladas.
 function useDelayedState<T>(initialValue: T, targetValue: T, delay: number) {
   const [value, setValue] = useState(initialValue)
 
@@ -101,6 +105,7 @@ function useDelayedState<T>(initialValue: T, targetValue: T, delay: number) {
   return value
 }
 
+// StatCard renderiza una tarjeta de indicador con valor animado y aparición escalonada.
 function StatCard({ icon: Icon, label, value, colorClass, delay = 0, fullGrid = false }: {
   icon: typeof TrendingUp
   label: string
@@ -140,6 +145,7 @@ function StatCard({ icon: Icon, label, value, colorClass, delay = 0, fullGrid = 
   )
 }
 
+// FadeIn reutiliza una animación de entrada para bloques completos de la página.
 function FadeIn({ children, delay = 0, className = "" }: { 
   children: React.ReactNode
   delay?: number
@@ -166,6 +172,7 @@ function FadeIn({ children, delay = 0, className = "" }: {
   )
 }
 
+// LineChart dibuja líneas y áreas de ingresos/egresos con SVG responsivo y animación de trazado.
 function LineChart({ data }: { data: MonthData[] }) {
   const [progress, setProgress] = useState(0)
   const [size, setSize] = useState({ width: 0, height: 0 })
@@ -176,6 +183,7 @@ function LineChart({ data }: { data: MonthData[] }) {
     let animationId: number
     const duration = 1200
 
+    // animate avanza la animación del gráfico usando una curva de desaceleración cúbica.
     const animate = (timestamp: number) => {
       if (!start) start = timestamp
       const elapsed = timestamp - start
@@ -220,6 +228,7 @@ function LineChart({ data }: { data: MonthData[] }) {
     const padding = { top: 8, bottom: 8 }
     const chartHeight = size.height - padding.top - padding.bottom
 
+    // normalize convierte valores monetarios al sistema de coordenadas vertical del SVG.
     const normalize = (v: number) => padding.top + chartHeight - ((v - min) / (max - min)) * chartHeight
 
     const ingresos = data.map((d, i) => ({
@@ -232,9 +241,11 @@ function LineChart({ data }: { data: MonthData[] }) {
       y: normalize(d.egresos),
     }))
 
+    // toPath genera el atributo d de un path SVG a partir de una serie de puntos.
     const toPath = (pts: { x: number; y: number }[]) =>
       pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ")
 
+    // toArea cierra la serie contra la base para pintar el área bajo la curva.
     const toArea = (pts: { x: number; y: number }[]) =>
       `${toPath(pts)} L${size.width},${size.height} L0,${size.height} Z`
 
@@ -298,6 +309,7 @@ function LineChart({ data }: { data: MonthData[] }) {
   )
 }
 
+// SummaryStats calcula mejor/peor mes y promedio de ingresos del período filtrado.
 function SummaryStats({ mensual }: { mensual: MonthData[] }) {
   const nets = mensual.map(m => ({ mes: m.mes, net: m.ingresos - m.egresos }))
   const best = nets.reduce((a, b) => a.net > b.net ? a : b, nets[0])
@@ -324,6 +336,7 @@ function SummaryStats({ mensual }: { mensual: MonthData[] }) {
   )
 }
 
+// StatsPage compone filtros, tarjetas y visualizaciones para análisis financiero por período.
 export default function StatsPage() {
   const [filtroAño, setFiltroAño] = useState("2025")
   const [filtroTipoBono, setFiltroTipoBono] = useState("Todos")

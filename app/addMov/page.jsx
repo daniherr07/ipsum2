@@ -5,6 +5,7 @@ import Link from "next/link";
 import NavBar from "@/components/navbar/NavBar";
 
 
+// AddMovement alterna entre formularios de ingreso y egreso según la pestaña seleccionada.
 export default function AddMovement() {
   const [action, setAction] = useState(0);
 
@@ -35,6 +36,7 @@ export default function AddMovement() {
   );
 }
 
+// OutForm renderiza el formulario de captura para registrar un movimiento de egreso.
 export function OutForm() {
   return (
     <form
@@ -93,6 +95,7 @@ export function OutForm() {
   );
 }
 
+// InForm renderiza el formulario de captura para registrar un movimiento de ingreso.
 export function InForm() {
   return (
     <form

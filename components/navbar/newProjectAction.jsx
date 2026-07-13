@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+// newProjectAction representa la server action de alta de proyecto y actualmente solo realiza redirección.
 export async function newProjectAction(formData) {
   /*const projectName = formData.get("projectName");
 
@@ -21,5 +22,6 @@ export async function newProjectAction(formData) {
     redirect(`/protected/edit/${projectId}`)
   }*/
 
+  // Redirige al dashboard como fallback temporal mientras la creación real en backend está comentada.
   redirect('/dashboard')
 }

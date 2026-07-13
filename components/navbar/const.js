@@ -1,3 +1,4 @@
+// modifyData centraliza catálogos de entidades configurables mostradas en el módulo de modificación.
 export const modifyData = [
   {
     label: "Analista de Entidad",

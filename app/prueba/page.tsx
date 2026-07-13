@@ -14,7 +14,7 @@ interface Transaccion {
   estado: "pago cuota" | "pendiente" | "completado"
 }
 
-// Animated number hook
+// useAnimatedNumber anima la transición de montos numéricos para mostrar KPIs de forma gradual.
 function useAnimatedNumber(target: number, duration = 1000) {
   const [value, setValue] = useState(0)
 
@@ -41,7 +41,7 @@ function useAnimatedNumber(target: number, duration = 1000) {
   return value
 }
 
-// FadeIn animation component
+// FadeIn controla la aparición escalonada de cada bloque visual.
 function FadeIn({ children, delay = 0, className = "" }: { 
   children: React.ReactNode
   delay?: number
@@ -68,7 +68,7 @@ function FadeIn({ children, delay = 0, className = "" }: {
   )
 }
 
-// Stat Card component - estilo de /stats
+// StatCard renderiza un indicador con icono, valor animado y subtítulo opcional.
 function StatCard({ icon: Icon, label, value, colorClass, delay = 0, subtitle }: {
   icon: typeof TrendingUp
   label: string
@@ -85,6 +85,7 @@ function StatCard({ icon: Icon, label, value, colorClass, delay = 0, subtitle }:
     return () => clearTimeout(id)
   }, [delay])
 
+  // formatCurrency da formato CRC al valor que se muestra en la tarjeta.
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat("es-CR", {
       style: "currency",
@@ -124,6 +125,7 @@ const DONUT_COLORS = [
   { stroke: "#661ae6", bg: "bg-primary", text: "text-primary" },
 ]
 
+// DonutChart dibuja la distribución de egresos por categoría con segmentos SVG animados.
 function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
   const [progress, setProgress] = useState(0)
   const animKey = data.map(d => d.monto).join(",")
@@ -133,6 +135,7 @@ function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
     let start: number | null = null
     let animId: number
     const duration = 900
+    // animate incrementa progress para revelar el gráfico de dona de manera progresiva.
     const animate = (ts: number) => {
       if (!start) start = ts
       const t = Math.min((ts - start) / duration, 1)
@@ -144,6 +147,7 @@ function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animKey])
 
+  // fmt da formato monetario a cada etiqueta del desglose.
   const fmt = (v: number) =>
     new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", minimumFractionDigits: 0 }).format(v)
 
@@ -202,6 +206,7 @@ function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
   )
 }
 
+// PruebaPage simula un detalle de proyecto con estadísticas, desglose y tabla de transacciones.
 export default function PruebaPage() {
   const [activeTab, setActiveTab] = useState<"ingresos" | "egresos">("ingresos")
   const [mounted, setMounted] = useState(false)
@@ -304,10 +309,12 @@ export default function PruebaPage() {
     egresosCategories.map(c => ({ nombre: c.nombre, monto: c.monto })),
   [egresosCategories])
 
+  // formatCurrency formatea montos en CRC para celdas de tabla y resúmenes.
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", minimumFractionDigits: 0 }).format(value)
   }
 
+  // formatDate convierte fechas ISO en formato legible para la interfaz local.
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + "T00:00:00")
     return new Intl.DateTimeFormat("es-CR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date)

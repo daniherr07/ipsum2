@@ -15,6 +15,7 @@ interface Item {
   valor: string
 }
 
+// EditarPlantillaPage carga una plantilla existente, permite ajustarla y confirma sus cambios.
 export default function EditarPlantillaPage() {
   const router = useRouter()
 
@@ -25,12 +26,14 @@ export default function EditarPlantillaPage() {
     { id: 2, cantidad: "1250", medida: "Unidad", articulo: "Varilla", valor: "455" },
   ])
 
+  // addItem agrega una nueva fila editable al detalle actual.
   const addItem = () =>
     setItems([
       ...items,
       { id: Date.now(), cantidad: "", medida: "Unidad", articulo: "", valor: "" },
     ])
 
+  // removeItem elimina una fila del detalle de la plantilla por identificador.
   const removeItem = (id: number) =>
     setItems(items.filter(i => i.id !== id))
 
@@ -44,6 +47,7 @@ export default function EditarPlantillaPage() {
   const iva = subtotal * 0.13
   const total = subtotal + flete + iva
 
+  // handleConfirmar valida por confirmación del usuario y retorna al listado tras guardar.
   const handleConfirmar = () => {
     Swal.fire({
       title: "¿Confirmar cambios?",

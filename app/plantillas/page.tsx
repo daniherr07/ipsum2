@@ -6,6 +6,7 @@ import Link from "next/link"
 import Swal from "sweetalert2"
 import NavBar from "@/components/navbar/NavBar"
 
+// PlantillasPage lista, filtra y permite seleccionar plantillas para crear, editar o eliminar.
 export default function PlantillasPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedRow, setSelectedRow] = useState<number | null>(null)
@@ -21,6 +22,7 @@ export default function PlantillasPage() {
     p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  // handleDelete confirma la eliminación de la plantilla seleccionada y limpia la selección local.
   const handleDelete = () => {
     if (!selectedRow) return
 

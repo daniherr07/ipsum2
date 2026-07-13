@@ -6,7 +6,7 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 
 /* =========================
-   FadeIn animation component
+   FadeIn anima la aparición de bloques del formulario para mejorar la lectura visual.
 ========================= */
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
@@ -30,6 +30,7 @@ function FadeIn({ children, delay = 0, className = "" }) {
   );
 }
 
+// NewProject administra el formulario de creación de proyectos, validación local y feedback visual.
 export default function NewProject() {
   const [formData, setFormData] = useState({
     nombreProyecto: "",
@@ -57,6 +58,7 @@ export default function NewProject() {
     "Diciembre",
   ];
 
+  // handleInputChange sincroniza cada input con el estado y limpia su error específico si existe.
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -72,6 +74,7 @@ export default function NewProject() {
     }
   };
 
+  // validateForm verifica campos obligatorios y devuelve true solo cuando el formulario es válido.
   const validateForm = () => {
     const newErrors = {};
 
@@ -86,6 +89,7 @@ export default function NewProject() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // handleSubmit ejecuta la validación y muestra confirmación de éxito antes de reiniciar el formulario.
   const handleSubmit = (e) => {
     e.preventDefault();
 

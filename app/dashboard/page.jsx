@@ -15,14 +15,14 @@ import Link from "next/link";
 import NavBar from "@/components/navbar/NavBar";
 
 /* =========================
-   Format number consistently (avoid locale mismatch)
+   formatNumber normaliza separadores de miles para mostrar montos de forma consistente.
 ========================= */
 function formatNumber(num) {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 /* =========================
-   FadeIn animation component
+   FadeIn anima la entrada de bloques con retraso configurable.
 ========================= */
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
@@ -47,7 +47,7 @@ function FadeIn({ children, delay = 0, className = "" }) {
 }
 
 /* =========================
-   Gastos Administrativos component
+   GastosAdministrativosCard muestra total administrativo y distribución porcentual por proyecto.
 ========================= */
 function GastosAdministrativosCard({ gastosAdmin, proyectosAdmin }) {
   return (
@@ -317,6 +317,7 @@ const DATA = {
   },
 };
 
+// DashboardConstructora presenta indicadores financieros mensuales y navegación temporal del resumen.
 export default function DashboardConstructora() {
   const [mesIndex, setMesIndex] = useState(9); // Octubre
   const [anio, setAnio] = useState(2025);
@@ -332,7 +333,7 @@ export default function DashboardConstructora() {
   const balance = data.ingresos - data.egresos;
 
   /* =========================
-     Trigger fade effect on month change
+     Este efecto dispara una transición cuando cambia el mes o el año seleccionado.
   ========================= */
   useEffect(() => {
     setIsChanging(true);
@@ -341,7 +342,7 @@ export default function DashboardConstructora() {
   }, [mesIndex, anio]);
 
   /* =========================
-     Navegación de meses
+     mesAnterior retrocede el período y ajusta año cuando cruza de enero a diciembre.
   ========================= */
   const mesAnterior = () => {
     if (mesIndex === 0) {
@@ -352,6 +353,7 @@ export default function DashboardConstructora() {
     }
   };
 
+  // mesSiguiente avanza el período y ajusta año cuando cruza de diciembre a enero.
   const mesSiguiente = () => {
     if (mesIndex === 11) {
       setMesIndex(0);

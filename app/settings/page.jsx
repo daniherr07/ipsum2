@@ -5,6 +5,7 @@ import { ChevronLeft, Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
 
+// FadeIn muestra secciones de configuración con una animación progresiva al montar.
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
 
@@ -27,6 +28,7 @@ function FadeIn({ children, delay = 0, className = "" }) {
   );
 }
 
+// FormModal encapsula el formulario modal para crear o editar elementos de una categoría.
 function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
   const [nombre, setNombre] = useState("");
 
@@ -38,6 +40,7 @@ function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
     }
   }, [initialData, isOpen]);
 
+  // handleSubmit valida el nombre y delega el guardado al callback recibido por props.
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!nombre.trim()) {
@@ -83,6 +86,7 @@ function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
   );
 }
 
+// CRUDSection gestiona localmente altas, edición y eliminación de elementos de una categoría.
 function CRUDSection({ categoryId, categoryLabel, initialData }) {
   const [items, setItems] = useState(initialData || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,6 +98,7 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
     setIsModalOpen(false);
   }, [categoryId, initialData]);
 
+  // handleAdd crea un nuevo registro en memoria y notifica éxito al usuario.
   const handleAdd = (data) => {
     const newItem = {
       id: Math.max(...(items.map((i) => i.id) || [0]), 0) + 1,
@@ -109,6 +114,7 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
     });
   };
 
+  // handleEdit actualiza el registro seleccionado y restablece el estado del modal.
   const handleEdit = (data) => {
     setItems(
       items.map((i) =>
@@ -125,6 +131,7 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
     });
   };
 
+  // handleDelete solicita confirmación y elimina el registro cuando el usuario acepta.
   const handleDelete = (id) => {
     Swal.fire({
       title: "¿Está seguro?",
@@ -227,6 +234,7 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
   );
 }
 
+// Settings actúa como página contenedora para seleccionar categoría y renderizar su CRUD asociado.
 export default function Settings() {
   const [activeCategory, setActiveCategory] = useState("tiposDeBO");
 

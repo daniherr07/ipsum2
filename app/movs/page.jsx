@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Pencil, Trash, X, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
-// FadeIn animation component
+// FadeIn anima la entrada de listas y controles para mejorar percepción de carga.
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
 
@@ -301,12 +301,13 @@ const initialData = [
   },
 ];
 
-// Parse date from dd/mm/yyyy format
+// parseDate transforma fechas dd/mm/yyyy a objetos Date para poder ordenar correctamente.
 const parseDate = (dateStr) => {
   const [day, month, year] = dateStr.split("/").map(Number);
   return new Date(year, month - 1, day);
 };
 
+// AddMovement muestra el historial de movimientos, filtros y edición de registros en modal.
 export default function AddMovement() {
   const [filter, setFilter] = useState(0);
   const [movimientos, setMovimientos] = useState(initialData);
@@ -314,7 +315,7 @@ export default function AddMovement() {
   const [editingItem, setEditingItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Sort movements
+  // sortedMovimientos ordena por monto o por fecha según el criterio activo del usuario.
   const sortedMovimientos = [...movimientos].sort((a, b) => {
     if (sortBy === "monto") {
       return b.mount - a.mount;
@@ -323,16 +324,19 @@ export default function AddMovement() {
     }
   });
 
+  // openEditModal clona el registro seleccionado y abre el modal para edición.
   const openEditModal = (item) => {
     setEditingItem({ ...item });
     setIsModalOpen(true);
   };
 
+  // closeModal restablece el estado del modal y limpia el registro en edición.
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingItem(null);
   };
 
+  // handleSave persiste cambios del modal sobre la lista local y luego cierra el modal.
   const handleSave = () => {
     if (!editingItem) return;
     setMovimientos((prev) =>
@@ -341,6 +345,7 @@ export default function AddMovement() {
     closeModal();
   };
 
+  // handleInputChange actualiza en memoria un campo específico del registro en edición.
   const handleInputChange = (field, value) => {
     setEditingItem((prev) => ({ ...prev, [field]: value }));
   };
@@ -606,6 +611,7 @@ export default function AddMovement() {
   );
 }
 
+// OutForm representa un formulario base de egreso reutilizable (actualmente demostrativo).
 export function OutForm() {
   return (
     <form
@@ -664,6 +670,7 @@ export function OutForm() {
   );
 }
 
+// InForm representa un formulario base de ingreso reutilizable (actualmente demostrativo).
 export function InForm() {
   return (
     <form

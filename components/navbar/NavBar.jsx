@@ -16,6 +16,7 @@ import Form from "next/form";
 import { newProjectAction } from "./newProjectAction";
 import CreateProjectButton from "./CreateProjectButton";
 
+// NavBar construye la navegación superior responsive con accesos rápidos y menú contextual de creación.
 export default function NavBar() {
   return (
     <div className="navbar bg-base-300 shadow-sm">

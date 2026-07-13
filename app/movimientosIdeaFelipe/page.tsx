@@ -22,7 +22,7 @@ interface ComponentePago {
   descripcion?: string
 }
 
-// FadeIn animation component - estilo stats/prueba
+// FadeIn aplica una animación de entrada para mantener consistencia visual con otras pantallas.
 function FadeIn({ children, delay = 0, className = "" }: { 
   children: React.ReactNode
   delay?: number
@@ -49,6 +49,7 @@ function FadeIn({ children, delay = 0, className = "" }: {
   )
 }
 
+// NuevoMovimientoPage gestiona la creación de movimientos simples o compuestos con validaciones visuales.
 export default function NuevoMovimientoPage() {
   const [tipoMovimiento, setTipoMovimiento] = useState<"pago-casa" | "ingreso-casa" | "administrativo" | "pago-compuesto">("pago-casa")
   const [isChanging, setIsChanging] = useState(false)
@@ -119,6 +120,7 @@ export default function NuevoMovimientoPage() {
 
   const opcionesCategoria = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
 
+  // formatCurrency limpia y presenta el monto como moneda CRC sin decimales.
   const formatCurrency = (value: string) => {
     const num = parseInt(value.replace(/\D/g, "")) || 0
     return new Intl.NumberFormat("es-CR", {
@@ -128,11 +130,13 @@ export default function NuevoMovimientoPage() {
     }).format(num)
   }
 
+  // handleMontoChange mantiene en estado únicamente dígitos para el monto principal.
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "")
     setMonto(value)
   }
 
+  // handleComponenteMontoChange mantiene en estado únicamente dígitos para montos de componentes.
   const handleComponenteMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "")
     setComponenteMonto(value)
@@ -143,6 +147,7 @@ export default function NuevoMovimientoPage() {
   const sumaComponentes = componentesAcumulados.reduce((sum, c) => sum + (parseInt(c.monto) || 0), 0)
   const restante = totalNum - sumaComponentes
 
+  // resetFormComponente limpia el formulario interno usado para agregar componentes al pago compuesto.
   const resetFormComponente = () => {
     setTipoComponente(null)
     setComponenteMonto("")
@@ -153,6 +158,7 @@ export default function NuevoMovimientoPage() {
     setMostrarFormComponente(false)
   }
 
+  // agregarComponente valida lo mínimo requerido y agrega un componente al acumulado.
   const agregarComponente = () => {
     if (!tipoComponente || !componenteMonto) return
 
@@ -171,10 +177,12 @@ export default function NuevoMovimientoPage() {
     resetFormComponente()
   }
 
+  // eliminarComponente quita un componente ya agregado del pago compuesto.
   const eliminarComponente = (id: string) => {
     setComponentesAcumulados(componentesAcumulados.filter(c => c.id !== id))
   }
 
+  // handleSubmit valida por tipo de movimiento y muestra el resumen de confirmación al usuario.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
