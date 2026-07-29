@@ -10,6 +10,7 @@ import {
   TrendingUp,
   TrendingDown,
   ExternalLink,
+  TriangleAlert,
 } from "lucide-react";
 import Link from "next/link";
 import NavBar from "@/components/navbar/NavBar";
@@ -50,6 +51,13 @@ function FadeIn({ children, delay = 0, className = "" }) {
    Gastos Administrativos component
 ========================= */
 function GastosAdministrativosCard({ gastosAdmin, proyectosAdmin }) {
+  /* Peso del proyecto = presupuesto / presupuesto total del grupo.
+     Asignado = gastosAdmin * peso. Alerta si supera el 10% del presupuesto. */
+  const presupuestoTotal = proyectosAdmin.reduce((s, p) => s + p.presupuesto, 0);
+  const ratioPeriodo =
+    presupuestoTotal > 0 ? (gastosAdmin / presupuestoTotal) * 100 : 0;
+  const superaLimite = ratioPeriodo > 10;
+
   return (
     <div className="w-full bg-base-200 flex flex-col gap-6 rounded-lg shadow-lg p-7">
       {/* Título y monto */}
@@ -60,29 +68,63 @@ function GastosAdministrativosCard({ gastosAdmin, proyectosAdmin }) {
         <span className="text-4xl font-black text-warning block mt-2">
           ₵{formatNumber(gastosAdmin)}
         </span>
+        <p className="text-xs text-base-content/50 mt-1">
+          {ratioPeriodo.toFixed(1)}% del presupuesto del período · distribuido
+          por peso presupuestario
+        </p>
       </div>
+
+      {/* Alerta: supera el 10% del presupuesto */}
+      {superaLimite && (
+        <div
+          role="alert"
+          className="alert alert-warning alert-soft rounded-lg px-3 py-2 text-xs sm:text-sm"
+        >
+          <TriangleAlert size={16} className="shrink-0" />
+          <span>
+            Los gastos administrativos superan el 10% del presupuesto del
+            período
+          </span>
+        </div>
+      )}
 
       <div className="divider m-0!"></div>
 
-      {/* Progress bars por proyecto */}
+      {/* Distribución por proyecto */}
       <div className="space-y-4">
-        {proyectosAdmin.map((proyecto, idx) => (
-          <div key={idx} className="space-y-1">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-gray-300">
-                {proyecto.nombre}
-              </span>
-              <span className="text-sm font-bold text-warning">
-                {proyecto.porcentaje}%
-              </span>
+        {proyectosAdmin.map((proyecto, idx) => {
+          const peso =
+            presupuestoTotal > 0
+              ? (proyecto.presupuesto / presupuestoTotal) * 100
+              : 0;
+          const asignado = Math.round(
+            (gastosAdmin * proyecto.presupuesto) / (presupuestoTotal || 1),
+          );
+          return (
+            <div key={idx} className="space-y-1">
+              <div className="flex justify-between items-baseline gap-2">
+                <span className="text-sm font-semibold text-base-content/80 truncate">
+                  {proyecto.nombre}
+                </span>
+                <span className="text-sm font-bold text-warning shrink-0">
+                  ₵{formatNumber(asignado)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <progress
+                  className={`progress w-full ${
+                    superaLimite ? "progress-error" : "progress-warning"
+                  }`}
+                  value={peso}
+                  max="100"
+                ></progress>
+                <span className="text-xs font-semibold text-base-content/60 w-11 text-right shrink-0">
+                  {peso.toFixed(1)}%
+                </span>
+              </div>
             </div>
-            <progress
-              className="progress progress-warning w-full"
-              value={proyecto.porcentaje}
-              max="100"
-            ></progress>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -110,213 +152,31 @@ const MESES = [
    Data mock por mes/año
    (luego puedes traerla de BD)
 ========================= */
-const DATA = {
-  "2025-0": {
-    // Enero
-    ingresos: 320000,
-    egresos: 410000,
-    categorias: {
-      Administrativos: -180000,
-      Proyectos: 80000,
-      Otros: -230000,
-    },
-    gastosAdmin: 180000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 35 },
-      { nombre: "Proyecto Lucas", porcentaje: 30 },
-      { nombre: "Proyecto Carlos", porcentaje: 20 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-1": {
-    // Febrero
-    ingresos: 500000,
-    egresos: 450000,
-    categorias: {
-      Administrativos: -200000,
-      Proyectos: 280000,
-      Otros: -70000,
-    },
-    gastosAdmin: 200000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 40 },
-      { nombre: "Proyecto Lucas", porcentaje: 25 },
-      { nombre: "Proyecto Carlos", porcentaje: 20 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-2": {
-    // Marzo
-    ingresos: 780000,
-    egresos: 520000,
-    categorias: {
-      Administrativos: -220000,
-      Proyectos: 450000,
-      Otros: -70000,
-    },
-    gastosAdmin: 220000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 38 },
-      { nombre: "Proyecto Lucas", porcentaje: 28 },
-      { nombre: "Proyecto Carlos", porcentaje: 18 },
-      { nombre: "Proyecto Ana", porcentaje: 16 },
-    ],
-  },
-  "2025-3": {
-    // Abril
-    ingresos: 620000,
-    egresos: 610000,
-    categorias: {
-      Administrativos: -240000,
-      Proyectos: 320000,
-      Otros: -50000,
-    },
-    gastosAdmin: 240000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 42 },
-      { nombre: "Proyecto Lucas", porcentaje: 25 },
-      { nombre: "Proyecto Carlos", porcentaje: 18 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-4": {
-    // Mayo
-    ingresos: 910000,
-    egresos: 700000,
-    categorias: {
-      Administrativos: -260000,
-      Proyectos: 500000,
-      Otros: -20000,
-    },
-    gastosAdmin: 260000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 36 },
-      { nombre: "Proyecto Lucas", porcentaje: 26 },
-      { nombre: "Proyecto Carlos", porcentaje: 21 },
-      { nombre: "Proyecto Ana", porcentaje: 17 },
-    ],
-  },
-  "2025-5": {
-    // Junio
-    ingresos: 400000,
-    egresos: 650000,
-    categorias: {
-      Administrativos: -250000,
-      Proyectos: 150000,
-      Otros: -550000,
-    },
-    gastosAdmin: 250000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 39 },
-      { nombre: "Proyecto Lucas", porcentaje: 27 },
-      { nombre: "Proyecto Carlos", porcentaje: 19 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-6": {
-    // Julio
-    ingresos: 1050000,
-    egresos: 720000,
-    categorias: {
-      Administrativos: -270000,
-      Proyectos: 620000,
-      Otros: -10000,
-    },
-    gastosAdmin: 270000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 41 },
-      { nombre: "Proyecto Lucas", porcentaje: 24 },
-      { nombre: "Proyecto Carlos", porcentaje: 20 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-7": {
-    // Agosto
-    ingresos: 880000,
-    egresos: 830000,
-    categorias: {
-      Administrativos: -300000,
-      Proyectos: 520000,
-      Otros: -10000,
-    },
-    gastosAdmin: 300000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 37 },
-      { nombre: "Proyecto Lucas", porcentaje: 28 },
-      { nombre: "Proyecto Carlos", porcentaje: 20 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-8": {
-    // Septiembre
-    ingresos: 450970,
-    egresos: 900780,
-    categorias: {
-      Administrativos: -560000,
-      Proyectos: 275000,
-      Otros: -15000,
-    },
-    gastosAdmin: 560000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 34 },
-      { nombre: "Proyecto Lucas", porcentaje: 26 },
-      { nombre: "Proyecto Carlos", porcentaje: 22 },
-      { nombre: "Proyecto Ana", porcentaje: 18 },
-    ],
-  },
-  "2025-9": {
-    // Octubre
-    ingresos: 780000,
-    egresos: 420000,
-    categorias: {
-      Administrativos: -210000,
-      Proyectos: 600000,
-      Otros: -30000,
-    },
-    gastosAdmin: 210000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 40 },
-      { nombre: "Proyecto Lucas", porcentaje: 27 },
-      { nombre: "Proyecto Carlos", porcentaje: 19 },
-      { nombre: "Proyecto Ana", porcentaje: 14 },
-    ],
-  },
-  "2025-10": {
-    // Noviembre
-    ingresos: 1200000,
-    egresos: 650000,
-    categorias: {
-      Administrativos: -280000,
-      Proyectos: 750000,
-      Otros: -20000,
-    },
-    gastosAdmin: 280000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 35 },
-      { nombre: "Proyecto Lucas", porcentaje: 28 },
-      { nombre: "Proyecto Carlos", porcentaje: 22 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-  "2025-11": {
-    // Diciembre
-    ingresos: 300000,
-    egresos: 550000,
-    categorias: {
-      Administrativos: -200000,
-      Proyectos: 50000,
-      Otros: -400000,
-    },
-    gastosAdmin: 200000,
-    proyectosAdmin: [
-      { nombre: "Proyecto María", porcentaje: 38 },
-      { nombre: "Proyecto Lucas", porcentaje: 26 },
-      { nombre: "Proyecto Carlos", porcentaje: 21 },
-      { nombre: "Proyecto Ana", porcentaje: 15 },
-    ],
-  },
-};
+const PROYECTOS_A = [
+  { nombre: "Clodomiro Picado", presupuesto: 50000000 },
+  { nombre: "Monseñor Sanabria", presupuesto: 75000000 },
+  { nombre: "Joaquín García", presupuesto: 60000000 },
+];
 
+const PROYECTOS_B = [
+  ...PROYECTOS_A,
+  { nombre: "Residencial Vista", presupuesto: 85000000 },
+];
+
+const DATA = {
+  "2025-0": { ingresos: 16000000, egresos: 20500000, gastosAdmin: 16500000, proyectosAdmin: PROYECTOS_A },
+  "2025-1": { ingresos: 25000000, egresos: 22500000, gastosAdmin: 18900000, proyectosAdmin: PROYECTOS_A },
+  "2025-2": { ingresos: 39000000, egresos: 26000000, gastosAdmin: 14800000, proyectosAdmin: PROYECTOS_A },
+  "2025-3": { ingresos: 31000000, egresos: 30500000, gastosAdmin: 22100000, proyectosAdmin: PROYECTOS_A },
+  "2025-4": { ingresos: 45500000, egresos: 35000000, gastosAdmin: 24300000, proyectosAdmin: PROYECTOS_B },
+  "2025-5": { ingresos: 20000000, egresos: 32500000, gastosAdmin: 29700000, proyectosAdmin: PROYECTOS_B },
+  "2025-6": { ingresos: 52500000, egresos: 36000000, gastosAdmin: 21600000, proyectosAdmin: PROYECTOS_B },
+  "2025-7": { ingresos: 44000000, egresos: 41500000, gastosAdmin: 18200000, proyectosAdmin: PROYECTOS_A },
+  "2025-8": { ingresos: 22500000, egresos: 45000000, gastosAdmin: 20900000, proyectosAdmin: PROYECTOS_A },
+  "2025-9": { ingresos: 39000000, egresos: 21000000, gastosAdmin: 15700000, proyectosAdmin: PROYECTOS_A },
+  "2025-10": { ingresos: 60000000, egresos: 32500000, gastosAdmin: 26400000, proyectosAdmin: PROYECTOS_B },
+  "2025-11": { ingresos: 15000000, egresos: 27500000, gastosAdmin: 31100000, proyectosAdmin: PROYECTOS_B },
+};
 export default function DashboardConstructora() {
   const [mesIndex, setMesIndex] = useState(9); // Octubre
   const [anio, setAnio] = useState(2025);
@@ -326,7 +186,8 @@ export default function DashboardConstructora() {
   const data = DATA[key] ?? {
     ingresos: 0,
     egresos: 0,
-    categorias: {},
+    gastosAdmin: 0,
+    proyectosAdmin: [],
   };
 
   const balance = data.ingresos - data.egresos;
@@ -363,7 +224,7 @@ export default function DashboardConstructora() {
 
   return (
     <>
-      <div className=" text-white flex flex-col items-center p-3 mt-3">
+      <div className="flex flex-col items-center p-3 mt-3">
         {/* Back Button */}
         <FadeIn delay={0} className="w-full mb-4">
           <Link href="/" className="btn btn-ghost btn-circle w-fit">
@@ -373,7 +234,7 @@ export default function DashboardConstructora() {
 
         {/* Selector de Fecha */}
         <FadeIn delay={0} className="flex flex-col items-center mb-10">
-          <span className="text-gray-500 text-sm font-medium mb-1">{anio}</span>
+          <span className="text-base-content/50 text-sm font-medium mb-1">{anio}</span>
           <div className="flex items-center gap-8">
             <button
               onClick={mesAnterior}
@@ -497,7 +358,7 @@ export default function DashboardConstructora() {
                     ART. 59
                   </div>
                 </div>
-                <Link href="/prueba" className="btn btn-square btn-primary ">
+                <Link href="/proyecto" className="btn btn-square btn-primary ">
                   <ExternalLink></ExternalLink>
                 </Link>
               </li>
@@ -509,7 +370,7 @@ export default function DashboardConstructora() {
                     CLP
                   </div>
                 </div>
-                <Link href="/prueba" className="btn btn-square btn-primary ">
+                <Link href="/proyecto" className="btn btn-square btn-primary ">
                   <ExternalLink></ExternalLink>
                 </Link>
               </li>
@@ -521,7 +382,7 @@ export default function DashboardConstructora() {
                     ART. 59
                   </div>
                 </div>
-                <Link href="/prueba" className="btn btn-square btn-primary ">
+                <Link href="/proyecto" className="btn btn-square btn-primary ">
                   <ExternalLink></ExternalLink>
                 </Link>
               </li>

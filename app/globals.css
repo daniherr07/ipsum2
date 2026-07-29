@@ -23,12 +23,37 @@
   --color-secondary: #8e0396;
   --color-secondary-content: #f89bfd;
 
-  --success: #039603;
-  --warning: #969603;
-  --error: #960303;
-  --success-content: #9bfd9b;
-  --warning-content: #000000;
-  --error-content: #fd9b9b;
+  /* Variables legacy (las usa @theme y páginas con var(--...)) */
+  --base-100: #1d232a;
+  --base-200: #191e24;
+  --base-300: #15191e;
+  --neutral: #09090b;
+  --neutral-content: #e4e4e7;
+  --primary: #035496;
+  --primary-content: #9bd1fd;
+  --primary-50: #e6f3fe;
+  --primary-100: #cde8fe;
+  --primary-200: #9bd1fd;
+  --primary-300: #69bafc;
+  --primary-400: #37a3fb;
+  --primary-500: #058cfa;
+  --primary-600: #0470c8;
+  --primary-700: #035496;
+  --primary-800: #023864;
+  --primary-900: #011c32;
+  --primary-950: #011423;
+  --secondary: #8e0396;
+  --secondary-content: #f89bfd;
+  --accent: #00d1bb;
+  --accent-content: #084d49;
+  --info: #00bafc;
+  --info-content: #042e49;
+  --success: #00d193;
+  --warning: #f9b800;
+  --error: #ff657f;
+  --success-content: #004c39;
+  --warning-content: #793205;
+  --error-content: #4d0218;
 }
 
 @plugin "daisyui/theme" {
@@ -36,8 +61,25 @@
   default: true;
   color-scheme: light;
 
+  /* Base: blancos y grises fríos con matiz azulado (coherente con la marca) */
+  --color-base-100: #ffffff;
+  --color-base-200: #f2f5f9;
+  --color-base-300: #e3e9f2;
+  --color-base-content: #1f2a37;
+
+  --base-100: #ffffff;
+  --base-200: #f2f5f9;
+  --base-300: #e3e9f2;
+
+  /* Neutral */
+  --color-neutral: #1f2a37;
+  --color-neutral-content: #f8fafc;
+  --neutral: #1f2a37;
+  --neutral-content: #f8fafc;
+
+  /* Primary (marca) */
   --color-primary: #035496;
-  --color-primary-content: #9bd1fd;
+  --color-primary-content: #ffffff;
   --color-primary-50: #e6f3fe;
   --color-primary-100: #cde8fe;
   --color-primary-200: #9bd1fd;
@@ -49,16 +91,55 @@
   --color-primary-800: #023864;
   --color-primary-900: #011c32;
   --color-primary-950: #011423;
+  --primary: #035496;
+  --primary-content: #ffffff;
+  --primary-50: #e6f3fe;
+  --primary-100: #cde8fe;
+  --primary-200: #9bd1fd;
+  --primary-300: #69bafc;
+  --primary-400: #37a3fb;
+  --primary-500: #058cfa;
+  --primary-600: #0470c8;
+  --primary-700: #035496;
+  --primary-800: #023864;
+  --primary-900: #011c32;
+  --primary-950: #011423;
 
+  /* Secondary */
   --color-secondary: #8e0396;
   --color-secondary-content: #f89bfd;
+  --secondary: #8e0396;
+  --secondary-content: #f89bfd;
 
-  --success: #039603;
-  --warning: #969603;
-  --error: #960303;
-  --success-content: #9bfd9b;
-  --warning-content: #000000;
-  --error-content: #fd9b9b;
+  /* Accent */
+  --color-accent: #0d9488;
+  --color-accent-content: #ffffff;
+  --accent: #0d9488;
+  --accent-content: #ffffff;
+
+  /* Info */
+  --color-info: #0284c7;
+  --color-info-content: #ffffff;
+  --info: #0284c7;
+  --info-content: #ffffff;
+
+  /* Success */
+  --color-success: #16a34a;
+  --color-success-content: #ffffff;
+  --success: #16a34a;
+  --success-content: #ffffff;
+
+  /* Warning */
+  --color-warning: #b45309;
+  --color-warning-content: #ffffff;
+  --warning: #b45309;
+  --warning-content: #ffffff;
+
+  /* Error */
+  --color-error: #dc2626;
+  --color-error-content: #ffffff;
+  --error: #dc2626;
+  --error-content: #ffffff;
 }
 
 /*Configuración para que tailwind lo detecte*/
