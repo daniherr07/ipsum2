@@ -1,10 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Pencil, Trash, X, ChevronLeft } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  ChevronLeft,
+  Plus,
+  Search,
+  X,
+  TrendingUp,
+  TrendingDown,
+  Pencil,
+  Trash2,
+  Inbox,
+} from "lucide-react";
 import Link from "next/link";
 
-// FadeIn animation component
+/* =========================
+   Format number consistently (avoid locale mismatch)
+========================= */
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/* =========================
+   FadeIn animation component
+========================= */
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
 
@@ -27,277 +46,207 @@ function FadeIn({ children, delay = 0, className = "" }) {
   );
 }
 
+const MESES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+
+const ANOS = [2024, 2025, 2026, 2027, 2028];
+
+const CATEGORIAS = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"];
+
+/* =========================
+   Data mock — alineada con /agregarMovimento:
+   - Ingreso: nombreIngreso, monto, fechaPago, descripcion
+   - Egreso General: categoria, ordenCompra, monto, descripcion
+   - Egreso Administrativo: mes, ano, monto, descripcion
+   (created_at es metadata del sistema, solo para ordenar)
+========================= */
 const initialData = [
+  // ── Ingresos ──
   {
     id: 1,
-    mount: 3500,
-    type: "ingreso",
-    template: null,
-    title: "Pago Mutual",
-    description: "Pago mensual recibido por concepto de mutualidad",
-    created_at: "09/11/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Desembolso inicial del bono",
+    monto: 20000000,
+    fechaPago: "15/01/2025",
+    descripcion: "Primer desembolso del bono Art.59",
+    created_at: "15/01/2025",
   },
   {
     id: 2,
-    mount: 5000,
-    type: "egreso",
-    template: "plantilla construccion 1",
-    title: "Inicio Construcción 1",
-    description:
-      "Pago inicial para el arranque de la construcción de la vivienda",
-    created_at: "23/08/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Aporte familiar",
+    monto: 3500000,
+    fechaPago: "28/02/2025",
+    descripcion: "Aporte para inicio de obra gris",
+    created_at: "28/02/2025",
   },
   {
     id: 3,
-    mount: 125000,
-    type: "ingreso",
-    template: null,
-    title: "Aporte Familiar",
-    description: "Aporte económico recibido para gastos de la casa",
-    created_at: "01/09/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Desembolso segundo tramo",
+    monto: 10000000,
+    fechaPago: "10/04/2025",
+    descripcion: "Segundo desembolso del bono Art.59",
+    created_at: "10/04/2025",
   },
   {
     id: 4,
-    mount: 84250,
-    type: "egreso",
-    template: "plantilla materiales",
-    title: "Compra de Materiales",
-    description: "Compra de cemento, arena y varilla para obra gris",
-    created_at: "05/09/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Reintegro de materiales",
+    monto: 850000,
+    fechaPago: "22/05/2025",
+    descripcion: "Reintegro por devolución de materiales",
+    created_at: "22/05/2025",
   },
   {
     id: 5,
-    mount: 250000,
-    type: "ingreso",
-    template: null,
-    title: "Depósito Salarial",
-    description: "Depósito correspondiente al salario mensual",
-    created_at: "15/09/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Aporte institucional",
+    monto: 2500000,
+    fechaPago: "05/06/2025",
+    descripcion: "Aporte de programa de apoyo habitacional",
+    created_at: "05/06/2025",
   },
   {
     id: 6,
-    mount: 67500,
-    type: "egreso",
-    template: "plantilla servicios",
-    title: "Pago Servicios Públicos",
-    description: "Pago de agua y electricidad del mes",
-    created_at: "18/09/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Venta de materiales sobrantes",
+    monto: 620000,
+    fechaPago: "30/06/2025",
+    descripcion: "Venta de varilla sobrante",
+    created_at: "30/06/2025",
   },
   {
     id: 7,
-    mount: 180000,
-    type: "egreso",
-    template: "plantilla construccion 2",
-    title: "Mano de Obra",
-    description: "Pago de mano de obra para avance de construcción",
-    created_at: "25/09/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Desembolso tercer tramo",
+    monto: 8000000,
+    fechaPago: "18/07/2025",
+    descripcion: "Tercer desembolso del bono Art.59",
+    created_at: "18/07/2025",
   },
   {
     id: 8,
-    mount: 95000,
-    type: "ingreso",
-    template: null,
-    title: "Ingreso Extraordinario",
-    description: "Ingreso adicional por trabajo ocasional",
-    created_at: "02/10/2024",
+    tipo: "ingreso",
+    nombreIngreso: "Reintegro de garantía",
+    monto: 1200000,
+    fechaPago: "02/08/2025",
+    descripcion: "Reintegro de depósito de garantía",
+    created_at: "02/08/2025",
   },
+  // ── Egresos Generales ──
   {
     id: 9,
-    mount: 42000,
-    type: "egreso",
-    template: "plantilla mantenimiento",
-    title: "Mantenimiento General",
-    description: "Compra de herramientas y reparaciones menores",
-    created_at: "07/10/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Materiales",
+    ordenCompra: "OC1",
+    monto: 8450000,
+    descripcion: "Compra de cemento, arena y varilla",
+    created_at: "20/01/2025",
   },
   {
     id: 10,
-    mount: 300000,
-    type: "ingreso",
-    template: null,
-    title: "Transferencia Bancaria",
-    description: "Transferencia recibida para continuidad del proyecto",
-    created_at: "20/10/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Mano de Obra",
+    ordenCompra: "OC1",
+    monto: 6800000,
+    descripcion: "Pago de planilla semanas 12 a 15",
+    created_at: "05/02/2025",
   },
   {
     id: 11,
-    mount: 220000,
-    type: "egreso",
-    template: "plantilla construccion 2",
-    title: "Avance Obra Gris",
-    description: "Pago parcial por avance de obra gris en vivienda",
-    created_at: "28/10/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Equipamiento",
+    ordenCompra: "OC2",
+    monto: 4200000,
+    descripcion: "Alquiler de mezcladora y andamios",
+    created_at: "14/03/2025",
   },
   {
     id: 12,
-    mount: 180000,
-    type: "ingreso",
-    template: null,
-    title: "Aporte Institucional",
-    description: "Aporte recibido por programa de apoyo habitacional",
-    created_at: "02/11/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Servicios",
+    ordenCompra: "OC2",
+    monto: 1650000,
+    descripcion: "Instalación eléctrica temporal",
+    created_at: "02/04/2025",
   },
   {
     id: 13,
-    mount: 73500,
-    type: "egreso",
-    template: "plantilla materiales",
-    title: "Material Eléctrico",
-    description: "Compra de cableado, breakers y tomacorrientes",
-    created_at: "05/11/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Materiales",
+    ordenCompra: "OC3",
+    monto: 3300000,
+    descripcion: "Compra de bloques y ladrillos",
+    created_at: "25/04/2025",
   },
   {
     id: 14,
-    mount: 95000,
-    type: "egreso",
-    template: "plantilla servicios",
-    title: "Pago Internet y Teléfono",
-    description: "Servicios de comunicación del mes",
-    created_at: "10/11/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Otros",
+    ordenCompra: "OC3",
+    monto: 950000,
+    descripcion: "Transporte de materiales",
+    created_at: "10/05/2025",
   },
   {
     id: 15,
-    mount: 300000,
-    type: "ingreso",
-    template: null,
-    title: "Salario Mensual",
-    description: "Depósito salarial correspondiente al mes",
-    created_at: "15/11/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-general",
+    categoria: "Mano de Obra",
+    ordenCompra: "OC4",
+    monto: 5400000,
+    descripcion: "Pago de planilla semanas 16 a 19",
+    created_at: "20/06/2025",
   },
+  // ── Egresos Administrativos ──
   {
     id: 16,
-    mount: 125000,
-    type: "egreso",
-    template: "plantilla mantenimiento",
-    title: "Reparaciones Varias",
-    description: "Reparaciones menores y ajustes estructurales",
-    created_at: "18/11/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-administrativo",
+    mes: "Julio",
+    ano: "2025",
+    monto: 2400000,
+    descripcion: "Permisos municipales y trámites",
+    created_at: "08/07/2025",
   },
   {
     id: 17,
-    mount: 52000,
-    type: "egreso",
-    template: "plantilla transporte",
-    title: "Transporte Materiales",
-    description: "Flete para traslado de materiales de construcción",
-    created_at: "20/11/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-administrativo",
+    mes: "Agosto",
+    ano: "2025",
+    monto: 2200000,
+    descripcion: "Seguro de obra y fianzas",
+    created_at: "12/08/2025",
   },
   {
     id: 18,
-    mount: 100000,
-    type: "ingreso",
-    template: null,
-    title: "Ingreso Extra",
-    description: "Ingreso por trabajo independiente",
-    created_at: "22/11/2024",
-  },
-  {
-    id: 19,
-    mount: 210000,
-    type: "egreso",
-    template: "plantilla construccion 3",
-    title: "Instalación Techo",
-    description: "Pago por instalación de estructura de techo",
-    created_at: "25/11/2024",
-  },
-  {
-    id: 20,
-    mount: 45000,
-    type: "egreso",
-    template: "plantilla servicios",
-    title: "Pago Agua",
-    description: "Recibo de agua potable del mes",
-    created_at: "28/11/2024",
-  },
-  {
-    id: 21,
-    mount: 275000,
-    type: "ingreso",
-    template: null,
-    title: "Transferencia Familiar",
-    description: "Apoyo económico familiar para proyecto habitacional",
-    created_at: "01/12/2024",
-  },
-  {
-    id: 22,
-    mount: 86000,
-    type: "egreso",
-    template: "plantilla materiales",
-    title: "Pintura y Acabados",
-    description: "Compra de pintura, brochas y rodillos",
-    created_at: "04/12/2024",
-  },
-  {
-    id: 23,
-    mount: 65000,
-    type: "egreso",
-    template: "plantilla mantenimiento",
-    title: "Herramientas",
-    description: "Compra de herramientas manuales",
-    created_at: "06/12/2024",
-  },
-  {
-    id: 24,
-    mount: 320000,
-    type: "ingreso",
-    template: null,
-    title: "Pago Bono Vivienda",
-    description: "Desembolso parcial del bono de vivienda",
-    created_at: "10/12/2024",
-  },
-  {
-    id: 25,
-    mount: 150000,
-    type: "egreso",
-    template: "plantilla construccion 4",
-    title: "Instalación Eléctrica",
-    description: "Pago por instalación eléctrica interna",
-    created_at: "12/12/2024",
-  },
-  {
-    id: 26,
-    mount: 92000,
-    type: "egreso",
-    template: "plantilla servicios",
-    title: "Electricidad",
-    description: "Recibo de electricidad del mes",
-    created_at: "15/12/2024",
-  },
-  {
-    id: 27,
-    mount: 50000,
-    type: "ingreso",
-    template: null,
-    title: "Reintegro",
-    description: "Reintegro por gastos previamente adelantados",
-    created_at: "18/12/2024",
-  },
-  {
-    id: 28,
-    mount: 110000,
-    type: "egreso",
-    template: "plantilla construccion 5",
-    title: "Instalación Sanitaria",
-    description: "Pago por instalación de tuberías y sanitarios",
-    created_at: "20/12/2024",
-  },
-  {
-    id: 29,
-    mount: 340000,
-    type: "ingreso",
-    template: null,
-    title: "Salario Diciembre",
-    description: "Depósito salarial correspondiente a diciembre",
-    created_at: "22/12/2024",
-  },
-  {
-    id: 30,
-    mount: 98000,
-    type: "egreso",
-    template: "plantilla mantenimiento",
-    title: "Limpieza Final",
-    description: "Limpieza general posterior a trabajos de construcción",
-    created_at: "27/12/2024",
+    tipo: "egreso",
+    tipoEgreso: "egreso-administrativo",
+    mes: "Septiembre",
+    ano: "2025",
+    monto: 1800000,
+    descripcion: "Servicios profesionales y notaría",
+    created_at: "03/09/2025",
   },
 ];
 
@@ -307,288 +256,553 @@ const parseDate = (dateStr) => {
   return new Date(year, month - 1, day);
 };
 
-export default function AddMovement() {
-  const [filter, setFilter] = useState(0);
+/* Título visible: los egresos no tienen nombre, solo descripción */
+const getTitulo = (m) => (m.tipo === "ingreso" ? m.nombreIngreso : m.descripcion);
+
+/* Texto meta del egreso: categoría · OC  |  mes año */
+const getMetaEgreso = (m) =>
+  m.tipoEgreso === "egreso-administrativo"
+    ? `${m.mes} ${m.ano}`
+    : [m.categoria, m.ordenCompra].filter(Boolean).join(" · ");
+
+export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState(initialData);
-  const [sortBy, setSortBy] = useState("monto");
+  const [tipoFiltro, setTipoFiltro] = useState("todos"); // todos | ingreso | egreso
+  const [busqueda, setBusqueda] = useState("");
+  const [sortBy, setSortBy] = useState("fecha-desc");
   const [editingItem, setEditingItem] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingItem, setDeletingItem] = useState(null);
 
-  // Sort movements
-  const sortedMovimientos = [...movimientos].sort((a, b) => {
-    if (sortBy === "monto") {
-      return b.mount - a.mount;
-    } else {
-      return parseDate(b.created_at) - parseDate(a.created_at);
+  /* =========================
+     Filtrado + ordenamiento
+  ========================= */
+  const filtrados = useMemo(() => {
+    let lista = [...movimientos];
+
+    if (tipoFiltro !== "todos") {
+      lista = lista.filter((m) => m.tipo === tipoFiltro);
     }
-  });
 
-  const openEditModal = (item) => {
-    setEditingItem({ ...item });
-    setIsModalOpen(true);
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase();
+      lista = lista.filter(
+        (m) =>
+          getTitulo(m).toLowerCase().includes(q) ||
+          m.descripcion.toLowerCase().includes(q) ||
+          (m.categoria && m.categoria.toLowerCase().includes(q)),
+      );
+    }
+
+    lista.sort((a, b) => {
+      switch (sortBy) {
+        case "fecha-asc":
+          return parseDate(a.created_at) - parseDate(b.created_at);
+        case "monto-desc":
+          return b.monto - a.monto;
+        case "monto-asc":
+          return a.monto - b.monto;
+        case "fecha-desc":
+        default:
+          return parseDate(b.created_at) - parseDate(a.created_at);
+      }
+    });
+
+    return lista;
+  }, [movimientos, tipoFiltro, busqueda, sortBy]);
+
+  /* =========================
+     Totales del conjunto filtrado
+  ========================= */
+  const totales = useMemo(
+    () => ({
+      ingresos: filtrados
+        .filter((m) => m.tipo === "ingreso")
+        .reduce((s, m) => s + m.monto, 0),
+      egresos: filtrados
+        .filter((m) => m.tipo === "egreso")
+        .reduce((s, m) => s + m.monto, 0),
+    }),
+    [filtrados],
+  );
+
+  const limpiarFiltros = () => {
+    setTipoFiltro("todos");
+    setBusqueda("");
+    setSortBy("fecha-desc");
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingItem(null);
-  };
+  /* =========================
+     Edición
+  ========================= */
+  const openEditModal = (item) => setEditingItem({ ...item });
+  const closeEditModal = () => setEditingItem(null);
 
   const handleSave = () => {
     if (!editingItem) return;
     setMovimientos((prev) =>
       prev.map((item) => (item.id === editingItem.id ? editingItem : item)),
     );
-    closeModal();
+    closeEditModal();
   };
 
   const handleInputChange = (field, value) => {
     setEditingItem((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleTipoChange = (nuevoTipo) => {
+    setEditingItem((prev) => ({
+      ...prev,
+      tipo: nuevoTipo,
+      tipoEgreso:
+        nuevoTipo === "egreso"
+          ? prev.tipoEgreso || "egreso-general"
+          : prev.tipoEgreso,
+    }));
+  };
+
+  /* =========================
+     Eliminación
+  ========================= */
+  const handleDelete = () => {
+    if (!deletingItem) return;
+    setMovimientos((prev) => prev.filter((m) => m.id !== deletingItem.id));
+    setDeletingItem(null);
+  };
+
+  const TIPOS = [
+    { value: "todos", label: "Todos", activeClass: "btn-primary" },
+    { value: "ingreso", label: "Ingresos", activeClass: "btn-success" },
+    { value: "egreso", label: "Egresos", activeClass: "btn-error" },
+  ];
+
   return (
     <>
-      <main className="w-full flex flex-col justify-center items-center p-3 gap-5 lg:px-[25dvw]">
-        {/* Back Button */}
-        <FadeIn delay={0} className="w-full">
-          <Link href="/" className="btn btn-ghost btn-circle w-fit">
-            <ChevronLeft size={24} />
-          </Link>
-        </FadeIn>
+      <main className="min-h-[calc(100svh-64px)] bg-base-200 p-3 sm:p-4 lg:p-6">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4 sm:gap-5">
+          {/* Header: volver + título + CTA */}
+          <FadeIn delay={0} className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <Link
+                href="/"
+                className="btn btn-ghost btn-circle btn-sm sm:btn-md shrink-0"
+                aria-label="Volver al inicio"
+              >
+                <ChevronLeft size={22} />
+              </Link>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-black truncate">
+                  Movimientos
+                </h1>
+                <p className="text-xs sm:text-sm text-base-content/60">
+                  {filtrados.length} de {movimientos.length} registros
+                </p>
+              </div>
+            </div>
 
-        <FadeIn delay={0} className="flex w-full gap-1">
-          <button
-            type="button"
-            className={`btn flex-1 btn-primary ${filter != 0 && "btn-soft"}`}
-            onClick={() => setFilter(0)}
-          >
-            Egreso
-          </button>
-          <button
-            type="button"
-            className={`btn flex-1 btn-primary ${filter != 1 && "btn-soft"}`}
-            onClick={() => setFilter(1)}
-          >
-            Ingreso
-          </button>
-          <button
-            type="button"
-            className={`btn flex-1 btn-primary ${filter != 2 && "btn-soft"}`}
-            onClick={() => setFilter(2)}
-          >
-            Todos
-          </button>
-        </FadeIn>
+            <Link
+              href="/agregarMovimento"
+              className="btn btn-primary btn-circle btn-sm sm:btn-md sm:rounded-full sm:w-auto gap-1 sm:px-4 shrink-0"
+              aria-label="Añadir movimiento"
+            >
+              <Plus size={18} />
+              <span className="hidden sm:inline">Añadir Movimiento</span>
+            </Link>
+          </FadeIn>
 
-        <FadeIn delay={100} className="fieldset w-full">
-          <legend className="fieldset-legend">Ordenar por:</legend>
-          <select
-            value={sortBy}
-            className="select w-full"
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="monto">Monto</option>
-            <option value="fecha">Fecha</option>
-          </select>
-        </FadeIn>
+          {/* Resumen: ingresos / egresos del filtro actual */}
+          <FadeIn delay={50} className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="bg-base-100 rounded-lg shadow-md p-3 sm:p-4 flex items-center gap-3">
+              <div className="bg-success/10 p-2 sm:p-2.5 rounded-lg shrink-0">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/60">
+                  Ingresos
+                </p>
+                <p className="font-black text-success text-sm sm:text-xl truncate">
+                  ₵{formatNumber(totales.ingresos)}
+                </p>
+              </div>
+            </div>
 
-        <FadeIn delay={200} className="flex flex-col w-full gap-3">
-          <Link
-            href={"/movimientosIdeaFelipe"}
-            type="button"
-            className={`btn btn-secondary`}
-          >
-            Añadir Movimiento
-          </Link>
-        </FadeIn>
+            <div className="bg-base-100 rounded-lg shadow-md p-3 sm:p-4 flex items-center gap-3">
+              <div className="bg-error/10 p-2 sm:p-2.5 rounded-lg shrink-0">
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-error" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/60">
+                  Egresos
+                </p>
+                <p className="font-black text-error text-sm sm:text-xl truncate">
+                  ₵{formatNumber(totales.egresos)}
+                </p>
+              </div>
+            </div>
+          </FadeIn>
 
-        <FadeIn delay={300} className="w-full">
-          <ul className="list bg-base-100 rounded-box shadow-md max-h-dvh overflow-scroll">
-            {sortedMovimientos.map((item) =>
-              filter == 0 ? (
-                item.type == "egreso" && (
-                  <li className="list-row" key={item.id}>
-                    <div>
-                      <h1 className="font-bold text-md">{item.title}</h1>
-                      <div>₵{item.mount.toLocaleString("es-CR")}</div>
-                      <div
-                        className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
+          {/* Barra de herramientas: búsqueda + filtros */}
+          <FadeIn
+            delay={100}
+            className="bg-base-100 rounded-lg shadow-md p-3 sm:p-4 flex flex-col gap-3"
+          >
+            {/* Búsqueda */}
+            <label className="input input-bordered flex items-center gap-2 w-full">
+              <Search size={16} className="text-base-content/50 shrink-0" />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por nombre, descripción o categoría..."
+                className="grow"
+              />
+              {busqueda && (
+                <button
+                  type="button"
+                  onClick={() => setBusqueda("")}
+                  className="btn btn-ghost btn-xs btn-circle shrink-0"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </label>
+
+            {/* Segmentado por tipo */}
+            <div className="join w-full">
+              {TIPOS.map((tipo) => (
+                <button
+                  key={tipo.value}
+                  type="button"
+                  onClick={() => setTipoFiltro(tipo.value)}
+                  className={`btn btn-sm sm:btn-md join-item flex-1 ${
+                    tipoFiltro === tipo.value ? tipo.activeClass : ""
+                  }`}
+                >
+                  {tipo.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Orden */}
+            <div>
+              <span className="text-[10px] uppercase font-bold text-base-content/50 ml-1">
+                Ordenar por
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="select select-bordered select-sm w-full mt-1"
+              >
+                <option value="fecha-desc">Más recientes</option>
+                <option value="fecha-asc">Más antiguos</option>
+                <option value="monto-desc">Mayor monto</option>
+                <option value="monto-asc">Menor monto</option>
+              </select>
+            </div>
+          </FadeIn>
+
+          {/* Lista de movimientos */}
+          <FadeIn delay={150}>
+            <div className="bg-base-100 rounded-lg shadow-md overflow-hidden">
+              {filtrados.length > 0 ? (
+                <ul className="divide-y divide-base-200">
+                  {filtrados.map((item) => {
+                    const esIngreso = item.tipo === "ingreso";
+                    return (
+                      <li
+                        key={item.id}
+                        className="group flex items-center gap-3 p-3 sm:p-4 hover:bg-base-200/60 transition-colors"
                       >
-                        {item.type}
-                      </div>
-                      <div className="text-xs opacity-60">
-                        {item.created_at}
-                      </div>
-                      <span className="font-bold text-xs">
-                        Plantilla: {item.template || "Sin plantilla"}
-                      </span>
-                    </div>
-                    <p className="list-col-wrap text-xs">{item.description}</p>
-                    <button
-                      className="btn btn-square btn-ghost btn-sm"
-                      onClick={() => openEditModal(item)}
-                    >
-                      <Pencil size={14}></Pencil>
-                    </button>
-                    <button className="btn btn-square btn-ghost btn-sm text-error">
-                      <Trash size={14}></Trash>
-                    </button>
-                  </li>
-                )
-              ) : filter == 1 ? (
-                item.type == "ingreso" && (
-                  <li className="list-row" key={item.id}>
-                    <div>
-                      <h1 className="font-bold text-md">{item.title}</h1>
-                      <div>₵{item.mount.toLocaleString("es-CR")}</div>
-                      <div
-                        className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
-                      >
-                        {item.type}
-                      </div>
-                      <div className="text-xs opacity-60">
-                        {item.created_at}
-                      </div>
-                      <span className="font-bold text-xs">
-                        Plantilla: {item.template || "Sin plantilla"}
-                      </span>
-                    </div>
-                    <p className="list-col-wrap text-xs">{item.description}</p>
-                    <button
-                      className="btn btn-square btn-ghost btn-sm"
-                      onClick={() => openEditModal(item)}
-                    >
-                      <Pencil size={14}></Pencil>
-                    </button>
-                    <button className="btn btn-square btn-ghost btn-sm text-error">
-                      <Trash size={14}></Trash>
-                    </button>
-                  </li>
-                )
+                        {/* Icono por tipo */}
+                        <div
+                          className={`p-2 sm:p-2.5 rounded-full shrink-0 ${
+                            esIngreso ? "bg-success/10" : "bg-error/10"
+                          }`}
+                        >
+                          {esIngreso ? (
+                            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-error" />
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm sm:text-base truncate">
+                            {getTitulo(item)}
+                          </p>
+                          {esIngreso ? (
+                            /* Ingreso: fecha + descripción en una sola línea */
+                            <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                              <span className="text-[11px] text-base-content/60 shrink-0">
+                                {item.fechaPago}
+                              </span>
+                              <span className="hidden sm:inline text-[11px] text-base-content/50 truncate">
+                                {item.descripcion}
+                              </span>
+                            </div>
+                          ) : (
+                            /* Egreso: badge de tipo + meta truncada */
+                            <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                              <span
+                                className={`badge badge-xs shrink-0 ${
+                                  item.tipoEgreso === "egreso-administrativo"
+                                    ? "badge-warning"
+                                    : "badge-error"
+                                }`}
+                              >
+                                {item.tipoEgreso === "egreso-general"
+                                  ? "Egreso General"
+                                  : "Egreso Administrativo"}
+                              </span>
+                              <span className="text-[11px] text-base-content/60 truncate">
+                                {getMetaEgreso(item)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Monto */}
+                        <p
+                          className={`font-black text-sm sm:text-base shrink-0 ${
+                            esIngreso ? "text-success" : "text-error"
+                          }`}
+                        >
+                          {esIngreso ? "+" : "-"}₵{formatNumber(item.monto)}
+                        </p>
+
+                        {/* Acciones (hover en escritorio) */}
+                        <div className="flex gap-0.5 shrink-0 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-xs sm:btn-sm btn-circle"
+                            onClick={() => openEditModal(item)}
+                            aria-label={`Editar ${getTitulo(item)}`}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-xs sm:btn-sm btn-circle text-error"
+                            onClick={() => setDeletingItem(item)}
+                            aria-label={`Eliminar ${getTitulo(item)}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
               ) : (
-                <li className="list-row" key={item.id}>
-                  <div>
-                    <h1 className="font-bold text-md">{item.title}</h1>
-                    <div>₵{item.mount.toLocaleString("es-CR")}</div>
-                    <div
-                      className={`text-xs uppercase font-semibold opacity-60 ${item.type == "ingreso" ? "text-success" : "text-error"} `}
-                    >
-                      {item.type}
-                    </div>
-                    <div className="text-xs opacity-60">{item.created_at}</div>
-                    <span className="font-bold text-xs">
-                      Plantilla: {item.template || "Sin plantilla"}
-                    </span>
+                /* Estado vacío */
+                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                  <div className="bg-base-200 p-4 rounded-full mb-3">
+                    <Inbox className="w-8 h-8 text-base-content/40" />
                   </div>
-                  <p className="list-col-wrap text-xs">{item.description}</p>
+                  <p className="font-bold">Sin resultados</p>
+                  <p className="text-sm text-base-content/60 mt-1">
+                    No hay movimientos que coincidan con los filtros.
+                  </p>
                   <button
-                    className="btn btn-square btn-ghost btn-sm"
-                    onClick={() => openEditModal(item)}
+                    type="button"
+                    onClick={limpiarFiltros}
+                    className="btn btn-primary btn-sm rounded-full mt-4"
                   >
-                    <Pencil size={14}></Pencil>
+                    Limpiar filtros
                   </button>
-                  <button className="btn btn-square btn-ghost btn-sm text-error">
-                    <Trash size={14}></Trash>
-                  </button>
-                </li>
-              ),
-            )}
-          </ul>
-        </FadeIn>
+                </div>
+              )}
+            </div>
+          </FadeIn>
+        </div>
       </main>
 
-      {/* Modal de Edición - Responsive para iPhone SE */}
-      {isModalOpen && editingItem && (
+      {/* Modal de Edición */}
+      {editingItem && (
         <div className="modal modal-open">
           <div className="modal-box w-11/12 max-w-md p-4 max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-bold text-base">Editar Movimiento</h3>
               <button
                 className="btn btn-xs btn-circle btn-ghost"
-                onClick={closeModal}
+                onClick={closeEditModal}
+                aria-label="Cerrar"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
+              {/* Tipo */}
               <fieldset className="fieldset w-full">
-                <legend className="fieldset-legend text-xs">Título</legend>
-                <input
-                  type="text"
-                  className="input input-sm w-full"
-                  value={editingItem.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
-                />
+                <legend className="fieldset-legend text-xs">Tipo</legend>
+                <select
+                  className="select select-sm w-full"
+                  value={editingItem.tipo}
+                  onChange={(e) => handleTipoChange(e.target.value)}
+                >
+                  <option value="ingreso">Ingreso de proyecto</option>
+                  <option value="egreso">Egreso de proyecto</option>
+                </select>
               </fieldset>
 
+              {/* Campos de INGRESO */}
+              {editingItem.tipo === "ingreso" && (
+                <>
+                  <fieldset className="fieldset w-full">
+                    <legend className="fieldset-legend text-xs">
+                      Nombre del Ingreso
+                    </legend>
+                    <input
+                      type="text"
+                      className="input input-sm w-full"
+                      value={editingItem.nombreIngreso || ""}
+                      onChange={(e) =>
+                        handleInputChange("nombreIngreso", e.target.value)
+                      }
+                    />
+                  </fieldset>
+
+                  <fieldset className="fieldset w-full">
+                    <legend className="fieldset-legend text-xs">
+                      Fecha de Pago
+                    </legend>
+                    <input
+                      type="text"
+                      className="input input-sm w-full"
+                      value={editingItem.fechaPago || ""}
+                      placeholder="dd/mm/aaaa"
+                      onChange={(e) =>
+                        handleInputChange("fechaPago", e.target.value)
+                      }
+                    />
+                  </fieldset>
+                </>
+              )}
+
+              {/* Campos de EGRESO */}
+              {editingItem.tipo === "egreso" && (
+                <>
+                  <fieldset className="fieldset w-full">
+                    <legend className="fieldset-legend text-xs">
+                      Tipo de Egreso
+                    </legend>
+                    <select
+                      className="select select-sm w-full"
+                      value={editingItem.tipoEgreso || "egreso-general"}
+                      onChange={(e) =>
+                        handleInputChange("tipoEgreso", e.target.value)
+                      }
+                    >
+                      <option value="egreso-general">Egreso General</option>
+                      <option value="egreso-administrativo">
+                        Egreso Administrativo
+                      </option>
+                    </select>
+                  </fieldset>
+
+                  {editingItem.tipoEgreso === "egreso-administrativo" ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <fieldset className="fieldset w-full">
+                        <legend className="fieldset-legend text-xs">Mes</legend>
+                        <select
+                          className="select select-sm w-full"
+                          value={editingItem.mes || ""}
+                          onChange={(e) => handleInputChange("mes", e.target.value)}
+                        >
+                          <option value="">Seleccionar...</option>
+                          {MESES.map((mes) => (
+                            <option key={mes} value={mes}>
+                              {mes}
+                            </option>
+                          ))}
+                        </select>
+                      </fieldset>
+                      <fieldset className="fieldset w-full">
+                        <legend className="fieldset-legend text-xs">Año</legend>
+                        <select
+                          className="select select-sm w-full"
+                          value={editingItem.ano || ""}
+                          onChange={(e) => handleInputChange("ano", e.target.value)}
+                        >
+                          <option value="">Seleccionar...</option>
+                          {ANOS.map((ano) => (
+                            <option key={ano} value={ano}>
+                              {ano}
+                            </option>
+                          ))}
+                        </select>
+                      </fieldset>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <fieldset className="fieldset w-full">
+                        <legend className="fieldset-legend text-xs">
+                          Categoría
+                        </legend>
+                        <select
+                          className="select select-sm w-full"
+                          value={editingItem.categoria || ""}
+                          onChange={(e) =>
+                            handleInputChange("categoria", e.target.value)
+                          }
+                        >
+                          <option value="">Seleccionar...</option>
+                          {CATEGORIAS.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </fieldset>
+                      <fieldset className="fieldset w-full">
+                        <legend className="fieldset-legend text-xs">
+                          Orden de Compra
+                        </legend>
+                        <input
+                          type="text"
+                          className="input input-sm w-full"
+                          value={editingItem.ordenCompra || ""}
+                          placeholder="Opcional"
+                          onChange={(e) =>
+                            handleInputChange("ordenCompra", e.target.value)
+                          }
+                        />
+                      </fieldset>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Descripción + Monto (todos) */}
               <fieldset className="fieldset w-full">
                 <legend className="fieldset-legend text-xs">Descripción</legend>
                 <input
                   type="text"
                   className="input input-sm w-full"
-                  value={editingItem.description}
+                  value={editingItem.descripcion}
                   onChange={(e) =>
-                    handleInputChange("description", e.target.value)
+                    handleInputChange("descripcion", e.target.value)
                   }
                 />
               </fieldset>
 
-              <div className="grid grid-cols-2 gap-2">
-                <fieldset className="fieldset w-full">
-                  <legend className="fieldset-legend text-xs">Monto (₵)</legend>
-                  <input
-                    type="number"
-                    className="input input-sm w-full"
-                    value={editingItem.mount}
-                    onChange={(e) =>
-                      handleInputChange("mount", Number(e.target.value))
-                    }
-                  />
-                </fieldset>
-
-                <fieldset className="fieldset w-full">
-                  <legend className="fieldset-legend text-xs">Tipo</legend>
-                  <select
-                    className="select select-sm w-full"
-                    value={editingItem.type}
-                    onChange={(e) => handleInputChange("type", e.target.value)}
-                  >
-                    <option value="ingreso">Ingreso</option>
-                    <option value="egreso">Egreso</option>
-                  </select>
-                </fieldset>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <fieldset className="fieldset w-full">
-                  <legend className="fieldset-legend text-xs">Plantilla</legend>
-                  <input
-                    type="text"
-                    className="input input-sm w-full"
-                    value={editingItem.template || ""}
-                    placeholder="Opcional"
-                    onChange={(e) =>
-                      handleInputChange("template", e.target.value || null)
-                    }
-                  />
-                </fieldset>
-
-                <fieldset className="fieldset w-full">
-                  <legend className="fieldset-legend text-xs">Fecha</legend>
-                  <input
-                    type="text"
-                    className="input input-sm w-full"
-                    value={editingItem.created_at}
-                    onChange={(e) =>
-                      handleInputChange("created_at", e.target.value)
-                    }
-                  />
-                </fieldset>
-              </div>
+              <fieldset className="fieldset w-full">
+                <legend className="fieldset-legend text-xs">Monto (₵)</legend>
+                <input
+                  type="number"
+                  className="input input-sm w-full"
+                  value={editingItem.monto}
+                  onChange={(e) =>
+                    handleInputChange("monto", Number(e.target.value))
+                  }
+                />
+              </fieldset>
             </div>
 
             <div className="modal-action mt-3">
-              <button className="btn btn-sm btn-ghost" onClick={closeModal}>
+              <button className="btn btn-sm btn-ghost" onClick={closeEditModal}>
                 Cancelar
               </button>
               <button className="btn btn-sm btn-primary" onClick={handleSave}>
@@ -598,116 +812,45 @@ export default function AddMovement() {
           </div>
           <div
             className="modal-backdrop bg-black/50"
-            onClick={closeModal}
+            onClick={closeEditModal}
+          ></div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {deletingItem && (
+        <div className="modal modal-open">
+          <div className="modal-box w-11/12 max-w-sm p-5">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="bg-error/10 p-3 rounded-full">
+                <Trash2 className="w-6 h-6 text-error" />
+              </div>
+              <h3 className="font-bold text-lg">¿Eliminar movimiento?</h3>
+              <p className="text-sm text-base-content/60">
+                <span className="font-semibold text-base-content">
+                  {getTitulo(deletingItem)}
+                </span>{" "}
+                se eliminará permanentemente.
+              </p>
+            </div>
+            <div className="modal-action flex gap-2 mt-2">
+              <button
+                className="btn btn-ghost flex-1"
+                onClick={() => setDeletingItem(null)}
+              >
+                Cancelar
+              </button>
+              <button className="btn btn-error flex-1" onClick={handleDelete}>
+                Eliminar
+              </button>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={() => setDeletingItem(null)}
           ></div>
         </div>
       )}
     </>
-  );
-}
-
-export function OutForm() {
-  return (
-    <form
-      action=""
-      method="get"
-      className="w-full flex flex-col gap-3 **:w-full"
-    >
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Detalle</legend>
-        <input type="text" className="input" placeholder="Pago Mutual" />
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Descripción</legend>
-        <input
-          type="text"
-          className="input"
-          placeholder="Pago Mutual para el proyecto..."
-        />
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Proyecto asignado</legend>
-        <select defaultValue="Proyecto Maria" className="select">
-          <option disabled={true}>Proyecto Maria</option>
-          <option>Proyecto Juan</option>
-          <option>Proyecto Pablo</option>
-          <option>Proyecto Daniel</option>
-        </select>
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Fecha de Ingreso</legend>
-        <input type="date" className="input" />
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Plantilla (Opcional)</legend>
-        <select defaultValue="Seleccionar Plantilla" className="select">
-          <option disabled={true}>Seleccionar Plantilla</option>
-          <option>Plantilla 1</option>
-          <option>Plantilla 2</option>
-          <option>Plantilla 3</option>
-        </select>
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Monto</legend>
-        <input type="text" className="input" placeholder="$1.200" />
-      </fieldset>
-
-      <button type="button" className="btn btn-primary w-full">
-        Guardar
-      </button>
-    </form>
-  );
-}
-
-export function InForm() {
-  return (
-    <form
-      action=""
-      method="get"
-      className="w-full flex flex-col gap-3 **:w-full"
-    >
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Detalle</legend>
-        <input type="text" className="input" placeholder="Pago Mutual" />
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Descripción</legend>
-        <input
-          type="text"
-          className="input"
-          placeholder="Pago Mutual para el proyecto..."
-        />
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Proyecto asignado</legend>
-        <select defaultValue="Proyecto Maria" className="select">
-          <option disabled={true}>Proyecto Maria</option>
-          <option>Proyecto Juan</option>
-          <option>Proyecto Pablo</option>
-          <option>Proyecto Daniel</option>
-        </select>
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Fecha de Ingreso</legend>
-        <input type="date" className="input" />
-      </fieldset>
-
-      <fieldset className="fieldset">
-        <legend className="fieldset-legend">Monto</legend>
-        <input type="text" className="input" placeholder="$1.200" />
-      </fieldset>
-
-      <button type="button" className="btn btn-primary w-full">
-        Guardar
-      </button>
-    </form>
   );
 }

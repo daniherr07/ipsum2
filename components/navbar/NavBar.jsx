@@ -1,211 +1,241 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  Search,
-  Pencil,
-  Plus,
-  CircleUserRound,
-  Bell,
-  ChartColumn,
-  LayoutDashboard,
-  NotebookText,
-  ChartPie,
   Home,
+  ChartColumn,
+  ChartPie,
+  Plus,
+  ChevronDown,
+  Settings,
+  LogOut,
+  Menu,
+  ArrowRightLeft,
+  FolderPlus,
 } from "lucide-react";
-import { modifyData } from "./const";
-import Form from "next/form";
-import { newProjectAction } from "./newProjectAction";
-import CreateProjectButton from "./CreateProjectButton";
+
+/* =========================
+   Enlaces de navegación
+========================= */
+const NAV_LINKS = [
+  { href: "/", label: "Inicio", icon: Home },
+  { href: "/movs", label: "Movimientos", icon: ChartColumn },
+  { href: "/stats", label: "Estadísticas", icon: ChartPie },
+];
 
 export default function NavBar() {
+  const pathname = usePathname();
+
+  const isActive = (href) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   return (
-    <div className="navbar bg-base-300 shadow-sm">
-      {/** Menu Dropdown Mobiles */}
-      <div className="navbar-start z-100">
-        <div className="dropdown">
-          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              {" "}
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h8m-8 6h16"
-              />{" "}
-            </svg>
+    <header className="navbar sticky top-0 z-50 bg-base-100/80 backdrop-blur-md border-b border-base-200 shadow-sm px-2 sm:px-4">
+      {/** Izquierda: menú móvil + home */}
+      <div className="navbar-start gap-1">
+        {/* Menú hamburguesa (móvil) */}
+        <div className="dropdown lg:hidden">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost btn-circle btn-sm"
+            aria-label="Abrir menú"
+          >
+            <Menu size={20} />
           </div>
           <ul
-            tabIndex="-1"
-            className="
-            menu menu-sm dropdown-content bg-base-300 rounded-box z-1 mt-3 w-60 p-2 gap-2 shadow 
-            **:text-[16px]
-            "
+            tabIndex={-1}
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 gap-1 shadow-lg border border-base-200"
           >
-            <li className="bg-base-100 flex flex-row items-center justify-start">
-              <CircleUserRound size={40} />
-              <p>Felipe</p>
+            <li className="menu-title text-xs uppercase tracking-wide">
+              Navegación
+            </li>
+            {NAV_LINKS.map((link) => {
+              const Icon = link.icon;
+              const active = isActive(link.href);
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`flex items-center gap-3 rounded-lg ${
+                      active
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-base-content/70"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+
+            <div className="divider my-1"></div>
+
+            <li className="menu-title text-xs uppercase tracking-wide">
+              Cuenta
             </li>
             <li>
               <Link
                 href="/settings"
-                className="flex flex-row items-center justify-start"
+                className="flex items-center gap-3 rounded-lg text-base-content/70"
               >
-                <Pencil size={20} />
-                <p>Modificar</p>
-              </Link>
-            </li>
-
-            <div className="divider m-0!"></div>
-
-            <li>
-              <Link
-                href="/dashboard"
-                className="flex flex-row items-center justify-start"
-              >
-                <LayoutDashboard size={20} />
-                <p>Dashboard</p>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/movs"
-                className="flex flex-row items-center justify-start"
-              >
-                <ChartColumn size={20} />
-                <p>Movimientos</p>
+                <Settings size={18} />
+                Configuración
               </Link>
             </li>
             <li>
               <Link
-                href="/stats"
-                className="flex flex-row items-center justify-start"
+                href="#"
+                className="flex items-center gap-3 rounded-lg text-error"
               >
-                <ChartPie size={20} />
-                <p>Estadísticas</p>
-              </Link>
-            </li>
-
-            <div className="divider m-0!"></div>
-
-            <li>
-              <Link
-                href="/newproject"
-                className="flex flex-row items-center justify-start"
-              >
-                <Plus size={20} />
-                <p>Agregar Proyecto</p>
-              </Link>
-            </li>
-            <li>
-              <Link href={"#"} className="text-error">
+                <LogOut size={18} />
                 Cerrar Sesión
               </Link>
             </li>
           </ul>
         </div>
 
-        <div className="gap-2 items-center justify-center bg-base-100 p-2 rounded shadow-sm hidden lg:flex">
-          <CircleUserRound size={30} />
-          <p>Felipe</p>
-        </div>
-
-        <Link href="/" className="btn btn-ghost btn-circle">
+        {/* Botón Home */}
+        <Link
+          href="/"
+          className="btn btn-ghost btn-circle btn-sm sm:btn-md"
+          aria-label="Ir al inicio"
+        >
           <Home size={20} />
         </Link>
       </div>
 
-      {/** Menu Centro Escritorio */}
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1 gap-2">
-          <li>
-            <Link
-              href="/settings"
-              className="flex flex-row items-center justify-start"
-            >
-              <Pencil size={20} />
-              <p>Modificar</p>
-            </Link>
-          </li>
-
-          <div className="divider divider-horizontal m-0!"></div>
-
-          <li>
-            <Link
-              href="/dashboard"
-              className="flex flex-row items-center justify-start"
-            >
-              <LayoutDashboard size={20} />
-              <p>Dashboard</p>
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="/movs"
-              className="flex flex-row items-center justify-start"
-            >
-              <ChartColumn size={20} />
-              <p>Movimientos</p>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/stats"
-              className="flex flex-row items-center justify-start"
-            >
-              <ChartPie size={20} />
-              <p>Estadísticas</p>
-            </Link>
-          </li>
-
-          <div className="divider divider-horizontal m-0!"></div>
-
-          <li>
-            <Link href={"#"} className="text-error">
-              Cerrar Sesión
-            </Link>
-          </li>
+      {/** Centro: navegación tipo pill (escritorio) */}
+      <nav className="navbar-center hidden lg:flex">
+        <ul className="flex items-center gap-1 bg-base-200/60 rounded-full p-1">
+          {NAV_LINKS.map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.href);
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${
+                    active
+                      ? "bg-primary text-white font-semibold shadow-sm"
+                      : "text-base-content/70 hover:text-base-content hover:bg-base-100"
+                  }`}
+                >
+                  <Icon size={16} />
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
-      </div>
+      </nav>
 
-      {/** Botón a la derecha */}
-      <div className="navbar-end flex gap-3 w-full">
-        <Bell size={30} className="text-primary" />
-
-        {/* Dropdown con opciones de agregar */}
+      {/** Derecha: acciones */}
+      <div className="navbar-end gap-2">
+        {/* CTA Agregar */}
         <div className="dropdown dropdown-end">
-          <div tabIndex={0} role="button" className="btn btn-primary">
-            <Plus size={20} />
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-primary btn-circle btn-sm sm:btn-md sm:rounded-full sm:w-auto gap-1 sm:px-4"
+          >
+            <Plus size={18} />
             <span className="hidden sm:inline">Agregar</span>
+            <ChevronDown size={14} className="hidden sm:inline opacity-70" />
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content menu bg-base-300 rounded-box z-10 w-52 p-2 shadow-lg mt-2"
+            className="dropdown-content menu bg-base-100 rounded-box z-50 w-56 p-2 shadow-lg border border-base-200 mt-2"
           >
+            <li className="menu-title text-xs uppercase tracking-wide">
+              Crear nuevo
+            </li>
             <li>
               <Link
-                href="/movimientosIdeaFelipe"
-                className="flex items-center gap-2"
+                href="/agregarMovimento"
+                className="flex items-center gap-3 rounded-lg"
               >
-                <Plus size={16} />
-                Agregar Movimiento
+                <div className="bg-primary/10 p-1.5 rounded-md">
+                  <ArrowRightLeft size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Movimiento</p>
+                  <p className="text-xs text-base-content/50">
+                    Ingreso o egreso
+                  </p>
+                </div>
               </Link>
             </li>
             <li>
-              <Link href="/newproject" className="flex items-center gap-2">
-                <Plus size={16} />
-                Agregar Proyecto
+              <Link
+                href="/agregarProyecto"
+                className="flex items-center gap-3 rounded-lg"
+              >
+                <div className="bg-info/10 p-1.5 rounded-md">
+                  <FolderPlus size={16} className="text-info" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Proyecto</p>
+                  <p className="text-xs text-base-content/50">
+                    Nuevo proyecto
+                  </p>
+                </div>
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Menú de usuario */}
+        <div className="dropdown dropdown-end">
+          <div
+            tabIndex={0}
+            role="button"
+            aria-label="Menú de usuario"
+            className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center cursor-pointer select-none hover:bg-primary/20 transition-colors"
+          >
+            <span className="text-sm font-bold leading-none">F</span>
+          </div>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu bg-base-100 rounded-box z-50 w-64 p-2 shadow-lg border border-base-200 mt-2"
+          >
+            <li className="pointer-events-none mb-1">
+              <div className="flex items-center gap-3 px-2 py-2">
+                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shrink-0">
+                  <span className="text-base font-bold leading-none">F</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-sm truncate">Felipe</p>
+                  <p className="text-xs text-base-content/50 truncate">
+                    Administrador
+                  </p>
+                </div>
+              </div>
+            </li>
+            <div className="divider my-1"></div>
+            <li>
+              <Link
+                href="/settings"
+                className="flex items-center gap-3 rounded-lg"
+              >
+                <Settings size={16} />
+                Configuración
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="#"
+                className="flex items-center gap-3 rounded-lg text-error"
+              >
+                <LogOut size={16} />
+                Cerrar Sesión
               </Link>
             </li>
           </ul>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
