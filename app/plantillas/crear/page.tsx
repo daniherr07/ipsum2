@@ -71,7 +71,7 @@ export default function CrearPlantillaPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
+      <div className="min-h-screen bg-[var(--base-200)] text-[var(--foreground)]">
 
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
@@ -221,7 +221,7 @@ export default function CrearPlantillaPage() {
               gap-2
               text-sm
               font-semibold
-              hover:bg-gradient-to-r hover:from-[var(--primary)] hover:to-[#0470c8]
+              hover:bg-[var(--primary)]
               hover:text-white
               transition duration-200
             "

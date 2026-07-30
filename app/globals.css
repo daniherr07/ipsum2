@@ -1,5 +1,11 @@
 @import "tailwindcss";
-@plugin "daisyui";
+
+/* Sin temas built-in: solo usamos los dos temas custom de abajo.
+   Esto evita que la paleta default de daisyUI (rosa/morado/amarillo)
+   compita en la cascada y se filtre en la página. */
+@plugin "daisyui" {
+  themes: false;
+}
 
 @plugin "daisyui/theme" {
   name: "dark";
@@ -22,6 +28,12 @@
 
   --color-secondary: #8e0396;
   --color-secondary-content: #f89bfd;
+
+  /* Base explícita (no depender del tema dark por defecto de daisyUI) */
+  --color-base-100: #1d232a;
+  --color-base-200: #191e24;
+  --color-base-300: #15191e;
+  --color-base-content: #f2f8ff;
 
   /* Variables legacy (las usa @theme y páginas con var(--...)) */
   --base-100: #1d232a;
@@ -61,20 +73,20 @@
   default: true;
   color-scheme: light;
 
-  /* Base: blancos y grises fríos con matiz azulado (coherente con la marca) */
+  /* Base: tarjetas blancas sobre fondo grisito (contraste suave, estilo dashboard) */
   --color-base-100: #ffffff;
-  --color-base-200: #f2f5f9;
-  --color-base-300: #e3e9f2;
-  --color-base-content: #1f2a37;
+  --color-base-200: #edf0f5;
+  --color-base-300: #dde4ee;
+  --color-base-content: #16212e;
 
   --base-100: #ffffff;
-  --base-200: #f2f5f9;
-  --base-300: #e3e9f2;
+  --base-200: #edf0f5;
+  --base-300: #dde4ee;
 
   /* Neutral */
-  --color-neutral: #1f2a37;
+  --color-neutral: #16212e;
   --color-neutral-content: #f8fafc;
-  --neutral: #1f2a37;
+  --neutral: #16212e;
   --neutral-content: #f8fafc;
 
   /* Primary (marca) */
@@ -112,39 +124,48 @@
   --secondary-content: #f89bfd;
 
   /* Accent */
-  --color-accent: #0d9488;
+  --color-accent: #0f766e;
   --color-accent-content: #ffffff;
-  --accent: #0d9488;
+  --accent: #0f766e;
   --accent-content: #ffffff;
 
   /* Info */
-  --color-info: #0284c7;
+  --color-info: #0369a1;
   --color-info-content: #ffffff;
-  --info: #0284c7;
+  --info: #0369a1;
   --info-content: #ffffff;
 
   /* Success */
-  --color-success: #16a34a;
+  --color-success: #15803d;
   --color-success-content: #ffffff;
-  --success: #16a34a;
+  --success: #15803d;
   --success-content: #ffffff;
 
   /* Warning */
-  --color-warning: #b45309;
+  --color-warning: #92400e;
   --color-warning-content: #ffffff;
-  --warning: #b45309;
+  --warning: #92400e;
   --warning-content: #ffffff;
 
   /* Error */
-  --color-error: #dc2626;
+  --color-error: #b91c1c;
   --color-error-content: #ffffff;
-  --error: #dc2626;
+  --error: #b91c1c;
   --error-content: #ffffff;
 }
+
+/* Variante dark: basada en data-theme (el layout siempre lo fija:
+   guardado por el usuario o resuelto desde el sistema) */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /*Configuración para que tailwind lo detecte*/
 
 @theme {
+  /* Sombras suaves tipo dashboard (marcan las tarjetas sin gradientes) */
+  --shadow-sm: 0 1px 2px 0 rgb(16 24 40 / 0.06);
+  --shadow-md: 0 2px 6px -1px rgb(16 24 40 / 0.08), 0 1px 3px -1px rgb(16 24 40 / 0.06);
+  --shadow-lg: 0 6px 16px -4px rgb(16 24 40 / 0.12), 0 2px 6px -2px rgb(16 24 40 / 0.06);
+
   /* Base colors */
   --color-base-100: var(--base-100);
   --color-base-200: var(--base-200);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,6 +14,8 @@ import {
   Menu,
   ArrowRightLeft,
   FolderPlus,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 /* =========================
@@ -26,6 +29,31 @@ const NAV_LINKS = [
 
 export default function NavBar() {
   const pathname = usePathname();
+
+  /* =========================
+     Tema: por defecto sigue al sistema,
+     el usuario puede forzarlo con el toggle
+  ========================= */
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const t = localStorage.getItem("theme") || (mq.matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+      setTheme(t);
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+    setTheme(next);
+  };
 
   const isActive = (href) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -119,7 +147,7 @@ export default function NavBar() {
                   href={link.href}
                   className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors ${
                     active
-                      ? "bg-primary text-white font-semibold shadow-sm"
+                      ? "bg-primary/10 text-primary font-semibold shadow-sm dark:bg-primary dark:text-white"
                       : "text-base-content/70 hover:text-base-content hover:bg-base-100"
                   }`}
                 >
@@ -134,6 +162,18 @@ export default function NavBar() {
 
       {/** Derecha: acciones */}
       <div className="navbar-end gap-2">
+        {/* Toggle de tema (por defecto: sistema) */}
+        <button
+          onClick={toggleTheme}
+          className="btn btn-ghost btn-circle btn-sm sm:btn-md"
+          aria-label={
+            theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro"
+          }
+          title={theme === "dark" ? "Tema claro" : "Tema oscuro"}
+        >
+          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
         {/* CTA Agregar */}
         <div className="dropdown dropdown-end">
           <div
