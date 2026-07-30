@@ -227,6 +227,7 @@ function ProyectosDelMesCard({ proyectos }) {
                 <div className="text-sm sm:text-base">{proyecto.nombre}</div>
                 <div className="text-xs uppercase font-semibold opacity-70">
                   {proyecto.tipo ?? proyecto.bono}
+                </div>
               </div>
               <Link
                 href="/proyecto"
