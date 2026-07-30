@@ -18,12 +18,14 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import Link from "next/link";
+import Swal from "sweetalert2";
+import { obtenerDashboard } from "@/lib/api";
 
 /* =========================
    Format number consistently (avoid locale mismatch)
 ========================= */
 function formatNumber(num) {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return Math.round(num).toLocaleString("en-US");
 }
 
 /* =========================
@@ -69,37 +71,6 @@ const MESES = [
   "Diciembre",
 ];
 
-/* =========================
-   Data mock por mes/año
-   (luego puedes traerla de BD)
-========================= */
-const PROYECTOS_A = [
-  { nombre: "Clodomiro Picado", presupuesto: 50000000 },
-  { nombre: "Monseñor Sanabria", presupuesto: 75000000 },
-  { nombre: "Joaquín García", presupuesto: 60000000 },
-];
-
-const PROYECTOS_B = [
-  ...PROYECTOS_A,
-  { nombre: "Residencial Vista", presupuesto: 85000000 },
-];
-
-const DATA = {
-  "2025-0": { ingresos: 16000000, egresos: 20500000, gastosAdmin: 16500000, proyectosAdmin: PROYECTOS_A },
-  "2025-1": { ingresos: 25000000, egresos: 22500000, gastosAdmin: 18900000, proyectosAdmin: PROYECTOS_A },
-  "2025-2": { ingresos: 39000000, egresos: 26000000, gastosAdmin: 14800000, proyectosAdmin: PROYECTOS_A },
-  "2025-3": { ingresos: 31000000, egresos: 30500000, gastosAdmin: 22100000, proyectosAdmin: PROYECTOS_A },
-  "2025-4": { ingresos: 45500000, egresos: 35000000, gastosAdmin: 24300000, proyectosAdmin: PROYECTOS_B },
-  "2025-5": { ingresos: 20000000, egresos: 32500000, gastosAdmin: 29700000, proyectosAdmin: PROYECTOS_B },
-  "2025-6": { ingresos: 52500000, egresos: 36000000, gastosAdmin: 21600000, proyectosAdmin: PROYECTOS_B },
-  "2025-7": { ingresos: 44000000, egresos: 41500000, gastosAdmin: 18200000, proyectosAdmin: PROYECTOS_A },
-  "2025-8": { ingresos: 22500000, egresos: 45000000, gastosAdmin: 20900000, proyectosAdmin: PROYECTOS_A },
-  "2025-9": { ingresos: 39000000, egresos: 21000000, gastosAdmin: 15700000, proyectosAdmin: PROYECTOS_A },
-  "2025-10": { ingresos: 60000000, egresos: 32500000, gastosAdmin: 26400000, proyectosAdmin: PROYECTOS_B },
-  "2025-11": { ingresos: 15000000, egresos: 27500000, gastosAdmin: 31100000, proyectosAdmin: PROYECTOS_B },
-  "2026-5": { ingresos: 49000000, egresos: 30500000, gastosAdmin: 17800000, proyectosAdmin: PROYECTOS_A },
-  "2026-6": { ingresos: 36000000, egresos: 42300000, gastosAdmin: 19600000, proyectosAdmin: PROYECTOS_A },
-};
 /* =========================
    Accesos rápidos (menú)
 ========================= */
@@ -149,13 +120,13 @@ const ACCESOS_RAPIDOS = [
 /* =========================
    Gastos Administrativos component
 ========================= */
-function GastosAdministrativosCard({ gastosAdmin, proyectosAdmin }) {
-  /* Peso del proyecto = presupuesto / presupuesto total del grupo.
-     Asignado = gastosAdmin * peso. Alerta si supera el 10% del presupuesto. */
-  const presupuestoTotal = proyectosAdmin.reduce((s, p) => s + p.presupuesto, 0);
-  const ratioPeriodo =
-    presupuestoTotal > 0 ? (gastosAdmin / presupuestoTotal) * 100 : 0;
-  const superaLimite = ratioPeriodo > 10;
+function GastosAdministrativosCard({
+  gastosAdmin,
+  pctGastosAdmin,
+  superaLimite,
+  distribucion,
+}) {
+  const ratioPeriodo = pctGastosAdmin;
 
   return (
     <div className="w-full h-full bg-base-100 flex flex-col gap-5 rounded-lg shadow-md p-5 sm:p-7">
@@ -191,40 +162,31 @@ function GastosAdministrativosCard({ gastosAdmin, proyectosAdmin }) {
 
       {/* Distribución por proyecto */}
       <div className="space-y-4">
-        {proyectosAdmin.length > 0 ? (
-          proyectosAdmin.map((proyecto, idx) => {
-            const peso =
-              presupuestoTotal > 0
-                ? (proyecto.presupuesto / presupuestoTotal) * 100
-                : 0;
-            const asignado = Math.round(
-              (gastosAdmin * proyecto.presupuesto) / (presupuestoTotal || 1),
-            );
-            return (
-              <div key={idx} className="space-y-1">
-                <div className="flex justify-between items-baseline gap-2">
-                  <span className="text-sm font-semibold text-base-content/80 truncate">
-                    {proyecto.nombre}
-                  </span>
-                  <span className="text-sm font-bold text-warning shrink-0">
-                    ₵{formatNumber(asignado)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <progress
-                    className={`progress w-full ${
-                      superaLimite ? "progress-error" : "progress-warning"
-                    }`}
-                    value={peso}
-                    max="100"
-                  ></progress>
-                  <span className="text-xs font-semibold text-base-content/60 w-11 text-right shrink-0">
-                    {peso.toFixed(1)}%
-                  </span>
-                </div>
+        {distribucion.length > 0 ? (
+          distribucion.map((item) => (
+            <div key={item.proyectoId} className="space-y-1">
+              <div className="flex justify-between items-baseline gap-2">
+                <span className="text-sm font-semibold text-base-content/80 truncate">
+                  {item.nombre}
+                </span>
+                <span className="text-sm font-bold text-warning shrink-0">
+                  ₵{formatNumber(Math.round(item.monto))}
+                </span>
               </div>
-            );
-          })
+              <div className="flex items-center gap-2">
+                <progress
+                  className={`progress w-full ${
+                    superaLimite ? "progress-error" : "progress-warning"
+                  }`}
+                  value={item.porcentaje}
+                  max="100"
+                ></progress>
+                <span className="text-xs font-semibold text-base-content/60 w-11 text-right shrink-0">
+                  {item.porcentaje.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          ))
         ) : (
           <p className="text-center text-sm text-base-content/50">
             Sin datos para este mes
@@ -238,13 +200,7 @@ function GastosAdministrativosCard({ gastosAdmin, proyectosAdmin }) {
 /* =========================
    Proyectos del Mes component
 ========================= */
-function ProyectosDelMesCard() {
-  const proyectos = [
-    { nombre: "Clodomiro Picado", tipo: "ART. 59" },
-    { nombre: "Monseñor Sanabria", tipo: "CLP" },
-    { nombre: "Joaquín García", tipo: "ART. 59" },
-  ];
-
+function ProyectosDelMesCard({ proyectos }) {
   return (
     <div className="w-full h-full bg-base-100 flex flex-col gap-5 rounded-lg shadow-md p-5 sm:p-7">
       <div className="text-center">
@@ -253,33 +209,53 @@ function ProyectosDelMesCard() {
         </span>
       </div>
 
-      <ul className="list bg-base-200 rounded-box">
-        {proyectos.map((proyecto) => (
-          <li className="list-row" key={proyecto.nombre}>
-            <div className="list-col-grow">
-              <div className="text-sm sm:text-base">{proyecto.nombre}</div>
-              <div className="text-xs uppercase font-semibold opacity-60">
-                {proyecto.tipo}
+      {proyectos.length > 0 ? (
+        <ul className="list bg-base-200 rounded-box">
+          {proyectos.map((proyecto) => (
+            <li className="list-row" key={proyecto.id}>
+              <div className="list-col-grow">
+                <div className="text-sm sm:text-base">{proyecto.nombre}</div>
+                <div className="text-xs uppercase font-semibold opacity-60">
+                  {proyecto.bono}
+                </div>
               </div>
-            </div>
-            <Link
-              href="/proyecto"
-              className="btn btn-square btn-primary btn-sm sm:btn-md"
-              aria-label={`Ver ${proyecto.nombre}`}
-            >
-              <ExternalLink size={18} />
-            </Link>
-          </li>
-        ))}
-      </ul>
+              <Link
+                href="/proyecto"
+                className="btn btn-square btn-primary btn-sm sm:btn-md"
+                aria-label={`Ver ${proyecto.nombre}`}
+              >
+                <ExternalLink size={18} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-center text-sm text-base-content/50">
+          Sin proyectos asignados este mes
+        </p>
+      )}
     </div>
   );
 }
+
+const DATA_VACIA = {
+  ingresos: 0,
+  egresos: 0,
+  balance: 0,
+  pctGastado: 0,
+  gastosAdministrativos: 0,
+  pctGastosAdministrativos: 0,
+  superaLimiteAdministrativo: false,
+  distribucionGastosAdministrativos: [],
+  proyectosDelMes: [],
+};
 
 export default function Home() {
   const [mesIndex, setMesIndex] = useState(0);
   const [anio, setAnio] = useState(2025);
   const [isChanging, setIsChanging] = useState(false);
+  const [data, setData] = useState(DATA_VACIA);
+  const [listo, setListo] = useState(false);
 
   /* =========================
      Inicializar con el mes actual
@@ -289,25 +265,27 @@ export default function Home() {
     const now = new Date();
     setMesIndex(now.getMonth());
     setAnio(now.getFullYear());
+    setListo(true);
   }, []);
 
-  const key = `${anio}-${mesIndex}`;
-  const data = DATA[key] ?? {
-    ingresos: 0,
-    egresos: 0,
-    gastosAdmin: 0,
-    proyectosAdmin: [],
-  };
+  /* =========================
+     Cargar el dashboard real del backend cada vez que cambia mes/año
+  ========================= */
+  useEffect(() => {
+    if (!listo) return;
+    obtenerDashboard(MESES[mesIndex], String(anio))
+      .then(setData)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo cargar el resumen",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        });
+      });
+  }, [mesIndex, anio, listo]);
 
-  const balance = data.ingresos - data.egresos;
-
-  // Porcentaje de lo gastado respecto a lo ingresado
-  const pctGasto =
-    data.ingresos > 0
-      ? Math.round((data.egresos / data.ingresos) * 100)
-      : data.egresos > 0
-        ? 100
-        : 0;
+  const balance = data.balance;
+  const pctGasto = Math.round(data.pctGastado);
 
   /* =========================
      Trigger fade effect on month change
@@ -490,15 +468,17 @@ export default function Home() {
           <div style={fadeStyle} className="h-full">
             <FadeIn delay={200} className="h-full">
               <GastosAdministrativosCard
-                gastosAdmin={data.gastosAdmin}
-                proyectosAdmin={data.proyectosAdmin}
+                gastosAdmin={data.gastosAdministrativos}
+                pctGastosAdmin={data.pctGastosAdministrativos}
+                superaLimite={data.superaLimiteAdministrativo}
+                distribucion={data.distribucionGastosAdministrativos}
               />
             </FadeIn>
           </div>
 
           <div style={fadeStyle} className="h-full">
             <FadeIn delay={250} className="h-full">
-              <ProyectosDelMesCard />
+              <ProyectosDelMesCard proyectos={data.proyectosDelMes} />
             </FadeIn>
           </div>
         </div>

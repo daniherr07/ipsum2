@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import { crearProyecto } from "@/lib/api";
 
 /* =========================
    FadeIn animation component
@@ -127,10 +128,21 @@ export default function AgregarProyecto() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    if (validateForm()) {
+    try {
+      await crearProyecto({
+        nombre: formData.nombreProyecto,
+        presupuesto: Number(formData.presupuesto),
+        mesAsignacion: formData.mesAsignacion,
+        anioAsignacion: String(formData.anioAsignacion),
+        estado: formData.estado,
+        bono: formData.bono,
+        subtipoBono: formData.subtipoBonoI,
+      });
+
       Swal.fire({
         title: "¡Éxito!",
         html: `El proyecto "<strong>${formData.nombreProyecto}</strong>" ha sido creado exitosamente.`,
@@ -140,6 +152,13 @@ export default function AgregarProyecto() {
       }).then(() => {
         setFormData(initialFormData);
         setErrors({});
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: error.message,
+        icon: "error",
+        confirmButtonText: "Aceptar",
       });
     }
   };

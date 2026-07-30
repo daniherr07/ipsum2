@@ -13,6 +13,8 @@ import {
   Inbox,
 } from "lucide-react";
 import Link from "next/link";
+import Swal from "sweetalert2";
+import { listarMovimientos, actualizarMovimiento, eliminarMovimiento } from "@/lib/api";
 
 /* =========================
    Format number consistently (avoid locale mismatch)
@@ -65,190 +67,14 @@ const ANOS = [2024, 2025, 2026, 2027, 2028];
 
 const CATEGORIAS = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"];
 
-/* =========================
-   Data mock — alineada con /agregarMovimento:
-   - Ingreso: nombreIngreso, monto, fechaPago, descripcion
-   - Egreso General: categoria, ordenCompra, monto, descripcion
-   - Egreso Administrativo: mes, ano, monto, descripcion
-   (created_at es metadata del sistema, solo para ordenar)
-========================= */
-const initialData = [
-  // ── Ingresos ──
-  {
-    id: 1,
-    tipo: "ingreso",
-    nombreIngreso: "Desembolso inicial del bono",
-    monto: 20000000,
-    fechaPago: "15/01/2025",
-    descripcion: "Primer desembolso del bono Art.59",
-    created_at: "15/01/2025",
-  },
-  {
-    id: 2,
-    tipo: "ingreso",
-    nombreIngreso: "Aporte familiar",
-    monto: 3500000,
-    fechaPago: "28/02/2025",
-    descripcion: "Aporte para inicio de obra gris",
-    created_at: "28/02/2025",
-  },
-  {
-    id: 3,
-    tipo: "ingreso",
-    nombreIngreso: "Desembolso segundo tramo",
-    monto: 10000000,
-    fechaPago: "10/04/2025",
-    descripcion: "Segundo desembolso del bono Art.59",
-    created_at: "10/04/2025",
-  },
-  {
-    id: 4,
-    tipo: "ingreso",
-    nombreIngreso: "Reintegro de materiales",
-    monto: 850000,
-    fechaPago: "22/05/2025",
-    descripcion: "Reintegro por devolución de materiales",
-    created_at: "22/05/2025",
-  },
-  {
-    id: 5,
-    tipo: "ingreso",
-    nombreIngreso: "Aporte institucional",
-    monto: 2500000,
-    fechaPago: "05/06/2025",
-    descripcion: "Aporte de programa de apoyo habitacional",
-    created_at: "05/06/2025",
-  },
-  {
-    id: 6,
-    tipo: "ingreso",
-    nombreIngreso: "Venta de materiales sobrantes",
-    monto: 620000,
-    fechaPago: "30/06/2025",
-    descripcion: "Venta de varilla sobrante",
-    created_at: "30/06/2025",
-  },
-  {
-    id: 7,
-    tipo: "ingreso",
-    nombreIngreso: "Desembolso tercer tramo",
-    monto: 8000000,
-    fechaPago: "18/07/2025",
-    descripcion: "Tercer desembolso del bono Art.59",
-    created_at: "18/07/2025",
-  },
-  {
-    id: 8,
-    tipo: "ingreso",
-    nombreIngreso: "Reintegro de garantía",
-    monto: 1200000,
-    fechaPago: "02/08/2025",
-    descripcion: "Reintegro de depósito de garantía",
-    created_at: "02/08/2025",
-  },
-  // ── Egresos Generales ──
-  {
-    id: 9,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Materiales",
-    ordenCompra: "OC1",
-    monto: 8450000,
-    descripcion: "Compra de cemento, arena y varilla",
-    created_at: "20/01/2025",
-  },
-  {
-    id: 10,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Mano de Obra",
-    ordenCompra: "OC1",
-    monto: 6800000,
-    descripcion: "Pago de planilla semanas 12 a 15",
-    created_at: "05/02/2025",
-  },
-  {
-    id: 11,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Equipamiento",
-    ordenCompra: "OC2",
-    monto: 4200000,
-    descripcion: "Alquiler de mezcladora y andamios",
-    created_at: "14/03/2025",
-  },
-  {
-    id: 12,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Servicios",
-    ordenCompra: "OC2",
-    monto: 1650000,
-    descripcion: "Instalación eléctrica temporal",
-    created_at: "02/04/2025",
-  },
-  {
-    id: 13,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Materiales",
-    ordenCompra: "OC3",
-    monto: 3300000,
-    descripcion: "Compra de bloques y ladrillos",
-    created_at: "25/04/2025",
-  },
-  {
-    id: 14,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Otros",
-    ordenCompra: "OC3",
-    monto: 950000,
-    descripcion: "Transporte de materiales",
-    created_at: "10/05/2025",
-  },
-  {
-    id: 15,
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Mano de Obra",
-    ordenCompra: "OC4",
-    monto: 5400000,
-    descripcion: "Pago de planilla semanas 16 a 19",
-    created_at: "20/06/2025",
-  },
-  // ── Egresos Administrativos ──
-  {
-    id: 16,
-    tipo: "egreso",
-    tipoEgreso: "egreso-administrativo",
-    mes: "Julio",
-    ano: "2025",
-    monto: 2400000,
-    descripcion: "Permisos municipales y trámites",
-    created_at: "08/07/2025",
-  },
-  {
-    id: 17,
-    tipo: "egreso",
-    tipoEgreso: "egreso-administrativo",
-    mes: "Agosto",
-    ano: "2025",
-    monto: 2200000,
-    descripcion: "Seguro de obra y fianzas",
-    created_at: "12/08/2025",
-  },
-  {
-    id: 18,
-    tipo: "egreso",
-    tipoEgreso: "egreso-administrativo",
-    mes: "Septiembre",
-    ano: "2025",
-    monto: 1800000,
-    descripcion: "Servicios profesionales y notaría",
-    created_at: "03/09/2025",
-  },
-];
+/* Convierte el creadoEn (ISO) del backend a dd/mm/yyyy para ordenar igual que antes */
+function formatearCreatedAt(creadoEnISO) {
+  const fecha = new Date(creadoEnISO);
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
+  return `${dia}/${mes}/${anio}`;
+}
 
 // Parse date from dd/mm/yyyy format
 const parseDate = (dateStr) => {
@@ -266,12 +92,35 @@ const getMetaEgreso = (m) =>
     : [m.categoria, m.ordenCompra].filter(Boolean).join(" · ");
 
 export default function MovimientosPage() {
-  const [movimientos, setMovimientos] = useState(initialData);
+  const [movimientos, setMovimientos] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [tipoFiltro, setTipoFiltro] = useState("todos"); // todos | ingreso | egreso
   const [busqueda, setBusqueda] = useState("");
   const [sortBy, setSortBy] = useState("fecha-desc");
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
+
+  const cargarMovimientos = () => {
+    setCargando(true);
+    listarMovimientos()
+      .then((data) => {
+        setMovimientos(
+          data.map((m) => ({ ...m, created_at: formatearCreatedAt(m.creadoEn) }))
+        );
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los movimientos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        });
+      })
+      .finally(() => setCargando(false));
+  };
+
+  useEffect(() => {
+    cargarMovimientos();
+  }, []);
 
   /* =========================
      Filtrado + ordenamiento
@@ -337,12 +186,51 @@ export default function MovimientosPage() {
   const openEditModal = (item) => setEditingItem({ ...item });
   const closeEditModal = () => setEditingItem(null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingItem) return;
-    setMovimientos((prev) =>
-      prev.map((item) => (item.id === editingItem.id ? editingItem : item)),
-    );
-    closeEditModal();
+
+    let payload;
+    if (editingItem.tipo === "ingreso") {
+      payload = {
+        tipo: "ingreso",
+        proyectoId: editingItem.proyectoId,
+        monto: Number(editingItem.monto),
+        nombreIngreso: editingItem.nombreIngreso,
+        fechaPago: editingItem.fechaPago,
+        descripcion: editingItem.descripcion,
+      };
+    } else if (editingItem.tipoEgreso === "egreso-administrativo") {
+      payload = {
+        tipo: "egreso",
+        tipoEgreso: "egreso-administrativo",
+        monto: Number(editingItem.monto),
+        mes: editingItem.mes,
+        ano: String(editingItem.ano),
+        descripcion: editingItem.descripcion,
+      };
+    } else {
+      payload = {
+        tipo: "egreso",
+        tipoEgreso: "egreso-general",
+        proyectoId: editingItem.proyectoId,
+        monto: Number(editingItem.monto),
+        categoria: editingItem.categoria,
+        ordenCompra: editingItem.ordenCompra || undefined,
+        descripcion: editingItem.descripcion,
+      };
+    }
+
+    try {
+      await actualizarMovimiento(editingItem.id, payload);
+      closeEditModal();
+      cargarMovimientos();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo guardar",
+        text: error.message,
+      });
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -363,10 +251,19 @@ export default function MovimientosPage() {
   /* =========================
      Eliminación
   ========================= */
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deletingItem) return;
-    setMovimientos((prev) => prev.filter((m) => m.id !== deletingItem.id));
-    setDeletingItem(null);
+    try {
+      await eliminarMovimiento(deletingItem.id);
+      setDeletingItem(null);
+      cargarMovimientos();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo eliminar",
+        text: error.message,
+      });
+    }
   };
 
   const TIPOS = [
