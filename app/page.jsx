@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -30,22 +30,32 @@ function formatNumber(num) {
 
 /* =========================
    FadeIn animation component
+   (entrada suave: rise + scale + blur, easing moderno)
 ========================= */
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setShow(true), delay);
-    return () => clearTimeout(id);
-  }, [delay]);
+    // Respeta usuarios con movimiento reducido
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShow(true);
+      return;
+    }
+    const id = requestAnimationFrame(() => setShow(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   return (
     <div
       className={className}
       style={{
         opacity: show ? 1 : 0,
-        transform: show ? "translateY(0)" : "translateY(16px)",
-        transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+        transform: show
+          ? "translateY(0) scale(1)"
+          : "translateY(14px) scale(0.98)",
+        filter: show ? "blur(0px)" : "blur(3px)",
+        willChange: show ? "auto" : "opacity, transform, filter",
+        transition: `opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms, filter 0.6s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
       }}
     >
       {children}
@@ -138,7 +148,7 @@ function GastosAdministrativosCard({
         <span className="text-2xl sm:text-4xl font-black text-warning block mt-1 sm:mt-2">
           ₵{formatNumber(gastosAdmin)}
         </span>
-        <p className="text-[11px] sm:text-xs text-base-content/50 mt-1">
+        <p className="text-[11px] sm:text-xs text-base-content/70 mt-1">
           {ratioPeriodo.toFixed(1)}% del presupuesto del período · distribuido
           por peso presupuestario
         </p>
@@ -188,7 +198,7 @@ function GastosAdministrativosCard({
             </div>
           ))
         ) : (
-          <p className="text-center text-sm text-base-content/50">
+          <p className="text-center text-sm text-base-content/60">
             Sin datos para este mes
           </p>
         )}
@@ -212,12 +222,11 @@ function ProyectosDelMesCard({ proyectos }) {
       {proyectos.length > 0 ? (
         <ul className="list bg-base-200 rounded-box">
           {proyectos.map((proyecto) => (
-            <li className="list-row" key={proyecto.id}>
+            <li className="list-row" key={proyecto.id ?? proyecto.nombre}>
               <div className="list-col-grow">
                 <div className="text-sm sm:text-base">{proyecto.nombre}</div>
-                <div className="text-xs uppercase font-semibold opacity-60">
-                  {proyecto.bono}
-                </div>
+                <div className="text-xs uppercase font-semibold opacity-70">
+                  {proyecto.tipo ?? proyecto.bono}
               </div>
               <Link
                 href="/proyecto"
@@ -288,18 +297,27 @@ export default function Home() {
   const pctGasto = Math.round(data.pctGastado);
 
   /* =========================
-     Trigger fade effect on month change
+     Fade al cambiar de mes
+     (solo cuando el usuario navega, nunca al cargar)
   ========================= */
-  useEffect(() => {
+  const fadeTimer = useRef(null);
+  const triggerFade = () => {
+    if (fadeTimer.current) clearTimeout(fadeTimer.current);
     setIsChanging(true);
-    const timer = setTimeout(() => setIsChanging(false), 500);
-    return () => clearTimeout(timer);
-  }, [mesIndex, anio]);
+    fadeTimer.current = setTimeout(() => setIsChanging(false), 450);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (fadeTimer.current) clearTimeout(fadeTimer.current);
+    };
+  }, []);
 
   /* =========================
      Navegación de meses
   ========================= */
   const mesAnterior = () => {
+    triggerFade();
     if (mesIndex === 0) {
       setMesIndex(11);
       setAnio((a) => a - 1);
@@ -309,6 +327,7 @@ export default function Home() {
   };
 
   const mesSiguiente = () => {
+    triggerFade();
     if (mesIndex === 11) {
       setMesIndex(0);
       setAnio((a) => a + 1);
@@ -319,8 +338,10 @@ export default function Home() {
 
   const fadeStyle = {
     opacity: isChanging ? 0 : 1,
-    transform: isChanging ? "translateY(16px)" : "translateY(0)",
-    transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+    transform: isChanging ? "translateY(10px)" : "translateY(0)",
+    filter: isChanging ? "blur(2px)" : "blur(0px)",
+    transition:
+      "opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
   };
 
   return (
@@ -334,7 +355,7 @@ export default function Home() {
           <div className="flex items-center gap-4 sm:gap-8">
             <button
               onClick={mesAnterior}
-              className="btn btn-ghost btn-circle btn-sm bg-primary text-white"
+              className="btn btn-ghost btn-circle btn-sm bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary dark:text-white dark:hover:bg-primary/80"
               aria-label="Mes anterior"
             >
               <ChevronLeft size={20} />
@@ -346,7 +367,7 @@ export default function Home() {
 
             <button
               onClick={mesSiguiente}
-              className="btn btn-ghost btn-circle btn-sm bg-primary text-white"
+              className="btn btn-ghost btn-circle btn-sm bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary dark:text-white dark:hover:bg-primary/80"
               aria-label="Mes siguiente"
             >
               <ChevronRight size={20} />
@@ -380,7 +401,7 @@ export default function Home() {
                 {/* Progreso respecto a ingresos */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] sm:text-xs text-base-content/60">
+                    <span className="text-[10px] sm:text-xs text-base-content/70">
                       Has gastado el {pctGasto}% de lo ingresado
                     </span>
                   </div>
@@ -437,30 +458,78 @@ export default function Home() {
             </FadeIn>
           </div>
 
-          {/* CTA: Agregar Movimiento */}
-          <FadeIn delay={150} className="h-full">
-            <Link
-              href="/agregarMovimento"
-              className="relative overflow-hidden bg-primary text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 h-full flex lg:flex-col items-center lg:justify-center gap-4 p-4 sm:p-5 lg:p-7"
-            >
-              {/* Círculos decorativos */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/10 pointer-events-none"></div>
-              <div className="absolute -bottom-12 -left-8 w-28 h-28 rounded-full bg-white/5 pointer-events-none hidden lg:block"></div>
+          {/* CTA móvil: solo Agregar Movimiento */}
+          <div style={fadeStyle} className="h-full lg:hidden">
+            <FadeIn delay={150} className="h-full">
+              <Link
+                href="/agregarMovimento"
+                className="relative overflow-hidden bg-primary text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 h-full flex items-center gap-4 p-4 sm:p-5"
+              >
+                {/* Círculos decorativos */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/10 pointer-events-none"></div>
 
-              <div className="bg-white/15 p-3 sm:p-4 rounded-full shrink-0 relative">
-                <Plus className="w-7 h-7 sm:w-9 sm:h-9" />
+                <div className="bg-white/15 p-3 sm:p-4 rounded-full shrink-0 relative">
+                  <Plus className="w-7 h-7 sm:w-9 sm:h-9" />
+                </div>
+                <div className="flex-1 relative">
+                  <h2 className="font-black text-lg sm:text-2xl">
+                    Agregar Movimiento
+                  </h2>
+                  <p className="text-white/75 text-xs sm:text-sm mt-0.5">
+                    Registra un ingreso o egreso
+                  </p>
+                </div>
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 relative" />
+              </Link>
+            </FadeIn>
+          </div>
+
+          {/* CTAs escritorio: Agregar Movimiento + Agregar Proyecto (2 filas) */}
+          <div style={fadeStyle} className="hidden lg:block h-full">
+            <FadeIn delay={150} className="h-full">
+              <div className="h-full flex flex-col gap-4">
+                {/* Movimiento: sólido primario */}
+                <Link
+                  href="/agregarMovimento"
+                  className="relative overflow-hidden bg-primary text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 flex-1 flex items-center gap-4 p-5"
+                >
+                  {/* Círculo decorativo */}
+                  <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-white/10 pointer-events-none"></div>
+
+                  <div className="bg-white/15 p-3 rounded-full shrink-0 relative">
+                    <Plus className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 relative">
+                    <h2 className="font-black text-lg">Agregar Movimiento</h2>
+                    <p className="text-white/75 text-xs mt-0.5">
+                      Registra un ingreso o egreso
+                    </p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 shrink-0 relative" />
+                </Link>
+
+                {/* Proyecto: sólido secundario (mismo estilo, color distinto) */}
+                <Link
+                  href="/agregarProyecto"
+                  className="relative overflow-hidden bg-secondary text-white rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 flex-1 flex items-center gap-4 p-5"
+                >
+                  {/* Círculo decorativo */}
+                  <div className="absolute -bottom-10 -left-10 w-28 h-28 rounded-full bg-white/10 pointer-events-none"></div>
+
+                  <div className="bg-white/15 p-3 rounded-full shrink-0 relative">
+                    <FolderPlus className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 relative">
+                    <h2 className="font-black text-lg">Agregar Proyecto</h2>
+                    <p className="text-white/75 text-xs mt-0.5">
+                      Crea un nuevo proyecto
+                    </p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 shrink-0 relative" />
+                </Link>
               </div>
-              <div className="flex-1 lg:flex-none lg:text-center relative">
-                <h2 className="font-black text-lg sm:text-2xl">
-                  Agregar Movimiento
-                </h2>
-                <p className="text-white/70 text-xs sm:text-sm mt-0.5">
-                  Registra un ingreso o egreso
-                </p>
-              </div>
-              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 relative" />
-            </Link>
-          </FadeIn>
+            </FadeIn>
+          </div>
         </div>
 
         {/* Fila secundaria: Gastos Admin + Proyectos del Mes */}

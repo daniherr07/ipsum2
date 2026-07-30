@@ -15,8 +15,14 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-base-100`}>
+        {/* Fija data-theme antes de pintar: tema guardado o, por defecto, el del sistema */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("theme");if(!t)t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t);}catch(e){}`,
+          }}
+        />
         <NavBar />
         {children}
       </body>

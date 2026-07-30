@@ -55,7 +55,7 @@ export default function PlantillasPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-[var(--base-100)] to-[var(--base-200)] text-[var(--foreground)]">
+      <div className="min-h-screen bg-[var(--base-200)] text-[var(--foreground)]">
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         {/* Back Button */}
@@ -111,7 +111,7 @@ export default function PlantillasPage() {
                       className={`
                         cursor-pointer transition duration-200 rounded-lg font-medium
                         ${selected
-                          ? "bg-gradient-to-r from-[var(--primary)] to-[#0470c8] text-white shadow-md scale-[1.02]"
+                          ? "bg-[var(--primary)] text-white shadow-md scale-[1.02]"
                           : "bg-[var(--base-100)] dark:bg-[var(--base-300)] hover:bg-[var(--primary-50)] dark:hover:bg-[var(--base-300)] border border-[var(--primary-100)]"}
                       `}
                     >
