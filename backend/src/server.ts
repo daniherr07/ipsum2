@@ -35,4 +35,3 @@ console.log(
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
-

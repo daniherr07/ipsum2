@@ -54,17 +54,6 @@
       "subtipoBono": "Art.59",
       "creadoEn": "2026-05-30T00:00:00.000Z",
       "id": "a9ea70f5-f694-4992-bfb6-12fd162cd54a"
-    },
-    {
-      "nombre": "Proyecto Prueba Persistencia",
-      "presupuesto": 500000,
-      "mesAsignacion": "Julio",
-      "anioAsignacion": "2026",
-      "estado": "Revisión",
-      "bono": "Art.59",
-      "subtipoBono": "Art.59",
-      "id": "1d9498f5-d5ce-41cd-bd5d-19c4fea39abf",
-      "creadoEn": "2026-07-30T04:29:29.938Z"
     }
   ],
   "movimientos": [
