@@ -3,60 +3,24 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import Swal from "sweetalert2"
 import NavBar from "@/components/navbar/NavBar"
+import { obtenerStats, type ResumenStats } from "@/lib/api"
 
 type MonthData = { mes: string; ingresos: number; egresos: number }
-type CategoryData = { nombre: string; monto: number; tipo: "ingreso" | "egreso" }
-
-const DATA = {
-  ingresos: 450970,
-  egresos: 900780,
-  get balance() { return this.ingresos - this.egresos },
-  
-  categorias: [
-    { nombre: "Administrativos", monto: -560000, tipo: "egreso" },
-    { nombre: "Proyectos", monto: 275000, tipo: "ingreso" },
-    { nombre: "Servicios", monto: -180000, tipo: "egreso" },
-    { nombre: "Otros", monto: -15000, tipo: "egreso" },
-  ] as CategoryData[],
-  
-  mensual: [
-    { mes: "Ago", ingresos: 320000, egresos: 280000 },
-    { mes: "Sep", ingresos: 380000, egresos: 420000 },
-    { mes: "Oct", ingresos: 290000, egresos: 350000 },
-    { mes: "Nov", ingresos: 450000, egresos: 380000 },
-    { mes: "Dic", ingresos: 520000, egresos: 610000 },
-    { mes: "Ene", ingresos: 450970, egresos: 900780 },
-  ] as MonthData[],
-}
 
 const AÑOS = ["2023", "2024", "2025", "2026"]
 const TIPOS_BONO = ["Todos", "RAMT", "Lote Propio", "Hipoteca", "Articulo 76"]
 
-const YEAR_SCALE: Record<string, number> = { "2023": 0.72, "2024": 0.88, "2025": 1.0, "2026": 1.18 }
-const BONO_ING_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.45, "Lote Propio": 0.25, "Hipoteca": 0.20, "Articulo 76": 0.10 }
-const BONO_EGR_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.48, "Lote Propio": 0.22, "Hipoteca": 0.19, "Articulo 76": 0.11 }
-
-function getFilteredData(año: string, tipoBono: string) {
-  const ys = YEAR_SCALE[año] ?? 1.0
-  const bi = BONO_ING_SCALE[tipoBono] ?? 1.0
-  const be = BONO_EGR_SCALE[tipoBono] ?? 1.0
-  const ingresos = Math.round(DATA.ingresos * ys * bi)
-  const egresos = Math.round(DATA.egresos * ys * be)
-  return {
-    ingresos,
-    egresos,
-    balance: ingresos - egresos,
-    categorias: DATA.categorias.map(c => ({
-      ...c,
-      monto: Math.round(c.monto * ys * (c.tipo === "ingreso" ? bi : be)),
-    })) as CategoryData[],
-    mensual: DATA.mensual.map(m => ({
-      ...m,
-      ingresos: Math.round(m.ingresos * ys * bi),
-      egresos: Math.round(m.egresos * ys * be),
-    })) as MonthData[],
-  }
+const STATS_VACIO: ResumenStats = {
+  anio: "",
+  ingresos: 0,
+  egresos: 0,
+  balance: 0,
+  serieMensual: [],
+  mejorMes: null,
+  peorMes: null,
+  promedioMensualIngresos: 0,
 }
 
 const formatCurrency = (value: number) => {
@@ -298,26 +262,30 @@ function LineChart({ data }: { data: MonthData[] }) {
   )
 }
 
-function SummaryStats({ mensual }: { mensual: MonthData[] }) {
-  const nets = mensual.map(m => ({ mes: m.mes, net: m.ingresos - m.egresos }))
-  const best = nets.reduce((a, b) => a.net > b.net ? a : b, nets[0])
-  const worst = nets.reduce((a, b) => a.net < b.net ? a : b, nets[0])
-  const avgIngresos = Math.round(mensual.reduce((s, m) => s + m.ingresos, 0) / mensual.length)
+function SummaryStats({
+  mejorMes,
+  peorMes,
+  promedioMensualIngresos,
+}: {
+  mejorMes: { mes: string; neto: number } | null
+  peorMes: { mes: string; neto: number } | null
+  promedioMensualIngresos: number
+}) {
   return (
     <div className="stats stats-vertical w-full bg-base-100 mt-2">
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Mejor mes</div>
-        <div className="stat-value text-success text-base lg:text-lg">{best?.mes ?? "—"}</div>
-        <div className="stat-desc text-xs">{formatCurrency(best?.net ?? 0)} neto</div>
+        <div className="stat-value text-success text-base lg:text-lg">{mejorMes?.mes ?? "—"}</div>
+        <div className="stat-desc text-xs">{formatCurrency(mejorMes?.neto ?? 0)} neto</div>
       </div>
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Peor mes</div>
-        <div className="stat-value text-error text-base lg:text-lg">{worst?.mes ?? "—"}</div>
-        <div className="stat-desc text-xs">{formatCurrency(worst?.net ?? 0)} neto</div>
+        <div className="stat-value text-error text-base lg:text-lg">{peorMes?.mes ?? "—"}</div>
+        <div className="stat-desc text-xs">{formatCurrency(peorMes?.neto ?? 0)} neto</div>
       </div>
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Promedio mensual</div>
-        <div className="stat-value text-primary text-base lg:text-lg">₵{(avgIngresos / 1000).toFixed(0)}K</div>
+        <div className="stat-value text-primary text-base lg:text-lg">₵{(promedioMensualIngresos / 1000).toFixed(0)}K</div>
         <div className="stat-desc text-xs">Ingresos</div>
       </div>
     </div>
@@ -327,11 +295,19 @@ function SummaryStats({ mensual }: { mensual: MonthData[] }) {
 export default function StatsPage() {
   const [filtroAño, setFiltroAño] = useState("2025")
   const [filtroTipoBono, setFiltroTipoBono] = useState("Todos")
+  const [filteredData, setFilteredData] = useState<ResumenStats>(STATS_VACIO)
 
-  const filteredData = useMemo(
-    () => getFilteredData(filtroAño, filtroTipoBono),
-    [filtroAño, filtroTipoBono]
-  )
+  useEffect(() => {
+    obtenerStats(filtroAño, filtroTipoBono === "Todos" ? undefined : filtroTipoBono)
+      .then(setFilteredData)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar las estadísticas",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [filtroAño, filtroTipoBono])
 
   return (
     <>
@@ -407,7 +383,7 @@ export default function StatsPage() {
                 </div>
               </div>
               <div className="h-40 lg:h-52 mt-3">
-                <LineChart data={filteredData.mensual} />
+                <LineChart data={filteredData.serieMensual} />
               </div>
             </div>
           </FadeIn>
@@ -415,7 +391,11 @@ export default function StatsPage() {
           <FadeIn delay={380} className="card bg-base-100 shadow-md shrink-0">
             <div className="card-body p-4 lg:p-5">
               <h2 className="card-title text-sm lg:text-base">Resumen del Período</h2>
-              <SummaryStats mensual={filteredData.mensual} />
+              <SummaryStats
+                mejorMes={filteredData.mejorMes}
+                peorMes={filteredData.peorMes}
+                promedioMensualIngresos={filteredData.promedioMensualIngresos}
+              />
             </div>
           </FadeIn>
         </div>

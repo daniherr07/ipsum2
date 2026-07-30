@@ -11,11 +11,11 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
+import { crearMovimiento, listarProyectos } from "@/lib/api"
 
 interface Proyecto {
   id: string
   nombre: string
-  mes: number
 }
 
 interface ComponenteEgreso {
@@ -76,18 +76,24 @@ const meses = [
 
 const ANOS = [2024, 2025, 2026, 2027, 2028]
 
-const proyectos: Proyecto[] = [
-  { id: "proj-1", nombre: "Proyecto Magna", mes: 1 },
-  { id: "proj-2", nombre: "Centro Comercial", mes: 3 },
-  { id: "proj-3", nombre: "Residencial Vista", mes: 2 },
-  { id: "proj-4", nombre: "Oficinas Ejecutivas", mes: 4 },
-  { id: "proj-5", nombre: "Plaza Principal", mes: 5 },
-]
-
 const opcionesCategoria = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
 
 export default function AgregarMovimientoPage() {
   const today = new Date()
+
+  const [proyectos, setProyectos] = useState<Proyecto[]>([])
+
+  React.useEffect(() => {
+    listarProyectos()
+      .then((data) => setProyectos(data.map((p) => ({ id: p.id, nombre: p.nombre }))))
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los proyectos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [])
 
   // Tipo de movimiento: solo 2 opciones
   const [tipoMovimiento, setTipoMovimiento] = useState<"egreso-proyecto" | "ingreso-proyecto">("egreso-proyecto")
@@ -186,7 +192,7 @@ export default function AgregarMovimientoPage() {
   const nombreProyecto = (id?: string) =>
     proyectos.find((p) => p.id === id)?.nombre
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (esEgreso) {
@@ -200,46 +206,83 @@ export default function AgregarMovimientoPage() {
         return
       }
 
-      Swal.fire({
-        icon: "success",
-        title: "¡Movimiento guardado!",
-        html: `
-          <div style="text-align: left;">
-            <p><strong>Tipo:</strong> Egreso de proyecto</p>
-            <p><strong>Total:</strong> ${formatCurrency(monto)}</p>
-            <p><strong>Egresos:</strong> ${componentes.length}</p>
-          </div>
-        `,
-        confirmButtonColor: "#dc2626",
-      })
+      try {
+        for (const c of componentes) {
+          if (c.tipo === "egreso-general") {
+            await crearMovimiento({
+              tipo: "egreso",
+              tipoEgreso: "egreso-general",
+              proyectoId: c.proyecto!,
+              monto: Number(c.monto),
+              categoria: c.categoria!,
+              ordenCompra: c.ordenCompra,
+              descripcion: c.descripcion || "Egreso general",
+            })
+          } else {
+            await crearMovimiento({
+              tipo: "egreso",
+              tipoEgreso: "egreso-administrativo",
+              monto: Number(c.monto),
+              mes: meses[c.mes - 1],
+              ano: String(c.ano),
+              descripcion: c.descripcion || "Egreso administrativo",
+            })
+          }
+        }
 
-      console.log({
-        tipoMovimiento: "egreso-proyecto",
-        montoTotal: totalNum,
-        componentes,
-      })
+        Swal.fire({
+          icon: "success",
+          title: "¡Movimiento guardado!",
+          html: `
+            <div style="text-align: left;">
+              <p><strong>Tipo:</strong> Egreso de proyecto</p>
+              <p><strong>Total:</strong> ${formatCurrency(monto)}</p>
+              <p><strong>Egresos:</strong> ${componentes.length}</p>
+            </div>
+          `,
+          confirmButtonColor: "#dc2626",
+        })
+
+        cambiarTipo("egreso-proyecto")
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error al guardar",
+          text: error instanceof Error ? error.message : "Error desconocido",
+          confirmButtonColor: "#dc2626",
+        })
+      }
     } else {
-      Swal.fire({
-        icon: "success",
-        title: "¡Movimiento guardado!",
-        html: `
-          <div style="text-align: left;">
-            <p><strong>Tipo:</strong> Ingreso de proyecto</p>
-            <p><strong>Monto:</strong> ${formatCurrency(monto)}</p>
-            ${proyectoSeleccionado ? `<p><strong>Proyecto:</strong> ${nombreProyecto(proyectoSeleccionado)}</p>` : ""}
-          </div>
-        `,
-        confirmButtonColor: "#16a34a",
-      })
+      try {
+        await crearMovimiento({
+          tipo: "ingreso",
+          proyectoId: proyectoSeleccionado,
+          monto: Number(monto),
+          nombreIngreso,
+          fechaPago: `${fechaPagoDia}/${fechaPagoMes}/${fechaPagoAno}`,
+          descripcion,
+        })
 
-      console.log({
-        tipoMovimiento: "ingreso-proyecto",
-        monto,
-        proyecto: proyectoSeleccionado,
-        nombreIngreso,
-        fechaPago: `${fechaPagoDia}/${fechaPagoMes}/${fechaPagoAno}`,
-        descripcion,
-      })
+        Swal.fire({
+          icon: "success",
+          title: "¡Movimiento guardado!",
+          html: `
+            <div style="text-align: left;">
+              <p><strong>Tipo:</strong> Ingreso de proyecto</p>
+              <p><strong>Monto:</strong> ${formatCurrency(monto)}</p>
+              ${proyectoSeleccionado ? `<p><strong>Proyecto:</strong> ${nombreProyecto(proyectoSeleccionado)}</p>` : ""}
+            </div>
+          `,
+          confirmButtonColor: "#16a34a",
+        })
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error al guardar",
+          text: error instanceof Error ? error.message : "Error desconocido",
+          confirmButtonColor: "#16a34a",
+        })
+      }
     }
   }
 

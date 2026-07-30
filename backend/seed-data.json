@@ -1,0 +1,2232 @@
+{
+  "proyectos": [
+    {
+      "nombre": "Thais Rosita Coronado Espinoza",
+      "presupuesto": 12306000,
+      "mesAsignacion": "Junio",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "creadoEn": "2026-06-06T00:00:00.000Z",
+      "id": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a"
+    },
+    {
+      "nombre": "Luceli Fabiola Blandón Lopez",
+      "presupuesto": 12810000,
+      "mesAsignacion": "Junio",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "creadoEn": "2026-06-27T00:00:00.000Z",
+      "id": "672c4b35-2f8f-409f-baad-c12edf2416a2"
+    },
+    {
+      "nombre": "Jorge Luis Badilla Rodriguez",
+      "presupuesto": 10300000,
+      "mesAsignacion": "Julio",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "creadoEn": "2026-07-11T00:00:00.000Z",
+      "id": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7"
+    },
+    {
+      "nombre": "Jeniffer Rojas Araya",
+      "presupuesto": 12810000,
+      "mesAsignacion": "Mayo",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "creadoEn": "2026-05-16T00:00:00.000Z",
+      "id": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3"
+    },
+    {
+      "nombre": "Marianela Navarro Rodriguez",
+      "presupuesto": 12306000,
+      "mesAsignacion": "Mayo",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "id": "a9ea70f5-f694-4992-bfb6-12fd162cd54a"
+    },
+    {
+      "nombre": "Proyecto Prueba Persistencia",
+      "presupuesto": 500000,
+      "mesAsignacion": "Julio",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "id": "1d9498f5-d5ce-41cd-bd5d-19c4fea39abf",
+      "creadoEn": "2026-07-30T04:29:29.938Z"
+    }
+  ],
+  "movimientos": [
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 1180000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago nómina IPSUM",
+      "creadoEn": "2026-06-16T00:00:00.000Z",
+      "id": "26daeb28-b94b-425d-9a93-fcbaba4c3076"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 16000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago de seguro José",
+      "creadoEn": "2026-06-16T00:00:00.000Z",
+      "id": "6fa79727-7dea-442f-8eec-46b67c0c04ed"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 69101,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago de justificación 56 carlos cordero / total 71651 - casa Jennifer Rojas",
+      "creadoEn": "2026-06-13T00:00:00.000Z",
+      "id": "2569324f-4b2c-47d2-bfd6-f4bff9d6aadd"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 128189.18,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justif 57 Cordero / total 174159,18 - casas Jose Armando, Eliecer,  Jennifer Rojas",
+      "creadoEn": "2026-06-18T00:00:00.000Z",
+      "id": "9eb879ee-9155-4144-b5d8-240a82cc464e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 31968,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Gasolina felipe",
+      "creadoEn": "2026-06-19T00:00:00.000Z",
+      "id": "fc0c0619-8678-4c96-b848-1f213fb1b658"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 25355,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación Steven",
+      "creadoEn": "2026-06-20T00:00:00.000Z",
+      "id": "9d48d1b1-49ad-4086-aece-29e9f29f9d9d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 205000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago de gastos caso Dimas",
+      "creadoEn": "2026-06-20T00:00:00.000Z",
+      "id": "17064c7e-1c76-4e0a-91db-18a39ff505dc"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 10000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Bitácoras CFIA",
+      "creadoEn": "2026-06-23T00:00:00.000Z",
+      "id": "d83c4bf8-1433-48d2-9321-1f2ac85a7e6d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 29932.4,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago cinta métrica",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "id": "3050c487-9436-4173-8a54-daab34afa083"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 65900.79,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 58 cordero / total 89280,79 - casa Eliecer",
+      "creadoEn": "2026-06-20T00:00:00.000Z",
+      "id": "aafb4174-191b-484a-a982-4fe2c3be6d77"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 97116.1,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 59 cordero / total 112636,10 - casa Marianela",
+      "creadoEn": "2026-06-23T00:00:00.000Z",
+      "id": "367def7b-f169-40f8-b278-93185a5f67e8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 73389.99,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 60 Carlos cordero / total 99059,99 - casa Luceli",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "id": "af705fd4-adde-405f-aa96-e01116e0e295"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 90501.46,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 61 cordero / total 95194,46 - casa Jose Armando",
+      "creadoEn": "2026-06-25T00:00:00.000Z",
+      "id": "f9a0a351-3376-4065-a312-d6bd33e1ea2a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 74370,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago justificación 21",
+      "creadoEn": "2026-06-27T00:00:00.000Z",
+      "id": "4fd26fd5-a655-411e-af0e-e3e8bf87569a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 78100,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago permiso domingo",
+      "creadoEn": "2026-06-27T00:00:00.000Z",
+      "id": "8f23f968-74e3-42ee-981b-a6cec3719862"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 119898.26,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 62 Carlos cordero / total 125436,26 - casa Jose Armando",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "id": "8a00fa15-1331-469f-b20c-05860edb6303"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 25000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago mimbre transportes",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "id": "8a08b76e-cbe4-4375-9378-316761c0b81b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 159210,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 63 Carlos cordero",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "id": "71371bb6-357a-46de-86a2-0fcdfc27a70a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 1180000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago nóminas ipsum",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "id": "bbded926-20af-458c-ab1d-c5b55e01390d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 193000,
+      "mes": "Julio",
+      "ano": "2026",
+      "descripcion": "Pago de arriendo ipsum",
+      "creadoEn": "2026-07-01T00:00:00.000Z",
+      "id": "615301c2-d560-4f05-b3e1-0ad601cc6aec"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 64714.78,
+      "mes": "Julio",
+      "ano": "2026",
+      "descripcion": "Pago tigo ipsum",
+      "creadoEn": "2026-07-01T00:00:00.000Z",
+      "id": "aaca9af6-ded8-476b-98a3-1598b85b4482"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 86256.61,
+      "mes": "Julio",
+      "ano": "2026",
+      "descripcion": "Pago teléfonos ipsum",
+      "creadoEn": "2026-07-01T00:00:00.000Z",
+      "id": "594e7e85-e71f-40ee-a24d-4db78abd5315"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 4922000,
+      "nombreIngreso": "Desembolso 1",
+      "fechaPago": "06/06/2026",
+      "descripcion": "Desembolso 1 del presupuesto asignado a Thais Rosita Coronado Espinoza",
+      "creadoEn": "2026-06-06T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "fb73ffc4-6a01-4f0a-ae81-265afca5b08f"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 4300000,
+      "nombreIngreso": "Desembolso 2",
+      "fechaPago": "11/07/2026",
+      "descripcion": "Desembolso 2 del presupuesto asignado a Thais Rosita Coronado Espinoza",
+      "creadoEn": "2026-07-11T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "009101ce-e929-4a2b-9a72-cf064554c38e"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 2450000,
+      "nombreIngreso": "Desembolso 3",
+      "fechaPago": "01/08/2026",
+      "descripcion": "Desembolso 3 del presupuesto asignado a Thais Rosita Coronado Espinoza",
+      "creadoEn": "2026-08-01T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "03ea76bf-e439-4483-8afd-fa7a9d76193d"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 634000,
+      "nombreIngreso": "Desembolso 4",
+      "fechaPago": "29/08/2026",
+      "descripcion": "Desembolso 4 del presupuesto asignado a Thais Rosita Coronado Espinoza",
+      "creadoEn": "2026-08-29T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "630fc407-a195-4db7-b5de-b16d8bec18d9"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 125000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven saldo 125 mil",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "c20f79a6-b1c8-4594-b663-ff4c46f87d94"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 79326,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-06-04T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "2a3456dd-859e-4192-9e42-12c43f7f336e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 16217.36,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-04T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "161f1018-c5a9-4f82-99ea-2be756cb2a84"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 100000,
+      "categoria": "Servicios",
+      "descripcion": "Comisión doña Susana",
+      "creadoEn": "2026-06-05T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "ec0a9e83-b934-43cb-828e-2af3b0adefd6"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven",
+      "creadoEn": "2026-06-06T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "81f25d08-767a-4598-8b84-a31d2344bdbd"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 50000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven, saldo 0",
+      "creadoEn": "2026-06-09T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "d681c39e-65fa-4ec6-8ca8-1cbbc5f2e7b2"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 24207,
+      "categoria": "Materiales",
+      "descripcion": "Madera de inicio",
+      "creadoEn": "2026-06-10T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "87411be3-9b4b-4a03-9e97-f7e16057a4cd"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 50000,
+      "categoria": "Equipamiento",
+      "descripcion": "Batidora",
+      "creadoEn": "2026-06-13T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "bbf80f17-dfe2-4f58-81a4-00d6059c63d8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 15000,
+      "categoria": "Equipamiento",
+      "descripcion": "Backhoe",
+      "creadoEn": "2026-06-18T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "df4d17fa-738b-405d-832d-d80c9d8954fd"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1832092.5,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes",
+      "creadoEn": "2026-06-16T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "68f30b2d-1221-44a7-91f6-98b6de6765cb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 32400,
+      "categoria": "Otros",
+      "descripcion": "Andrés",
+      "creadoEn": "2026-06-17T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "c26ae29d-809c-4098-be72-a748d6239df4"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 38500,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-06-28T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "c57f1667-2200-47c4-b2dc-7c780999e3e8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 200000,
+      "categoria": "Servicios",
+      "descripcion": "Comisión Magdalena",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "802f1c67-5d57-4d6e-87be-c7fde7192ca8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1201759,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "90930c2c-b038-4554-a1a0-757ca82bce1c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 31722.45,
+      "categoria": "Materiales",
+      "descripcion": "Material eléctrico",
+      "creadoEn": "2026-07-09T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "0ee108a5-3677-4853-9f14-35a3e356603c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 146230,
+      "categoria": "Materiales",
+      "descripcion": "Materiales",
+      "creadoEn": "2026-07-10T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "d50a1878-08a7-4644-ba89-6a25b1cad909"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1187.5,
+      "categoria": "Materiales",
+      "descripcion": "Materiales teresa",
+      "creadoEn": "2026-07-10T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "b648244f-8370-4d37-ad86-eeb5453d2273"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 437068.56,
+      "categoria": "Materiales",
+      "descripcion": "Lagar",
+      "creadoEn": "2026-07-04T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "be09a80d-ab6c-4714-96d7-df7330c50e52"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75973,
+      "categoria": "Materiales",
+      "descripcion": "Pimmsa",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "9f77eb3f-3c0d-422e-8813-2e39b25e75bb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 106950.88,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "41ec4bf7-5df2-4adb-88c1-1399bce81930"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 23000,
+      "categoria": "Otros",
+      "descripcion": "Hugo Valverde",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "0afeefb4-fd2f-4828-aa73-4404e5410014"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 525443.25,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "8f9b9709-c44b-46a4-ae76-5efedaf40000"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 157742.35,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-07-09T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "6af1308e-540d-4d50-964f-90ece40cae76"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 183490,
+      "categoria": "Materiales",
+      "descripcion": "Radiapuertas Barranca",
+      "creadoEn": "2026-07-09T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "9fb1efee-4ca0-4730-b813-a7ab2805d02e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 29832,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-07-10T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "c997a550-3df4-4d85-89a4-60880347c98b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 35000,
+      "categoria": "Materiales",
+      "descripcion": "Materiales",
+      "creadoEn": "2026-07-28T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "6f15c5db-92e4-40a5-ae1d-7bfe3d49ab5c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 77623.31,
+      "categoria": "Materiales",
+      "descripcion": "Mapesa",
+      "creadoEn": "2026-07-24T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "30c1ffaf-1d49-4795-a6ef-5c118cb113e5"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 130000,
+      "categoria": "Servicios",
+      "descripcion": "Electricidad Cordero",
+      "creadoEn": "2026-08-01T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "c4b850b0-1e41-486b-b6c8-604c10069d19"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 14779,
+      "categoria": "Servicios",
+      "descripcion": "Agua y luz casa",
+      "creadoEn": "2026-08-01T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "0fb0425a-b890-43c1-81e2-908e1cf85534"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 29380.12,
+      "categoria": "Materiales",
+      "descripcion": "Materiales",
+      "creadoEn": "2026-08-05T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "f3d06c16-738b-4a78-9223-edfe14ab6509"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 60000,
+      "categoria": "Materiales",
+      "descripcion": "Radiapuertas",
+      "creadoEn": "2026-08-05T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "dc1b23b9-7900-4e29-b9ec-4237b4fc4654"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 330000,
+      "categoria": "Otros",
+      "descripcion": "Kenneth Cordero",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "cb1d27c8-08e2-40a1-948d-f82d3a593228"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 5840,
+      "categoria": "Materiales",
+      "descripcion": "Mapesa justif semana 76 Cordero",
+      "creadoEn": "2026-08-06T00:00:00.000Z",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "id": "ceadaf65-f306-4322-8eb6-1d01a65f4003"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 4500000,
+      "nombreIngreso": "Desembolso 1",
+      "fechaPago": "27/06/2026",
+      "descripcion": "Desembolso 1 del presupuesto asignado a Luceli Fabiola Blandón Lopez",
+      "creadoEn": "2026-06-27T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "a927059e-ff8e-408d-9b0e-fd51454d8725"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 6500000,
+      "nombreIngreso": "Desembolso 2",
+      "fechaPago": "08/08/2026",
+      "descripcion": "Desembolso 2 del presupuesto asignado a Luceli Fabiola Blandón Lopez",
+      "creadoEn": "2026-08-08T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "5756bd2e-296b-4884-a97b-c8e892ba97e9"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 1810000,
+      "nombreIngreso": "Desembolso 3",
+      "fechaPago": "22/08/2026",
+      "descripcion": "Desembolso 3 del presupuesto asignado a Luceli Fabiola Blandón Lopez",
+      "creadoEn": "2026-08-22T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "c3f09423-e94e-48b0-bc4c-8879e26eba32"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 125000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven",
+      "creadoEn": "2026-06-17T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "8b31d70c-3924-42f0-8bc9-3875c107d02b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 50000,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "3ce2581d-792c-40fb-9ad5-5b9dab073bcc"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1694602.33,
+      "categoria": "Materiales",
+      "descripcion": "Agrologos Upala",
+      "creadoEn": "2026-06-25T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "83323289-62ad-4a8f-a42f-052f8f85d7df"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 125000,
+      "categoria": "Servicios",
+      "descripcion": "Pago final honorarios Steven",
+      "creadoEn": "2026-06-23T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "7db5a889-2507-4a17-9d30-c6a6ad8c1f52"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 15874.91,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-19T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "bb4abe44-50e0-431b-9f0e-bb73d9511ffc"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1072.42,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-23T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "a401b64e-8788-4535-be3e-abeb8303da9c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 79326,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "1ca55c07-8c29-403c-886d-af9f304771c8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 61000,
+      "categoria": "Equipamiento",
+      "descripcion": "Batidora",
+      "creadoEn": "2026-06-27T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "d5f90f8a-ba08-479c-80c0-ce0c551a154f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 90000,
+      "categoria": "Materiales",
+      "descripcion": "Lastre",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "c0593502-4c88-42bc-8b2d-2ef17dce0334"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 200000,
+      "categoria": "Servicios",
+      "descripcion": "Comisiones Magdalena",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "0792e0fb-80fe-4686-9d69-cd1e8ffd753a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 101700,
+      "categoria": "Materiales",
+      "descripcion": "Formaleta",
+      "creadoEn": "2026-06-26T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "2901df2c-5c57-4390-887e-9fc7aeb85f3b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 6170,
+      "categoria": "Materiales",
+      "descripcion": "Ferretería Buen Precio inicio justif semana 60 Cordero",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "573d6e26-fdfc-4b73-9bbc-b108767b0d4b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 19500,
+      "categoria": "Materiales",
+      "descripcion": "Madera inicio justif semana 60 Cordero",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "2da94e2b-641f-4d69-acc5-6f30de0e28e4"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 787380.25,
+      "categoria": "Materiales",
+      "descripcion": "Agrologos Upala",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "3f13608e-f8b5-4a15-9f3e-b8a7679a221d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 38856.18,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "c9cf63d3-281d-491c-b476-2c91450bf63b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 15000,
+      "categoria": "Servicios",
+      "descripcion": "Pago luz y agua",
+      "creadoEn": "2026-07-10T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "6868feed-aa3e-4d03-9203-4ca6acc8411f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 90377.4,
+      "categoria": "Materiales",
+      "descripcion": "Agrologos SJ Upala",
+      "creadoEn": "2026-07-22T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "39f6763c-ce6c-4876-83a5-8b5b718ed787"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75973,
+      "categoria": "Materiales",
+      "descripcion": "Pintura",
+      "creadoEn": "2026-07-23T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "a96b7ca9-40f2-4821-b28c-d10697232dc9"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 23000,
+      "categoria": "Otros",
+      "descripcion": "Hugo",
+      "creadoEn": "2026-07-23T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "ddf79487-6cc4-4377-b86f-01a29e280b4c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 62447.64,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-07-23T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "7ed059bd-e5bb-4f07-839f-07c36a2fb792"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 19750,
+      "categoria": "Servicios",
+      "descripcion": "Agua y luz",
+      "creadoEn": "2026-07-25T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "d26359b6-5efd-4ae6-83ef-7c287a4e728e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 183490,
+      "categoria": "Materiales",
+      "descripcion": "Radiapuertas",
+      "creadoEn": "2026-07-30T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "ac00ed7a-ceee-438e-bfbd-559683421d26"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 448134.34,
+      "categoria": "Servicios",
+      "descripcion": "Electricidad lagar",
+      "creadoEn": "2026-07-26T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "864736e1-ff2c-4a22-8150-036df4b6184c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 502501.55,
+      "categoria": "Materiales",
+      "descripcion": "OC3 Ferretería Canalete",
+      "creadoEn": "2026-07-29T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "080f76bd-3641-4bec-ae85-6b0f8ccc4831"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 28200,
+      "categoria": "Otros",
+      "descripcion": "Andrés",
+      "creadoEn": "2026-07-30T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "156eca82-d88d-4a35-b569-9ec47cebf27b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 130000,
+      "categoria": "Servicios",
+      "descripcion": "Electricidad Cordero",
+      "creadoEn": "2026-08-01T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "269364cf-1395-4f65-9259-9df018e42a6f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 50000,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-08-05T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "da00342c-a0ae-4deb-9744-602d831a41f7"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 16270,
+      "categoria": "Servicios",
+      "descripcion": "Agrologos electricidad justif semana 75 Cordero",
+      "creadoEn": "2026-08-01T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "88b025de-ee63-41fa-8b10-ad8e9765ff4c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 330000,
+      "categoria": "Otros",
+      "descripcion": "Kenneth Cordero",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "d43f2713-ab98-471c-8b1a-7ccc1f0a8b37"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 4200,
+      "categoria": "Otros",
+      "descripcion": "Andrés Piedra",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "8dcaa3eb-07ea-4753-a64a-bad7209e1720"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 4738.09,
+      "categoria": "Materiales",
+      "descripcion": "Agrologos Upala semana 78 Cordero",
+      "creadoEn": "2026-08-09T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "2e6f4164-59ac-4e8d-b339-337bc42856cb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 2804,
+      "categoria": "Materiales",
+      "descripcion": "Agrologos Upala semana 78 Cordero",
+      "creadoEn": "2026-08-09T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "ea9d52ff-6bd0-456a-a69c-0eb9e12598c1"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 58850,
+      "categoria": "Servicios",
+      "descripcion": "Luz y agua alquiler casa",
+      "creadoEn": "2026-08-25T00:00:00.000Z",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "id": "488a87fe-ae3c-44b8-8a11-33df9168ddc8"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 1535000,
+      "nombreIngreso": "Desembolso 1",
+      "fechaPago": "11/07/2026",
+      "descripcion": "Desembolso 1 del presupuesto asignado a Jorge Luis Badilla Rodriguez",
+      "creadoEn": "2026-07-11T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "a2375e98-b1f7-4352-8c81-cbc3d6a0c903"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 1040000,
+      "nombreIngreso": "Desembolso 2",
+      "fechaPago": "11/07/2026",
+      "descripcion": "Desembolso 2 del presupuesto asignado a Jorge Luis Badilla Rodriguez",
+      "creadoEn": "2026-07-11T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "43da641a-4637-4b5b-8081-a9a84ce5ba24"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 5500000,
+      "nombreIngreso": "Desembolso 3",
+      "fechaPago": "08/08/2026",
+      "descripcion": "Desembolso 3 del presupuesto asignado a Jorge Luis Badilla Rodriguez",
+      "creadoEn": "2026-08-08T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "0e783347-680f-4a4a-8870-bee787b86a9b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 15874.91,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-19T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "8de4a49d-e051-4824-8bc9-a62ed50f0747"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1072.42,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-23T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "010cd29c-5ee0-4c52-8ea3-d706496409d0"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 79326,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "5aac8823-c25b-4399-ab9e-a518661f3dac"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 100000,
+      "categoria": "Servicios",
+      "descripcion": "Comisión Magdalena",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "e98e8c88-baae-4373-8cc4-84d447d9cfcb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 135000,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-07-07T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "2c234d3a-a825-4620-a00d-92daff8d8052"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1782350.54,
+      "categoria": "Materiales",
+      "descripcion": "OC1 Lagar",
+      "creadoEn": "2026-07-09T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "ffb8efb4-db6e-4297-93b0-c830fa9e2531"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 45765,
+      "categoria": "Equipamiento",
+      "descripcion": "Batidora",
+      "creadoEn": "2026-07-10T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "0f4a60b1-aa8b-469a-ad86-abd59ccfc316"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 19500,
+      "categoria": "Materiales",
+      "descripcion": "Madera de inicio",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "e51a45b2-9707-4bf2-b56e-099344b3f0c2"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 7395,
+      "categoria": "Otros",
+      "descripcion": "Supermercados Los Ángeles justif semana 66 Cordero",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "da700976-5189-4121-8e2f-78d4ebb6d642"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 200000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven",
+      "creadoEn": "2026-07-11T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "95819814-8ab0-4a78-8597-04189943461c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 161331,
+      "categoria": "Materiales",
+      "descripcion": "Lagar",
+      "creadoEn": "2026-07-17T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "54f4911a-6af3-468f-8605-7a22891542de"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 45000,
+      "categoria": "Equipamiento",
+      "descripcion": "Batidora",
+      "creadoEn": "2026-07-18T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "b2babe0e-a6bd-41d0-8880-c89ddd44af6e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 64972.51,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-07-30T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "ed9fafea-328c-4322-8972-d6823269c970"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 102340,
+      "categoria": "Otros",
+      "descripcion": "Fornaleta",
+      "creadoEn": "2026-07-24T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "5800e3e4-816b-4fd6-a11c-4d13d2205f79"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 139646.49,
+      "categoria": "Materiales",
+      "descripcion": "Materiales Lavar",
+      "creadoEn": "2026-07-24T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "66a25d8c-940d-481f-b050-a39384e653a5"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1004762.09,
+      "categoria": "Materiales",
+      "descripcion": "Materiales Lavar",
+      "creadoEn": "2026-07-28T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "32577faf-c6aa-4411-bbd4-1fe2fd31079a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 28200,
+      "categoria": "Otros",
+      "descripcion": "Andrés",
+      "creadoEn": "2026-07-30T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "d84b1518-62f3-4db3-ae75-0db52a041382"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 15264.5,
+      "categoria": "Materiales",
+      "descripcion": "Multiaceros justif semana 74 Cordero",
+      "creadoEn": "2026-08-01T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "6fd8ca5c-c777-4247-b38d-450f6dac125d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 4875,
+      "categoria": "Otros",
+      "descripcion": "Supermercados Los Ángeles justif semana 74 Cordero",
+      "creadoEn": "2026-07-26T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "8a8cebde-3654-4b4f-9b4a-a55e26b50980"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 157742.35,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "c67a6f19-b17c-4567-a460-71a2de0fcc57"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 470072.01,
+      "categoria": "Materiales",
+      "descripcion": "OC3 Lagar",
+      "creadoEn": "2026-08-08T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "43cb073c-a1fc-46eb-8b54-29773c3c9942"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 135000,
+      "categoria": "Servicios",
+      "descripcion": "Pago arriendo trabajadores",
+      "creadoEn": "2026-08-08T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "f9597a81-9c4c-4193-ae0a-3fc6b834afa0"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 4200,
+      "categoria": "Otros",
+      "descripcion": "Andrés Piedra",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "2b9aab25-664d-44ba-bd06-ef456e98ed2c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 57671.64,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "543f87aa-24ca-42a1-8d80-f89668805e87"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 435365.33,
+      "categoria": "Materiales",
+      "descripcion": "Lagar",
+      "creadoEn": "2026-08-13T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "57de50c4-89e1-4b26-9f93-d8a3450d69b0"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75973,
+      "categoria": "Materiales",
+      "descripcion": "Pimmsa",
+      "creadoEn": "2026-08-13T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "91ebbc8f-f1f1-4df8-9dcf-17208317ec81"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 23000,
+      "categoria": "Otros",
+      "descripcion": "Hugo Valverde",
+      "creadoEn": "2026-08-13T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "fc06b462-17bd-4777-9470-7efee5d52b6f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 81490,
+      "categoria": "Materiales",
+      "descripcion": "Radiapuertas Guadalupe",
+      "creadoEn": "2026-08-14T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "21ff9cdc-642b-46ab-9048-c584579bed51"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 325000,
+      "categoria": "Otros",
+      "descripcion": "Kenneth Cordero",
+      "creadoEn": "2026-08-27T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "21645351-9a41-4d23-a375-18a1080fa0a7"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 130000,
+      "categoria": "Servicios",
+      "descripcion": "Electricidad Cordero",
+      "creadoEn": "2026-08-29T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "66f9ba41-59cf-48cb-9757-8d17bbc672f7"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 36940,
+      "categoria": "Materiales",
+      "descripcion": "Lagar justif semana 81 Cordero",
+      "creadoEn": "2026-08-18T00:00:00.000Z",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "id": "02de2ca2-7871-43e1-b9c0-7c524a424b88"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 20000,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Ayuda niños comunidad José",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "id": "22f65e8a-bf65-48ee-a8d0-2ee9475d345e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 37500,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Justificación 17 Steven",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "id": "f4381f88-9986-4fae-805f-290cfb684d06"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 85000,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Pago de corte platinas",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "id": "5c454184-a659-46cc-a811-28955d6cffdf"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 1180000,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Nóminas quincena IPSUM",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "id": "90bb57de-d4be-4a3a-b5e9-b44922ecf96f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 38956.52,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Teléfono ipsum",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "id": "d67a6b86-a6ee-4633-a60e-529869906af2"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 36151.35,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Teléfono ipsum",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "id": "7883bd21-856e-4d01-b090-a915e5d9ab47"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 10864.68,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Teléfono ipsum",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "id": "44564ef5-625c-47fa-8fe1-a2c1e5158440"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 129429.56,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago de tigo ipsum",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "id": "1ef58a06-a1a6-40ae-b920-c039f9dc0f80"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 144460.42,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 51 cordero",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "id": "9ccdaf39-a94a-48c7-8844-822a0aefba19"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 8000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago de dropbox",
+      "creadoEn": "2026-06-03T00:00:00.000Z",
+      "id": "5db2c6a7-fa30-4899-aa95-565c40ba272d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 100264.95,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Pago justificación 50 cordero (Sogam y Sogam: 29320 de garantía casa María Fernanda y Maritza)",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "id": "c2721b94-6cf8-47e7-9a30-4344a7ee9330"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 20000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Ayuda a Noel",
+      "creadoEn": "2026-06-06T00:00:00.000Z",
+      "id": "2f9d5742-cc02-4baf-8fc3-af893f9e8e40"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 300000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Contador abril, mayo, junio",
+      "creadoEn": "2026-06-09T00:00:00.000Z",
+      "id": "2dcb1f9e-9140-4113-a460-5f04b717a962"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 287333,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago CCSS",
+      "creadoEn": "2026-06-10T00:00:00.000Z",
+      "id": "33e08dcd-e6b4-456f-b959-a9e408394a7c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 2932.5,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago personeria",
+      "creadoEn": "2026-06-10T00:00:00.000Z",
+      "id": "072b7f6e-3ed6-4e3f-b7be-95a81ab79e46"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 88486,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 53 Carlos cordero / total 103986 - casa Jose Armando",
+      "creadoEn": "2026-06-05T00:00:00.000Z",
+      "id": "19c8e1ce-2844-404f-8470-76a8e1cdec3c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 34735,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 19 Steven",
+      "creadoEn": "2026-06-09T00:00:00.000Z",
+      "id": "bcf6b54f-1f13-4379-8774-6697da7a5f96"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 155077.92,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Pago de materiales y casas justificación 54 cordero",
+      "creadoEn": "2026-06-09T00:00:00.000Z",
+      "id": "2958fad5-0fe3-47ec-8b5a-3d02dd97c097"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 88034.35,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Justificación 55 cordero",
+      "creadoEn": "2026-06-11T00:00:00.000Z",
+      "id": "ff85a771-879d-42d9-82b6-9affc9eacd95"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 32110,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "Steven justificación 18",
+      "creadoEn": "2026-06-06T00:00:00.000Z",
+      "id": "01b7d0c6-fead-45c1-9b5c-98b13b2a5b6a"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 4227300,
+      "nombreIngreso": "Desembolso 1",
+      "fechaPago": "16/05/2026",
+      "descripcion": "Desembolso 1 del presupuesto asignado a Jeniffer Rojas Araya",
+      "creadoEn": "2026-05-16T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "1ccf07b9-c0f8-4b64-b777-64370dd56f50"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 3458700,
+      "nombreIngreso": "Desembolso 2",
+      "fechaPago": "13/06/2026",
+      "descripcion": "Desembolso 2 del presupuesto asignado a Jeniffer Rojas Araya",
+      "creadoEn": "2026-06-13T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "00f14032-a526-4fcc-b106-e5d9cda3554f"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 3843000,
+      "nombreIngreso": "Desembolso 3",
+      "fechaPago": "27/06/2026",
+      "descripcion": "Desembolso 3 del presupuesto asignado a Jeniffer Rojas Araya",
+      "creadoEn": "2026-06-27T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "fe4885f0-30b0-447f-b4c5-a5686d108d86"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 1281000,
+      "nombreIngreso": "Desembolso 4",
+      "fechaPago": "15/07/2026",
+      "descripcion": "Desembolso 4 del presupuesto asignado a Jeniffer Rojas Araya",
+      "creadoEn": "2026-07-15T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "a4508576-ef9e-4ab8-a063-07bcfac56e35"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 250000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven",
+      "creadoEn": "2026-05-15T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "3c494de5-06aa-4ba7-a0f8-884eb3b4718e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 16217.36,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-05-12T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "5ff8ca3b-1794-41ff-b42f-5f08dff2ebf5"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 79326,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-05-12T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "6a985e0d-9be2-457e-8407-32d4cc514a1e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 151024,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores 100 mes, 50 depósito y 1024 sinpe",
+      "creadoEn": "2026-05-20T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "8814b086-5bbb-4e97-81e2-acc8a6fd0dc2"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 36913.37,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-05-22T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "c922e281-4d60-4d7e-aa2d-921aeee62600"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 355000,
+      "categoria": "Otros",
+      "descripcion": "Pago mikel",
+      "creadoEn": "2026-05-23T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "acd27dc6-45fc-4149-b77b-c63b13c5aa94"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1242854.09,
+      "categoria": "Materiales",
+      "descripcion": "Pago OC1 Colono",
+      "creadoEn": "2026-05-23T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "3fc26b18-e8a2-4a01-9888-59248dc52394"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 156000,
+      "categoria": "Otros",
+      "descripcion": "Mikel",
+      "creadoEn": "2026-05-29T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "46d35ea1-7f2d-4360-9c4b-59fb391359de"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 96774.52,
+      "categoria": "Materiales",
+      "descripcion": "Tubería Colono",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "01e84987-f781-4fa9-a9d6-e958016b1b4a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 200000,
+      "categoria": "Servicios",
+      "descripcion": "Comisión Magdalena",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "420202e9-2548-426c-aa82-7c9841cf762e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 101700,
+      "categoria": "Materiales",
+      "descripcion": "Formaleta justif semana 52",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "bbea0c84-309f-4a65-a83d-9717aa5a49a4"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 9017.8,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-04T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "c411410d-a737-41bb-9229-0bcb5253317a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 52000,
+      "categoria": "Otros",
+      "descripcion": "MIkel",
+      "creadoEn": "2026-06-05T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "4ce766e3-613e-49b5-a1f6-2a52ebd63368"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 848576.24,
+      "categoria": "Materiales",
+      "descripcion": "OC2 Colono",
+      "creadoEn": "2026-06-05T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "1a849186-f748-4f35-8713-9d6e773ed1e7"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 362328.22,
+      "categoria": "Materiales",
+      "descripcion": "OC3 Colono",
+      "creadoEn": "2026-06-17T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "b8182c3f-ef95-4bd1-9790-c803f7dcf2c5"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 7417.64,
+      "categoria": "Materiales",
+      "descripcion": "Materiales el colono",
+      "creadoEn": "2026-06-19T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "b1f0b007-d721-4e04-a9ae-33c420439766"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 50000,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-06-25T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "88af21fa-ab97-4465-ad3e-a659ef562186"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 64058.96,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-19T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "500e37fc-2e3f-4c3a-82db-24d9c152c89f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 25000,
+      "categoria": "Otros",
+      "descripcion": "Hugo Valverde",
+      "creadoEn": "2026-06-20T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "18ccd585-9877-4dda-8650-b8601e96c688"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75973,
+      "categoria": "Materiales",
+      "descripcion": "Pimmsa",
+      "creadoEn": "2026-06-20T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "d6884004-67e3-42b1-a3d8-78121914d51d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 183490.03,
+      "categoria": "Materiales",
+      "descripcion": "Radiapuertas Tibás",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "1689fa50-7ae7-4b04-9301-51b034931658"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 437423.51,
+      "categoria": "Materiales",
+      "descripcion": "Lagar",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "0e15cee7-58dc-40a4-949e-577b5e037338"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 139662.35,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-06-24T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "d6f4d8d6-4990-4a26-b2a1-f136f0b7309c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 2550,
+      "categoria": "Materiales",
+      "descripcion": "Ferretería ConstruHierro justif semana 56 Cordero",
+      "creadoEn": "2026-06-12T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "add7dc05-48fd-4bb8-bdaa-96a934fc9438"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 9300,
+      "categoria": "Materiales",
+      "descripcion": "Ferretería ConstruHierro justif semana 57 Cordero",
+      "creadoEn": "2026-06-17T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "48d9c269-62b7-427c-b018-f2b1f12a1458"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 130000,
+      "categoria": "Otros",
+      "descripcion": "Elevctricidad Cordero",
+      "creadoEn": "2026-07-04T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "cce79656-c3fe-411b-81b5-59fd96358187"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 7320,
+      "categoria": "Materiales",
+      "descripcion": "Colono justif semana 64 Cordero",
+      "creadoEn": "2026-07-02T00:00:00.000Z",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "id": "99765e72-6062-419b-9e06-5555f319bae6"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 4000000,
+      "nombreIngreso": "Desembolso 1",
+      "fechaPago": "30/05/2026",
+      "descripcion": "Desembolso 1 del presupuesto asignado a Marianela Navarro Rodriguez",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "2179a6a2-2d35-4227-b627-016376bfb584"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 4000000,
+      "nombreIngreso": "Desembolso 2",
+      "fechaPago": "01/07/2026",
+      "descripcion": "Desembolso 2 del presupuesto asignado a Marianela Navarro Rodriguez",
+      "creadoEn": "2026-07-01T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "b6a7fe48-78a1-49a7-90a3-0e2fe6f2d88e"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 2000000,
+      "nombreIngreso": "Desembolso 3",
+      "fechaPago": "04/07/2026",
+      "descripcion": "Desembolso 3 del presupuesto asignado a Marianela Navarro Rodriguez",
+      "creadoEn": "2026-07-04T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "e8a0455d-6f57-4c57-8c79-1ee0d788438a"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 1306000,
+      "nombreIngreso": "Desembolso 4",
+      "fechaPago": "24/07/2026",
+      "descripcion": "Desembolso 4 del presupuesto asignado a Marianela Navarro Rodriguez",
+      "creadoEn": "2026-07-24T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "7f55fb20-420c-42f0-9564-2de94a1644aa"
+    },
+    {
+      "tipo": "ingreso",
+      "monto": 1000000,
+      "nombreIngreso": "Desembolso 5",
+      "fechaPago": "29/08/2026",
+      "descripcion": "Desembolso 5 del presupuesto asignado a Marianela Navarro Rodriguez",
+      "creadoEn": "2026-08-29T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "5ba6f1d5-2bf4-4bcb-8343-11998cc8364d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven",
+      "creadoEn": "2026-05-21T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "aca99f6c-bb24-47ac-ac13-c290961afba7"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 70000,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-05-26T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "32691cde-d269-4362-8372-4b0ecda83793"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 1850617.5,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes",
+      "creadoEn": "2026-05-28T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "39aacd0a-bf6c-4e03-9a8c-6ee11dc510d2"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 43650,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes (Chris va a pedir nota de crédito)",
+      "creadoEn": "2026-05-28T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "d810af7e-a812-4690-890c-bd104bd16c25"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 23391,
+      "categoria": "Materiales",
+      "descripcion": "Madera justif 47 Cordero",
+      "creadoEn": "2026-05-26T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "a8128edf-3ae4-4d9a-8041-51a54c960a9f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 144950,
+      "categoria": "Materiales",
+      "descripcion": "Lastre",
+      "creadoEn": "2026-05-28T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "ba2a4926-4637-4d26-bf4e-bdf4a3b945cf"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 50000,
+      "categoria": "Equipamiento",
+      "descripcion": "Batidora",
+      "creadoEn": "2026-05-28T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "1a048806-5a3f-4146-9726-2a62a2254f82"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 175000,
+      "categoria": "Servicios",
+      "descripcion": "Honorarios Steven saldo 0",
+      "creadoEn": "2026-05-30T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "3599a3f5-49f7-415d-9776-aa1f506b0450"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 200000,
+      "categoria": "Servicios",
+      "descripcion": "Comisión Magdalena",
+      "creadoEn": "2026-06-02T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "6a3b39ab-3075-4d8b-b25e-45845e3b5ecb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 79326,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-06-04T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "24bcebd1-4e98-4be1-8c30-974b2a393757"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 64091.34,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-06-04T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "25afb480-d7da-49ba-a39e-b1658a653f83"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 100000,
+      "categoria": "Servicios",
+      "descripcion": "Comision susana",
+      "creadoEn": "2026-06-06T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "7be20be5-bbb1-408f-959c-054a46d9737d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 101700,
+      "categoria": "Materiales",
+      "descripcion": "Formaleta",
+      "creadoEn": "2026-06-10T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "b4fa0207-0c60-4431-8cd8-9101b76b02ed"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 962757,
+      "categoria": "Materiales",
+      "descripcion": "OC2 Teresa Barrantes",
+      "creadoEn": "2026-06-12T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "7ce59b56-d883-46fc-86b8-e77a1ce6d591"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 32400,
+      "categoria": "Otros",
+      "descripcion": "Andrés",
+      "creadoEn": "2026-06-17T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "73b8fdc8-3972-4a5e-8b38-b155901a94be"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 38500,
+      "categoria": "Servicios",
+      "descripcion": "Alquiler casa trabajadores",
+      "creadoEn": "2026-06-28T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "a810f25e-2f72-47ab-8146-8edfe119d5bb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 419299.25,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes (Chris va a pedir nota de crédito)",
+      "creadoEn": "2026-06-30T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "0b84ae39-be27-4a07-b1c8-1383315e6f8d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 15520,
+      "categoria": "Otros",
+      "descripcion": "AyC justif semana 59 Cordero",
+      "creadoEn": "2026-06-21T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "c8042882-b545-44b7-ab47-aa43dd56299d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 437068.56,
+      "categoria": "Materiales",
+      "descripcion": "Lagar",
+      "creadoEn": "2026-07-04T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "f2f4497f-4414-4d17-8d21-80ef330c0528"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 75973,
+      "categoria": "Materiales",
+      "descripcion": "Pimmsa",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "4c31bd59-5927-47e7-8f89-9af63c2f5423"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 62477.7,
+      "categoria": "Materiales",
+      "descripcion": "Arsa",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "7b1aea58-ccf1-4483-ba8a-0e24d68912ff"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 23000,
+      "categoria": "Otros",
+      "descripcion": "Hugo Valverde",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "95278c33-320e-4bb1-8fe9-199dd1b21573"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 8027.5,
+      "categoria": "Otros",
+      "descripcion": "Teresa Barrantes (Chris va a pedir nota de crédito)",
+      "creadoEn": "2026-07-08T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "b53dd478-b281-4b18-ba3c-9b293d654e3d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 157742.35,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-07-09T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "fb5e5332-f2f3-47bc-9e04-6e4a9c13fe2a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 183490,
+      "categoria": "Materiales",
+      "descripcion": "Radiapuertas Barranca",
+      "creadoEn": "2026-07-09T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "4ab74404-8769-4bb6-ab44-fb5ad1ccbb1f"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 29832,
+      "categoria": "Materiales",
+      "descripcion": "Fénix",
+      "creadoEn": "2026-07-10T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "bcab96d6-b259-4c72-af0d-46b87c1b1be1"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 130000,
+      "categoria": "Servicios",
+      "descripcion": "Electricidad",
+      "creadoEn": "2026-07-18T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "f4343d77-2800-4a88-ab09-f7232ca2ea1b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 35000,
+      "categoria": "Materiales",
+      "descripcion": "Materiales",
+      "creadoEn": "2026-07-28T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "0c0a632a-bbea-4b94-b197-0eefaca91421"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 24000,
+      "categoria": "Materiales",
+      "descripcion": "Mapesa",
+      "creadoEn": "2026-07-24T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "20f6034d-c105-4f31-a2a6-7a99fbf5e1af"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 330000,
+      "categoria": "Otros",
+      "descripcion": "Kenneth Cordero",
+      "creadoEn": "2026-08-12T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "0791c024-deaa-47cb-97fd-660cb5f4fcf8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "monto": 6430,
+      "categoria": "Materiales",
+      "descripcion": "Ferretería Nandayure justif semana 76 Cordero",
+      "creadoEn": "2026-08-07T00:00:00.000Z",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "id": "3b2bfb17-4809-464f-8bbb-1d5179b69b6c"
+    }
+  ]
+}
