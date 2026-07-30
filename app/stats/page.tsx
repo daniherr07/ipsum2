@@ -293,7 +293,7 @@ function SummaryStats({
 }
 
 export default function StatsPage() {
-  const [filtroAño, setFiltroAño] = useState("2025")
+  const [filtroAño, setFiltroAño] = useState(String(new Date().getFullYear()))
   const [filtroTipoBono, setFiltroTipoBono] = useState("Todos")
   const [filteredData, setFilteredData] = useState<ResumenStats>(STATS_VACIO)
 
