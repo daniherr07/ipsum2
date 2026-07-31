@@ -17,10 +17,15 @@ import Swal from "sweetalert2";
 import { listarMovimientos, actualizarMovimiento, eliminarMovimiento } from "@/lib/api";
 
 /* =========================
-   Format number consistently (avoid locale mismatch)
+   Formato de número consistente (evita mismatch de locale):
+   punto para miles, coma solo para céntimos (1.234.567,89)
 ========================= */
 function formatNumber(num) {
-  return Math.round(num).toLocaleString("en-US");
+  return num.toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: "always",
+  });
 }
 
 /* =========================

@@ -123,11 +123,11 @@ export default function AgregarMovimientoPage() {
 
   const formatCurrency = (value: string) => {
     const num = parseInt(value.replace(/\D/g, "")) || 0
-    return new Intl.NumberFormat("es-CR", {
-      style: "currency",
-      currency: "CRC",
-      minimumFractionDigits: 0,
-    }).format(num)
+    /* Mismo separador de miles que el resto de la app (1.500.000) */
+    return `₡${num.toLocaleString("es-ES", {
+      maximumFractionDigits: 0,
+      useGrouping: "always",
+    })}`
   }
 
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

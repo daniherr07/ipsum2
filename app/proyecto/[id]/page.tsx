@@ -18,13 +18,17 @@ import { obtenerProyecto, listarMovimientos, type Proyecto, type Movimiento } fr
 
 /* =========================
    Helpers
+   Formato consistente: punto para miles,
+   coma solo para céntimos (₡1.234.567,89)
 ========================= */
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("es-CR", {
-    style: "currency",
-    currency: "CRC",
-    minimumFractionDigits: 0,
-  }).format(value)
+const formatNumber = (value: number) =>
+  value.toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: "always",
+  })
+
+const formatCurrency = (value: number) => `₡${formatNumber(value)}`
 
 // Animated number hook
 function useAnimatedNumber(target: number, duration = 1000) {
@@ -215,7 +219,7 @@ function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
           className="fill-base-content font-bold"
           style={{ fontSize: 8, fontWeight: 700 }}
         >
-          {(total / 1000000).toFixed(1)}M
+          {formatNumber(total)}
         </text>
       </svg>
       <ul className="w-full space-y-2">

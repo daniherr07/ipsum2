@@ -49,8 +49,8 @@ export function calcularStats(anio: string, tipoBono?: string): ResumenStats {
     const delMes = movimientosDelAnio.filter((m) => mesAnioDe(m.creadoEn).mes === mes);
     return {
       mes,
-      ingresos: Math.round(delMes.filter((m) => m.tipo === "ingreso").reduce((sum, m) => sum + m.monto, 0)),
-      egresos: Math.round(delMes.filter((m) => m.tipo === "egreso").reduce((sum, m) => sum + m.monto, 0)),
+      ingresos: delMes.filter((m) => m.tipo === "ingreso").reduce((sum, m) => sum + m.monto, 0),
+      egresos: delMes.filter((m) => m.tipo === "egreso").reduce((sum, m) => sum + m.monto, 0),
     };
   });
 
@@ -73,12 +73,12 @@ export function calcularStats(anio: string, tipoBono?: string): ResumenStats {
   return {
     anio,
     tipoBono,
-    ingresos: Math.round(ingresos),
-    egresos: Math.round(egresos),
-    balance: Math.round(balance),
+    ingresos,
+    egresos,
+    balance,
     serieMensual,
     mejorMes: mejorMes ? { mes: mejorMes.mes, neto: mejorMes.ingresos - mejorMes.egresos } : null,
     peorMes: peorMes ? { mes: peorMes.mes, neto: peorMes.ingresos - peorMes.egresos } : null,
-    promedioMensualIngresos: Math.round(promedioMensualIngresos),
+    promedioMensualIngresos,
   };
 }

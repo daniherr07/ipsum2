@@ -58,7 +58,7 @@ export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
     return {
       proyectoId: p.id,
       nombre: p.nombre,
-      monto: Math.round(gastosAdministrativos * peso),
+      monto: gastosAdministrativos * peso,
       porcentaje: Math.round(peso * 1000) / 10,
     };
   });
@@ -69,11 +69,11 @@ export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
   return {
     mes,
     anio,
-    ingresos: Math.round(ingresos),
-    egresos: Math.round(egresos),
-    balance: Math.round(balance),
+    ingresos,
+    egresos,
+    balance,
     pctGastado: Math.round(pctGastado * 10) / 10,
-    gastosAdministrativos: Math.round(gastosAdministrativos),
+    gastosAdministrativos,
     pctGastosAdministrativos: Math.round(pctGastosAdministrativos * 10) / 10,
     superaLimiteAdministrativo: pctGastosAdministrativos > 10,
     distribucionGastosAdministrativos,
