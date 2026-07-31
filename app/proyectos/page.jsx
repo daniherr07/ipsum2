@@ -11,12 +11,14 @@ import {
   FolderOpen,
 } from "lucide-react";
 import Link from "next/link";
+import Swal from "sweetalert2";
+import { listarProyectos } from "@/lib/api";
 
 /* =========================
    Format number consistently (avoid locale mismatch)
 ========================= */
 function formatNumber(num) {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return Math.round(num).toLocaleString("en-US");
 }
 
 /* =========================
@@ -44,63 +46,6 @@ function FadeIn({ children, delay = 0, className = "" }) {
   );
 }
 
-/* =========================
-   Data mock
-   (mismos campos que se ingresan en /agregarProyecto)
-========================= */
-const initialProjects = [
-  {
-    id: 1,
-    nombre: "Clodomiro Picado",
-    presupuesto: 50000000,
-    mesAsignacion: "Enero",
-    anioAsignacion: "2024",
-    estado: "Revisión",
-    bono: "Art.59",
-    subtipoBonoI: "Art.59",
-  },
-  {
-    id: 2,
-    nombre: "Monseñor Sanabria",
-    presupuesto: 75000000,
-    mesAsignacion: "Marzo",
-    anioAsignacion: "2024",
-    estado: "Revisión",
-    bono: "Art.59",
-    subtipoBonoI: "Art.59",
-  },
-  {
-    id: 3,
-    nombre: "Joaquín García",
-    presupuesto: 60000000,
-    mesAsignacion: "Mayo",
-    anioAsignacion: "2024",
-    estado: "Finalizado",
-    bono: "Art.59",
-    subtipoBonoI: "Art.59",
-  },
-  {
-    id: 4,
-    nombre: "Residencial Vista",
-    presupuesto: 85000000,
-    mesAsignacion: "Febrero",
-    anioAsignacion: "2024",
-    estado: "Revisión",
-    bono: "Art.59",
-    subtipoBonoI: "Art.59",
-  },
-  {
-    id: 5,
-    nombre: "Centro Comercial Norte",
-    presupuesto: 120000000,
-    mesAsignacion: "Junio",
-    anioAsignacion: "2023",
-    estado: "Finalizado",
-    bono: "Art.59",
-    subtipoBonoI: "Art.59",
-  },
-];
-
 const ESTADOS = [
   { value: "todos", label: "Todos", activeClass: "btn-primary" },
   { value: "Revisión", label: "Revisión", activeClass: "btn-warning" },
@@ -108,9 +53,21 @@ const ESTADOS = [
 ];
 
 export default function ProyectosPage() {
-  const [projects] = useState(initialProjects);
+  const [projects, setProjects] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("todos");
+
+  useEffect(() => {
+    listarProyectos()
+      .then(setProjects)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los proyectos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        });
+      });
+  }, []);
 
   /* =========================
      Filtrado
@@ -221,7 +178,7 @@ export default function ProyectosPage() {
             {filtrados.map((project, index) => (
               <FadeIn key={project.id} delay={100 + index * 50} className="h-full">
                 <Link
-                  href="/proyecto"
+                  href={`/proyecto/${project.id}`}
                   className="bg-base-100 rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 h-full flex flex-col gap-3 p-4 sm:p-5"
                 >
                   {/* Header: icono + nombre + estado */}
@@ -259,7 +216,7 @@ export default function ProyectosPage() {
                       <span className="text-base-content/50 text-right">
                         Subtipo:{" "}
                         <span className="font-semibold text-base-content">
-                          {project.subtipoBonoI}
+                          {project.subtipoBono}
                         </span>
                       </span>
                     </div>

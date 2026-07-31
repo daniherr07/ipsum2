@@ -6,9 +6,13 @@ import { proyectosRouter } from "./routes/proyectos.js";
 import { movimientosRouter } from "./routes/movimientos.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { statsRouter } from "./routes/stats.js";
+import { catalogosRouter } from "./routes/catalogos.js";
+import { bonosRouter } from "./routes/bonos.js";
 import { cargarEstadoGuardado } from "./persistencia.js";
 import { restaurarProyectos } from "./services/proyectos.js";
 import { restaurarMovimientos } from "./services/movimientos.js";
+import { restaurarCatalogos } from "./services/catalogos.js";
+import { restaurarBonos } from "./services/bonos.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -21,6 +25,8 @@ app.use(proyectosRouter);
 app.use(movimientosRouter);
 app.use(dashboardRouter);
 app.use(statsRouter);
+app.use(catalogosRouter);
+app.use(bonosRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -28,10 +34,13 @@ app.use(errorHandler);
 const estado = cargarEstadoGuardado();
 restaurarProyectos(estado.proyectos);
 restaurarMovimientos(estado.movimientos);
+restaurarCatalogos(estado.catalogos ?? {});
+restaurarBonos(estado.bonos ?? []);
 console.log(
-  `Datos cargados desde seed-data.json: ${estado.proyectos.length} proyectos, ${estado.movimientos.length} movimientos.`
+  `Datos cargados desde seed-data.json: ${estado.proyectos.length} proyectos, ${estado.movimientos.length} movimientos, ${(estado.bonos ?? []).length} bonos.`
 );
 
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
+

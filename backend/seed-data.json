@@ -54,6 +54,39 @@
       "subtipoBono": "Art.59",
       "creadoEn": "2026-05-30T00:00:00.000Z",
       "id": "a9ea70f5-f694-4992-bfb6-12fd162cd54a"
+    },
+    {
+      "nombre": "Prueba - Deilyn",
+      "presupuesto": 5000000,
+      "mesAsignacion": "Julio",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "id": "16c4476d-c8c2-4773-8212-3b18aff5f609",
+      "creadoEn": "2026-07-30T22:51:16.791Z"
+    },
+    {
+      "nombre": "prueba - max",
+      "presupuesto": 20000000,
+      "mesAsignacion": "Mayo",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "id": "8261d61e-a1c1-49b3-a8f0-1dd5908f2b59",
+      "creadoEn": "2026-07-30T23:16:02.367Z"
+    },
+    {
+      "nombre": "Prueba 02 - Deilyn",
+      "presupuesto": 2500000,
+      "mesAsignacion": "Julio",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Bono Credito",
+      "subtipoBono": "CLP",
+      "id": "1f66a56b-c81c-4ef5-9ac6-68a235626206",
+      "creadoEn": "2026-07-31T00:11:31.332Z"
     }
   ],
   "movimientos": [
@@ -2216,6 +2249,197 @@
       "creadoEn": "2026-08-07T00:00:00.000Z",
       "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
       "id": "3b2bfb17-4809-464f-8bbb-1d5179b69b6c"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "16c4476d-c8c2-4773-8212-3b18aff5f609",
+      "monto": 200000,
+      "nombreIngreso": "Prueba",
+      "fechaPago": "28/07/2026",
+      "descripcion": "Descripción",
+      "id": "c46d7be7-7e6b-4cb4-bcfa-60caf5031ba8",
+      "creadoEn": "2026-07-30T22:52:02.771Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "16c4476d-c8c2-4773-8212-3b18aff5f609",
+      "monto": 1000000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC1",
+      "descripcion": "Descripción",
+      "id": "97314d45-7f61-44ad-9824-62b957f792f9",
+      "creadoEn": "2026-07-30T22:53:37.898Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 5000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "descrpción",
+      "id": "ea56a335-fe3a-402c-8259-2a3388c16b95",
+      "creadoEn": "2026-07-30T22:53:37.911Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 25000,
+      "mes": "Junio",
+      "ano": "2026",
+      "descripcion": "xx",
+      "id": "9f11caa7-2fb5-4a19-89fe-4454271106bf",
+      "creadoEn": "2026-07-30T23:14:43.541Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "16c4476d-c8c2-4773-8212-3b18aff5f609",
+      "monto": 20000,
+      "categoria": "Servicios",
+      "ordenCompra": "OC2",
+      "descripcion": "xxxx",
+      "id": "3eedc5c2-0344-4ebe-b5f0-0c4fa3626d5e",
+      "creadoEn": "2026-07-30T23:14:43.547Z"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "16c4476d-c8c2-4773-8212-3b18aff5f609",
+      "monto": 300000,
+      "nombreIngreso": "prueba2",
+      "fechaPago": "27/07/2026",
+      "descripcion": "xxx",
+      "id": "f169ec9f-8b77-46a5-b63d-06f0d18a2b6a",
+      "creadoEn": "2026-07-30T23:15:05.924Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "8261d61e-a1c1-49b3-a8f0-1dd5908f2b59",
+      "monto": 25000,
+      "categoria": "Equipamiento",
+      "ordenCompra": "OC2",
+      "descripcion": "bbbb",
+      "id": "3e3e00a7-12f9-4508-8d15-87fcd58b9330",
+      "creadoEn": "2026-07-30T23:19:13.330Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 5000,
+      "mes": "Julio",
+      "ano": "2026",
+      "descripcion": "bbb",
+      "id": "085d3a37-60f8-43c2-92b1-4badcfcdd7c1",
+      "creadoEn": "2026-07-30T23:19:13.337Z"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "1f66a56b-c81c-4ef5-9ac6-68a235626206",
+      "monto": 2000000,
+      "nombreIngreso": "P1",
+      "fechaPago": "30/07/2026",
+      "descripcion": "bbbbb",
+      "id": "05a74a89-123f-45d6-8a6a-461aab672b81",
+      "creadoEn": "2026-07-31T00:12:05.037Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 5000,
+      "mes": "Julio",
+      "ano": "2026",
+      "descripcion": "bbb",
+      "id": "995b922e-68cb-4850-9989-b496e73bad22",
+      "creadoEn": "2026-07-31T00:12:52.645Z"
+    }
+  ],
+  "catalogos": {
+    "ordenes-compra": [],
+    "proveedores": []
+  },
+  "bonos": [
+    {
+      "id": "52f9e61b-d927-448b-a26a-6a37d3730d38",
+      "nombre": "Articulo 59",
+      "subtipos": [
+        {
+          "id": "baece993-9e05-4579-b70c-7d26871f2368",
+          "nombre": "Nucleo Tipico"
+        },
+        {
+          "id": "b98499d3-8d0e-48dd-8cfc-99f33bd0ed1f",
+          "nombre": "Nucleo Numeroso"
+        },
+        {
+          "id": "f2c6ad2e-da0a-47e5-9641-c88751c816aa",
+          "nombre": "Adulto Mayor"
+        },
+        {
+          "id": "a2db8344-48cd-495f-beab-d0fcbfb95b59",
+          "nombre": "Discapacidad"
+        }
+      ],
+      "creadoEn": "2026-07-30T23:56:39.000Z"
+    },
+    {
+      "id": "92669929-3b75-42c5-9003-7d39da1d391b",
+      "nombre": "Bono Credito",
+      "subtipos": [
+        {
+          "id": "a5bd579c-17ea-4c49-bef7-e2ee9d7a6f19",
+          "nombre": "CLP"
+        },
+        {
+          "id": "377c1250-c8cc-46e2-96fe-f093ff5101b4",
+          "nombre": "Compra lote y construcción"
+        }
+      ],
+      "creadoEn": "2026-07-30T23:56:39.000Z"
+    },
+    {
+      "id": "8c9aeee5-350c-49e0-8a78-dbffd215ee1f",
+      "nombre": "CLP",
+      "subtipos": [
+        {
+          "id": "9ad09057-bf1c-4351-ab09-e7aa7daf0777",
+          "nombre": "Ordinario"
+        },
+        {
+          "id": "42f321cd-0712-43fa-922b-0fb5be27f703",
+          "nombre": "Crédito"
+        },
+        {
+          "id": "f227b97f-fff6-4d7c-8e75-97175fca393f",
+          "nombre": "Adulto Mayor"
+        },
+        {
+          "id": "d8b37be0-308e-4ba4-9f3b-1e8064f2b5d7",
+          "nombre": "Discapacidad"
+        }
+      ],
+      "creadoEn": "2026-07-30T23:56:39.000Z"
+    },
+    {
+      "id": "81c27c52-fa5f-4dbd-9bc3-fac2fb3deb08",
+      "nombre": "Crédito",
+      "subtipos": [
+        {
+          "id": "82a3d94c-721b-4571-94e0-fea494ba443a",
+          "nombre": "CLP"
+        },
+        {
+          "id": "4c839a40-805e-48b2-ba86-c74f2448fcb0",
+          "nombre": "Compra lote y construcción"
+        }
+      ],
+      "creadoEn": "2026-07-30T23:56:39.000Z"
+    },
+    {
+      "id": "360675b3-3d52-4c7b-9fca-6d7067f10c5d",
+      "nombre": "RAMT",
+      "subtipos": [],
+      "creadoEn": "2026-07-30T23:56:39.000Z"
     }
   ]
 }

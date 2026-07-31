@@ -20,7 +20,7 @@ import { listarMovimientos, actualizarMovimiento, eliminarMovimiento } from "@/l
    Format number consistently (avoid locale mismatch)
 ========================= */
 function formatNumber(num) {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return Math.round(num).toLocaleString("en-US");
 }
 
 /* =========================
@@ -97,6 +97,8 @@ export default function MovimientosPage() {
   const [tipoFiltro, setTipoFiltro] = useState("todos"); // todos | ingreso | egreso
   const [busqueda, setBusqueda] = useState("");
   const [sortBy, setSortBy] = useState("fecha-desc");
+  const [filtroMes, setFiltroMes] = useState(""); // "" = todos los meses
+  const [filtroAnio, setFiltroAnio] = useState(""); // "" = todos los años
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
 
@@ -142,6 +144,14 @@ export default function MovimientosPage() {
       );
     }
 
+    if (filtroMes) {
+      lista = lista.filter((m) => MESES[parseDate(m.created_at).getMonth()] === filtroMes);
+    }
+
+    if (filtroAnio) {
+      lista = lista.filter((m) => String(parseDate(m.created_at).getFullYear()) === filtroAnio);
+    }
+
     lista.sort((a, b) => {
       switch (sortBy) {
         case "fecha-asc":
@@ -157,7 +167,7 @@ export default function MovimientosPage() {
     });
 
     return lista;
-  }, [movimientos, tipoFiltro, busqueda, sortBy]);
+  }, [movimientos, tipoFiltro, busqueda, sortBy, filtroMes, filtroAnio]);
 
   /* =========================
      Totales del conjunto filtrado
@@ -178,6 +188,8 @@ export default function MovimientosPage() {
     setTipoFiltro("todos");
     setBusqueda("");
     setSortBy("fecha-desc");
+    setFiltroMes("");
+    setFiltroAnio("");
   };
 
   /* =========================
@@ -395,6 +407,44 @@ export default function MovimientosPage() {
                 <option value="monto-desc">Mayor monto</option>
                 <option value="monto-asc">Menor monto</option>
               </select>
+            </div>
+
+            {/* Mes y Año */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-base-content/50 ml-1">
+                  Mes
+                </span>
+                <select
+                  value={filtroMes}
+                  onChange={(e) => setFiltroMes(e.target.value)}
+                  className="select select-bordered select-sm w-full mt-1"
+                >
+                  <option value="">Todos</option>
+                  {MESES.map((mes) => (
+                    <option key={mes} value={mes}>
+                      {mes}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-base-content/50 ml-1">
+                  Año
+                </span>
+                <select
+                  value={filtroAnio}
+                  onChange={(e) => setFiltroAnio(e.target.value)}
+                  className="select select-bordered select-sm w-full mt-1"
+                >
+                  <option value="">Todos</option>
+                  {ANOS.map((ano) => (
+                    <option key={ano} value={ano}>
+                      {ano}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </FadeIn>
 

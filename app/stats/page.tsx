@@ -5,12 +5,11 @@ import { ArrowLeft, TrendingUp, TrendingDown, Wallet, ChevronLeft } from "lucide
 import Link from "next/link"
 import Swal from "sweetalert2"
 import NavBar from "@/components/navbar/NavBar"
-import { obtenerStats, type ResumenStats } from "@/lib/api"
+import { obtenerStats, listarBonos, type ResumenStats } from "@/lib/api"
 
 type MonthData = { mes: string; ingresos: number; egresos: number }
 
 const AÑOS = ["2023", "2024", "2025", "2026"]
-const TIPOS_BONO = ["Todos", "RAMT", "Lote Propio", "Hipoteca", "Articulo 76"]
 
 const STATS_VACIO: ResumenStats = {
   anio: "",
@@ -296,6 +295,15 @@ export default function StatsPage() {
   const [filtroAño, setFiltroAño] = useState(String(new Date().getFullYear()))
   const [filtroTipoBono, setFiltroTipoBono] = useState("Todos")
   const [filteredData, setFilteredData] = useState<ResumenStats>(STATS_VACIO)
+  const [tiposBono, setTiposBono] = useState<string[]>(["Todos"])
+
+  useEffect(() => {
+    listarBonos()
+      .then((bonos) => setTiposBono(["Todos", ...bonos.map((b) => b.nombre)]))
+      .catch(() => {
+        // si falla, se queda solo con "Todos" - no bloquea el resto de la pantalla
+      })
+  }, [])
 
   useEffect(() => {
     obtenerStats(filtroAño, filtroTipoBono === "Todos" ? undefined : filtroTipoBono)
@@ -339,7 +347,7 @@ export default function StatsPage() {
                     value={filtroTipoBono}
                     onChange={e => setFiltroTipoBono(e.target.value)}
                   >
-                    {TIPOS_BONO.map(t => (
+                    {tiposBono.map(t => (
                       <option key={t} value={t}>{t}</option>
                     ))}
                   </select>

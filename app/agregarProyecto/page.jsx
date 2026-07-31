@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import { crearProyecto } from "@/lib/api";
+import { crearProyecto, listarBonos } from "@/lib/api";
 
 /* =========================
    FadeIn animation component
@@ -69,8 +69,8 @@ const initialFormData = {
   mesAsignacion: "",
   anioAsignacion: "",
   estado: "Revisión",
-  bono: "Art.59",
-  subtipoBonoI: "Art.59",
+  bono: "",
+  subtipoBonoI: "",
 };
 
 /* Formato de moneda en colones costarricenses */
@@ -86,6 +86,22 @@ const formatCurrency = (value) => {
 export default function AgregarProyecto() {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
+  const [bonos, setBonos] = useState([]);
+
+  useEffect(() => {
+    listarBonos()
+      .then(setBonos)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los bonos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        });
+      });
+  }, []);
+
+  const bonoSeleccionado = bonos.find((b) => b.nombre === formData.bono);
+  const subtiposDisponibles = bonoSeleccionado?.subtipos ?? [];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -100,6 +116,15 @@ export default function AgregarProyecto() {
         [name]: "",
       }));
     }
+  };
+
+  const handleBonoChange = (e) => {
+    const { value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      bono: value,
+      subtipoBonoI: "",
+    }));
   };
 
   /* Presupuesto: solo dígitos, se muestra formateado en ₡ */
@@ -123,6 +148,12 @@ export default function AgregarProyecto() {
     if (!formData.anioAsignacion) {
       newErrors.anioAsignacion = "El año de asignación es requerido";
     }
+    if (!formData.bono) {
+      newErrors.bono = "El bono es requerido";
+    }
+    if (subtiposDisponibles.length > 0 && !formData.subtipoBonoI) {
+      newErrors.subtipoBonoI = "El subtipo de bono es requerido";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -140,7 +171,7 @@ export default function AgregarProyecto() {
         anioAsignacion: String(formData.anioAsignacion),
         estado: formData.estado,
         bono: formData.bono,
-        subtipoBono: formData.subtipoBonoI,
+        subtipoBono: formData.subtipoBonoI || undefined,
       });
 
       Swal.fire({
@@ -280,25 +311,44 @@ export default function AgregarProyecto() {
 
               {/* Bono y Subtipo de Bono */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <Field label="Bono">
+                <Field label="Bono" error={errors.bono}>
                   <select
                     name="bono"
                     value={formData.bono}
-                    onChange={handleInputChange}
-                    className="select select-bordered w-full"
+                    onChange={handleBonoChange}
+                    className={`select select-bordered w-full ${
+                      errors.bono ? "select-error" : ""
+                    }`}
                   >
-                    <option value="Art.59">Art.59</option>
+                    <option value="">Seleccionar...</option>
+                    {bonos.map((b) => (
+                      <option key={b.id} value={b.nombre}>
+                        {b.nombre}
+                      </option>
+                    ))}
                   </select>
                 </Field>
 
-                <Field label="Subtipo de Bono">
+                <Field label="Subtipo de Bono" error={errors.subtipoBonoI}>
                   <select
                     name="subtipoBonoI"
                     value={formData.subtipoBonoI}
                     onChange={handleInputChange}
-                    className="select select-bordered w-full"
+                    disabled={subtiposDisponibles.length === 0}
+                    className={`select select-bordered w-full ${
+                      errors.subtipoBonoI ? "select-error" : ""
+                    }`}
                   >
-                    <option value="Art.59">Art.59</option>
+                    <option value="">
+                      {subtiposDisponibles.length === 0
+                        ? "Sin subtipo"
+                        : "Seleccionar..."}
+                    </option>
+                    {subtiposDisponibles.map((s) => (
+                      <option key={s.id} value={s.nombre}>
+                        {s.nombre}
+                      </option>
+                    ))}
                   </select>
                 </Field>
               </div>
