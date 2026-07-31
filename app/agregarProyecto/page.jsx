@@ -73,14 +73,13 @@ const initialFormData = {
   subtipoBonoI: "",
 };
 
-/* Formato de moneda en colones costarricenses */
+/* Mismo separador de miles que el resto de la app (₡1.500.000) */
 const formatCurrency = (value) => {
   const num = parseInt(value.replace(/\D/g, "")) || 0;
-  return new Intl.NumberFormat("es-CR", {
-    style: "currency",
-    currency: "CRC",
-    minimumFractionDigits: 0,
-  }).format(num);
+  return `₡${num.toLocaleString("es-ES", {
+    maximumFractionDigits: 0,
+    useGrouping: "always",
+  })}`;
 };
 
 export default function AgregarProyecto() {

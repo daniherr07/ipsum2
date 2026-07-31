@@ -22,10 +22,15 @@ import Swal from "sweetalert2";
 import { obtenerDashboard } from "@/lib/api";
 
 /* =========================
-   Format number consistently (avoid locale mismatch)
+   Formato de número consistente (evita mismatch de locale):
+   punto para miles, coma solo para céntimos (1.234.567,89)
 ========================= */
 function formatNumber(num) {
-  return Math.round(num).toLocaleString("en-US");
+  return num.toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: "always",
+  });
 }
 
 /* =========================
@@ -180,7 +185,7 @@ function GastosAdministrativosCard({
                   {item.nombre}
                 </span>
                 <span className="text-sm font-bold text-warning shrink-0">
-                  ₵{formatNumber(Math.round(item.monto))}
+                  ₵{formatNumber(item.monto)}
                 </span>
               </div>
               <div className="flex items-center gap-2">

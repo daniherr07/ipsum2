@@ -22,9 +22,17 @@ const STATS_VACIO: ResumenStats = {
   promedioMensualIngresos: 0,
 }
 
+/* Formato consistente: punto para miles, coma solo para céntimos (1.234.567,89) */
+const formatNumber = (value: number) =>
+  value.toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: "always",
+  })
+
 const formatCurrency = (value: number) => {
   const prefix = value >= 0 ? "+" : ""
-  return `₵ ${prefix}${Math.abs(value).toLocaleString("es-CR")}`
+  return `₵ ${prefix}${formatNumber(Math.abs(value))}`
 }
 
 function useAnimatedNumber(target: number, duration = 1000) {
@@ -284,7 +292,7 @@ function SummaryStats({
       </div>
       <div className="stat p-2 lg:p-3">
         <div className="stat-title text-xs">Promedio mensual</div>
-        <div className="stat-value text-primary text-base lg:text-lg">₵{(promedioMensualIngresos / 1000).toFixed(0)}K</div>
+        <div className="stat-value text-primary text-base lg:text-lg">{formatCurrency(promedioMensualIngresos)}</div>
         <div className="stat-desc text-xs">Ingresos</div>
       </div>
     </div>
