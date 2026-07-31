@@ -16,9 +16,10 @@ export function postMovimiento(req: Request, res: Response) {
 }
 
 export function getMovimientos(req: Request, res: Response) {
-  const { tipo } = req.query;
+  const { tipo, proyectoId } = req.query;
   const movimientos = listarMovimientos({
     tipo: typeof tipo === "string" ? tipo : undefined,
+    proyectoId: typeof proyectoId === "string" ? proyectoId : undefined,
   });
   res.json({ success: true, data: movimientos });
 }

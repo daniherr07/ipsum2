@@ -12,7 +12,7 @@ export type CrearProyectoInput = {
   anioAsignacion: string;
   estado: EstadoProyecto;
   bono: string;
-  subtipoBono: string;
+  subtipoBono?: string;
 };
 
 function toTrimmedString(value: unknown): string | undefined {

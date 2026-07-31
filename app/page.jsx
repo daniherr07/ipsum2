@@ -230,7 +230,7 @@ function ProyectosDelMesCard({ proyectos }) {
                 </div>
               </div>
               <Link
-                href="/proyecto"
+                href={`/proyecto/${proyecto.id}`}
                 className="btn btn-square btn-primary btn-sm sm:btn-md"
                 aria-label={`Ver ${proyecto.nombre}`}
               >

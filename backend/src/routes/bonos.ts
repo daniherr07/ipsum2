@@ -1,0 +1,20 @@
+import { Router } from "express";
+import {
+  deleteBono,
+  deleteSubtipo,
+  getBonos,
+  postBono,
+  postSubtipo,
+  putBono,
+  putSubtipo,
+} from "../controllers/bonos.js";
+
+export const bonosRouter = Router();
+
+bonosRouter.get("/bonos", getBonos);
+bonosRouter.post("/bonos", postBono);
+bonosRouter.put("/bonos/:id", putBono);
+bonosRouter.delete("/bonos/:id", deleteBono);
+bonosRouter.post("/bonos/:id/subtipos", postSubtipo);
+bonosRouter.put("/bonos/:id/subtipos/:subtipoId", putSubtipo);
+bonosRouter.delete("/bonos/:id/subtipos/:subtipoId", deleteSubtipo);

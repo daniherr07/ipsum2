@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo, useEffect } from "react"
+import { useParams } from "next/navigation"
 import {
   ChevronLeft,
   Plus,
@@ -12,165 +13,8 @@ import {
   Calendar,
 } from "lucide-react"
 import Link from "next/link"
-
-/* =========================
-   Tipos (alineados con los formularios
-   /agregarProyecto y /agregarMovimento)
-========================= */
-interface Movimiento {
-  id: string
-  tipo: "ingreso" | "egreso"
-  monto: number
-  descripcion: string
-  // Ingreso de proyecto
-  nombreIngreso?: string
-  fechaPago?: string
-  // Egreso de proyecto
-  tipoEgreso?: "egreso-general" | "egreso-administrativo"
-  categoria?: string
-  ordenCompra?: string
-  mes?: string
-  ano?: string
-}
-
-/* =========================
-   Data mock — solo datos que existen en los formularios
-========================= */
-const PROYECTO = {
-  nombre: "Clodomiro Picado",
-  estado: "Revisión",
-  mesAsignacion: "Enero",
-  anioAsignacion: "2024",
-  bono: "Art.59",
-  subtipoBonoI: "Art.59",
-  presupuesto: 50000000,
-}
-
-const MOVIMIENTOS: Movimiento[] = [
-  // Ingresos de proyecto
-  {
-    id: "ing-1",
-    tipo: "ingreso",
-    nombreIngreso: "Desembolso inicial del bono",
-    monto: 20000000,
-    fechaPago: "15/01/2025",
-    descripcion: "Primer desembolso del bono Art.59",
-  },
-  {
-    id: "ing-2",
-    tipo: "ingreso",
-    nombreIngreso: "Aporte familiar",
-    monto: 3500000,
-    fechaPago: "28/02/2025",
-    descripcion: "Aporte para inicio de obra gris",
-  },
-  {
-    id: "ing-3",
-    tipo: "ingreso",
-    nombreIngreso: "Desembolso segundo tramo",
-    monto: 10000000,
-    fechaPago: "10/04/2025",
-    descripcion: "Segundo desembolso del bono Art.59",
-  },
-  {
-    id: "ing-4",
-    tipo: "ingreso",
-    nombreIngreso: "Reintegro de materiales",
-    monto: 850000,
-    fechaPago: "22/05/2025",
-    descripcion: "Reintegro por devolución de materiales",
-  },
-  {
-    id: "ing-5",
-    tipo: "ingreso",
-    nombreIngreso: "Aporte institucional",
-    monto: 2500000,
-    fechaPago: "05/06/2025",
-    descripcion: "Aporte de programa de apoyo habitacional",
-  },
-  {
-    id: "ing-6",
-    tipo: "ingreso",
-    nombreIngreso: "Desembolso tercer tramo",
-    monto: 8000000,
-    fechaPago: "18/06/2025",
-    descripcion: "Tercer desembolso del bono Art.59",
-  },
-  // Egresos de proyecto (Egreso General)
-  {
-    id: "egr-1",
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Materiales",
-    ordenCompra: "OC1",
-    monto: 8450000,
-    descripcion: "Compra de cemento, arena y varilla",
-  },
-  {
-    id: "egr-2",
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Mano de Obra",
-    ordenCompra: "OC1",
-    monto: 6800000,
-    descripcion: "Pago de planilla semanas 12 a 15",
-  },
-  {
-    id: "egr-3",
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Equipamiento",
-    ordenCompra: "OC2",
-    monto: 4200000,
-    descripcion: "Alquiler de mezcladora y andamios",
-  },
-  {
-    id: "egr-4",
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Servicios",
-    ordenCompra: "OC2",
-    monto: 1650000,
-    descripcion: "Instalación eléctrica temporal",
-  },
-  {
-    id: "egr-5",
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Materiales",
-    ordenCompra: "OC3",
-    monto: 3300000,
-    descripcion: "Compra de bloques y ladrillos",
-  },
-  {
-    id: "egr-6",
-    tipo: "egreso",
-    tipoEgreso: "egreso-general",
-    categoria: "Otros",
-    ordenCompra: "OC3",
-    monto: 950000,
-    descripcion: "Transporte de materiales",
-  },
-  // Egresos de proyecto (Egreso Administrativo)
-  {
-    id: "egr-7",
-    tipo: "egreso",
-    tipoEgreso: "egreso-administrativo",
-    mes: "Julio",
-    ano: "2025",
-    monto: 2400000,
-    descripcion: "Permisos municipales y trámites",
-  },
-  {
-    id: "egr-8",
-    tipo: "egreso",
-    tipoEgreso: "egreso-administrativo",
-    mes: "Agosto",
-    ano: "2025",
-    monto: 2200000,
-    descripcion: "Seguro de obra y fianzas",
-  },
-]
+import Swal from "sweetalert2"
+import { obtenerProyecto, listarMovimientos, type Proyecto, type Movimiento } from "@/lib/api"
 
 /* =========================
    Helpers
@@ -402,46 +246,71 @@ function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
 }
 
 export default function ProyectoPage() {
+  const params = useParams()
+  const id = params.id as string
+
+  const [proyecto, setProyecto] = useState<Proyecto | null>(null)
+  const [movimientos, setMovimientos] = useState<Movimiento[]>([])
+  const [cargando, setCargando] = useState(true)
   const [activeTab, setActiveTab] = useState<"ingresos" | "egresos">("ingresos")
+
+  useEffect(() => {
+    Promise.all([obtenerProyecto(id), listarMovimientos({ proyectoId: id })])
+      .then(([p, m]) => {
+        setProyecto(p)
+        setMovimientos(m)
+      })
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo cargar el proyecto",
+          text: error instanceof Error ? error.message : "Error desconocido",
+        })
+      })
+      .finally(() => setCargando(false))
+  }, [id])
 
   /* =========================
      Totales
   ========================= */
   const totales = useMemo(() => {
-    const ingresos = MOVIMIENTOS.filter((t) => t.tipo === "ingreso").reduce(
-      (s, t) => s + t.monto,
-      0,
-    )
-    const egresos = MOVIMIENTOS.filter((t) => t.tipo === "egreso").reduce(
-      (s, t) => s + t.monto,
-      0,
-    )
+    const ingresos = movimientos
+      .filter((t) => t.tipo === "ingreso")
+      .reduce((s, t) => s + t.monto, 0)
+    const egresos = movimientos
+      .filter((t) => t.tipo === "egreso")
+      .reduce((s, t) => s + t.monto, 0)
+    const presupuesto = proyecto?.presupuesto ?? 0
     return {
       ingresos,
       egresos,
-      disponible: PROYECTO.presupuesto - egresos,
-      pctUso: Math.round((egresos / PROYECTO.presupuesto) * 100),
+      disponible: presupuesto - egresos,
+      pctUso: presupuesto > 0 ? Math.round((egresos / presupuesto) * 100) : 0,
     }
-  }, [])
+  }, [movimientos, proyecto])
 
   /* =========================
      Desglose de egresos por categoría
   ========================= */
   const egresoCategorias = useMemo(() => {
     const map: Record<string, { monto: number; count: number }> = {}
-    MOVIMIENTOS.filter((t) => t.tipo === "egreso").forEach((t) => {
-      const nombre =
-        t.tipoEgreso === "egreso-administrativo"
-          ? "Egreso Administrativo"
-          : t.categoria || "Otros"
-      if (!map[nombre]) map[nombre] = { monto: 0, count: 0 }
-      map[nombre].monto += t.monto
-      map[nombre].count += 1
-    })
+    movimientos
+      .filter((t) => t.tipo === "egreso")
+      .forEach((t) => {
+        const nombre =
+          t.tipo === "egreso" && t.tipoEgreso === "egreso-administrativo"
+            ? "Egreso Administrativo"
+            : t.tipo === "egreso"
+              ? t.categoria || "Otros"
+              : "Otros"
+        if (!map[nombre]) map[nombre] = { monto: 0, count: 0 }
+        map[nombre].monto += t.monto
+        map[nombre].count += 1
+      })
     return Object.entries(map)
       .map(([nombre, d]) => ({ nombre, ...d }))
       .sort((a, b) => b.monto - a.monto)
-  }, [])
+  }, [movimientos])
 
   const donutData = useMemo(
     () => egresoCategorias.map((c) => ({ nombre: c.nombre, monto: c.monto })),
@@ -450,16 +319,35 @@ export default function ProyectoPage() {
 
   const movimientosFiltrados = useMemo(() => {
     const tipoFiltro = activeTab === "ingresos" ? "ingreso" : "egreso"
-    return MOVIMIENTOS.filter((t) => t.tipo === tipoFiltro)
-  }, [activeTab])
+    return movimientos.filter((t) => t.tipo === tipoFiltro)
+  }, [activeTab, movimientos])
 
   const conteos = useMemo(
     () => ({
-      ingresos: MOVIMIENTOS.filter((t) => t.tipo === "ingreso").length,
-      egresos: MOVIMIENTOS.filter((t) => t.tipo === "egreso").length,
+      ingresos: movimientos.filter((t) => t.tipo === "ingreso").length,
+      egresos: movimientos.filter((t) => t.tipo === "egreso").length,
     }),
-    [],
+    [movimientos],
   )
+
+  if (cargando) {
+    return (
+      <div className="min-h-[calc(100svh-64px)] bg-base-200 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    )
+  }
+
+  if (!proyecto) {
+    return (
+      <div className="min-h-[calc(100svh-64px)] bg-base-200 flex flex-col items-center justify-center gap-3">
+        <p className="font-bold">Proyecto no encontrado</p>
+        <Link href="/proyectos" className="btn btn-primary btn-sm rounded-full">
+          Volver a Proyectos
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-[calc(100svh-64px)] bg-base-200 p-3 sm:p-4 lg:p-6">
@@ -503,19 +391,19 @@ export default function ProyectoPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="font-black text-lg sm:text-2xl text-primary leading-tight">
-                  {PROYECTO.nombre}
+                  {proyecto.nombre}
                 </h2>
                 <p className="text-xs sm:text-sm text-base-content/60 mt-1 flex items-center gap-1.5">
                   <Calendar size={13} className="shrink-0" />
-                  Asignación: {PROYECTO.mesAsignacion} {PROYECTO.anioAsignacion}
+                  Asignación: {proyecto.mesAsignacion} {proyecto.anioAsignacion}
                 </p>
               </div>
               <span
                 className={`badge badge-sm sm:badge-md shrink-0 ${
-                  PROYECTO.estado === "Finalizado" ? "badge-success" : "badge-warning"
+                  proyecto.estado === "Finalizado" ? "badge-success" : "badge-warning"
                 }`}
               >
-                {PROYECTO.estado}
+                {proyecto.estado}
               </span>
             </div>
 
@@ -524,14 +412,14 @@ export default function ProyectoPage() {
                 <p className="text-[10px] uppercase font-bold text-base-content/50">
                   Bono
                 </p>
-                <p className="text-xs sm:text-sm font-semibold">{PROYECTO.bono}</p>
+                <p className="text-xs sm:text-sm font-semibold">{proyecto.bono}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold text-base-content/50">
                   Subtipo de Bono
                 </p>
                 <p className="text-xs sm:text-sm font-semibold">
-                  {PROYECTO.subtipoBonoI}
+                  {proyecto.subtipoBono}
                 </p>
               </div>
             </div>
@@ -545,7 +433,7 @@ export default function ProyectoPage() {
               <progress
                 className="progress progress-primary w-full h-2"
                 value={totales.egresos}
-                max={PROYECTO.presupuesto}
+                max={proyecto.presupuesto}
               />
               <div className="flex justify-between text-[11px] sm:text-xs mt-1 text-base-content/60">
                 <span>Gastado: {formatCurrency(totales.egresos)}</span>
@@ -560,7 +448,7 @@ export default function ProyectoPage() {
           <StatCard
             icon={Wallet}
             label="Presupuesto"
-            value={PROYECTO.presupuesto}
+            value={proyecto.presupuesto}
             color="primary"
             delay={100}
           />
@@ -597,34 +485,40 @@ export default function ProyectoPage() {
             <h2 className="font-bold text-sm sm:text-base">
               Desglose de Egresos
             </h2>
-            <ul className="space-y-3 mt-3">
-              {egresoCategorias.map((cat, idx) => {
-                const pct = Math.round((cat.monto / totales.egresos) * 100)
-                const color = PALETA[idx % PALETA.length]
-                return (
-                  <li key={cat.nombre}>
-                    <div className="flex justify-between items-center text-xs sm:text-sm mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${color.dot}`} />
-                        <span className="font-medium truncate">{cat.nombre}</span>
-                        <span className="text-base-content/40 text-xs shrink-0">
-                          ({cat.count} mov.)
+            {egresoCategorias.length > 0 ? (
+              <ul className="space-y-3 mt-3">
+                {egresoCategorias.map((cat, idx) => {
+                  const pct = totales.egresos > 0 ? Math.round((cat.monto / totales.egresos) * 100) : 0
+                  const color = PALETA[idx % PALETA.length]
+                  return (
+                    <li key={cat.nombre}>
+                      <div className="flex justify-between items-center text-xs sm:text-sm mb-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${color.dot}`} />
+                          <span className="font-medium truncate">{cat.nombre}</span>
+                          <span className="text-base-content/40 text-xs shrink-0">
+                            ({cat.count} mov.)
+                          </span>
+                        </div>
+                        <span className="font-semibold text-error shrink-0">
+                          {formatCurrency(cat.monto)}
                         </span>
                       </div>
-                      <span className="font-semibold text-error shrink-0">
-                        {formatCurrency(cat.monto)}
-                      </span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-base-200">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, backgroundColor: color.bar }}
-                      />
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
+                      <div className="h-1.5 rounded-full bg-base-200">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${pct}%`, backgroundColor: color.bar }}
+                        />
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p className="text-center text-sm text-base-content/50 mt-3">
+                Sin egresos todavía
+              </p>
+            )}
           </FadeIn>
 
           {/* Distribución (donut) */}
@@ -679,80 +573,86 @@ export default function ProyectoPage() {
           </div>
 
           {/* Lista de movimientos */}
-          <ul className="divide-y divide-base-200 mt-3">
-            {movimientosFiltrados.map((mov) => {
-              const esIngreso = mov.tipo === "ingreso"
-              return (
-                <li
-                  key={mov.id}
-                  className="flex items-center gap-3 p-3 sm:p-4 hover:bg-base-200/60 transition-colors"
-                >
-                  {/* Icono por tipo */}
-                  <div
-                    className={`p-2 sm:p-2.5 rounded-full shrink-0 ${
-                      esIngreso ? "bg-success/10" : "bg-error/10"
-                    }`}
+          {movimientosFiltrados.length > 0 ? (
+            <ul className="divide-y divide-base-200 mt-3">
+              {movimientosFiltrados.map((mov) => {
+                const esIngreso = mov.tipo === "ingreso"
+                return (
+                  <li
+                    key={mov.id}
+                    className="flex items-center gap-3 p-3 sm:p-4 hover:bg-base-200/60 transition-colors"
                   >
-                    {esIngreso ? (
-                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-error" />
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm sm:text-base truncate">
-                      {esIngreso ? mov.nombreIngreso : mov.descripcion}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                    {/* Icono por tipo */}
+                    <div
+                      className={`p-2 sm:p-2.5 rounded-full shrink-0 ${
+                        esIngreso ? "bg-success/10" : "bg-error/10"
+                      }`}
+                    >
                       {esIngreso ? (
-                        <>
-                          <span className="text-[11px] text-base-content/60 shrink-0">
-                            {mov.fechaPago}
-                          </span>
-                          <span className="hidden sm:inline text-[11px] text-base-content/50 truncate">
-                            {mov.descripcion}
-                          </span>
-                        </>
+                        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                       ) : (
-                        <>
-                          <span
-                            className={`badge badge-xs shrink-0 ${
-                              mov.tipoEgreso === "egreso-administrativo"
-                                ? "badge-warning"
-                                : "badge-error"
-                            }`}
-                          >
-                            {mov.tipoEgreso === "egreso-general"
-                              ? "Egreso General"
-                              : "Egreso Administrativo"}
-                          </span>
-                          <span className="text-[11px] text-base-content/60 truncate">
-                            {mov.tipoEgreso === "egreso-administrativo"
-                              ? `${mov.mes} ${mov.ano}`
-                              : [mov.categoria, mov.ordenCompra]
-                                  .filter(Boolean)
-                                  .join(" · ")}
-                          </span>
-                        </>
+                        <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-error" />
                       )}
                     </div>
-                  </div>
 
-                  {/* Monto */}
-                  <p
-                    className={`font-black text-sm sm:text-base shrink-0 ${
-                      esIngreso ? "text-success" : "text-error"
-                    }`}
-                  >
-                    {esIngreso ? "+" : "-"}
-                    {formatCurrency(mov.monto)}
-                  </p>
-                </li>
-              )
-            })}
-          </ul>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm sm:text-base truncate">
+                        {esIngreso ? mov.nombreIngreso : mov.descripcion}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                        {esIngreso ? (
+                          <>
+                            <span className="text-[11px] text-base-content/60 shrink-0">
+                              {mov.fechaPago}
+                            </span>
+                            <span className="hidden sm:inline text-[11px] text-base-content/50 truncate">
+                              {mov.descripcion}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span
+                              className={`badge badge-xs shrink-0 ${
+                                mov.tipoEgreso === "egreso-administrativo"
+                                  ? "badge-warning"
+                                  : "badge-error"
+                              }`}
+                            >
+                              {mov.tipoEgreso === "egreso-general"
+                                ? "Egreso General"
+                                : "Egreso Administrativo"}
+                            </span>
+                            <span className="text-[11px] text-base-content/60 truncate">
+                              {mov.tipoEgreso === "egreso-administrativo"
+                                ? `${mov.mes} ${mov.ano}`
+                                : [mov.categoria, mov.ordenCompra]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Monto */}
+                    <p
+                      className={`font-black text-sm sm:text-base shrink-0 ${
+                        esIngreso ? "text-success" : "text-error"
+                      }`}
+                    >
+                      {esIngreso ? "+" : "-"}
+                      {formatCurrency(mov.monto)}
+                    </p>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="text-center text-sm text-base-content/50 py-8">
+              Sin movimientos de este tipo todavía
+            </p>
+          )}
         </FadeIn>
       </div>
     </div>

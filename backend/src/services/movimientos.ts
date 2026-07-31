@@ -19,9 +19,18 @@ export function crearMovimiento(input: CrearMovimientoInput, creadoEn?: string):
   return movimiento;
 }
 
-export function listarMovimientos(filtros: { tipo?: string }): Movimiento[] {
+export function listarMovimientos(filtros: { tipo?: string; proyectoId?: string }): Movimiento[] {
   return movimientos.filter((m) => {
     if (filtros.tipo && m.tipo !== filtros.tipo) return false;
+    if (filtros.proyectoId) {
+      if (m.tipo === "ingreso") {
+        if (m.proyectoId !== filtros.proyectoId) return false;
+      } else if (m.tipo === "egreso" && m.tipoEgreso === "egreso-general") {
+        if (m.proyectoId !== filtros.proyectoId) return false;
+      } else {
+        return false;
+      }
+    }
     return true;
   });
 }

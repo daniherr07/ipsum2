@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { listarProyectos, type Proyecto } from "./services/proyectos.js";
 import { listarMovimientos, type Movimiento } from "./services/movimientos.js";
+import { obtenerTodosCatalogos, type Catalogos } from "./services/catalogos.js";
+import { listarBonos, type Bono } from "./services/bonos.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,6 +16,8 @@ const RUTA_ESTADO = path.join(__dirname, "..", "seed-data.json");
 type Estado = {
   proyectos: Proyecto[];
   movimientos: Movimiento[];
+  catalogos?: Partial<Catalogos>;
+  bonos?: Bono[];
 };
 
 export function cargarEstadoGuardado(): Estado {
@@ -26,6 +30,8 @@ export function guardarEstado(): void {
   const estado: Estado = {
     proyectos: listarProyectos(),
     movimientos: listarMovimientos({}),
+    catalogos: obtenerTodosCatalogos(),
+    bonos: listarBonos(),
   };
   writeFileSync(RUTA_ESTADO, JSON.stringify(estado, null, 2), "utf-8");
 }

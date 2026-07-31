@@ -1,9 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Plus, Edit, Trash2 } from "lucide-react";
+import { ChevronLeft, Plus, Edit, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import {
+  listarCatalogo,
+  crearItemCatalogo,
+  actualizarItemCatalogo,
+  eliminarItemCatalogo,
+  listarBonos,
+  crearBono,
+  actualizarBono,
+  eliminarBono,
+  crearSubtipoBono,
+  actualizarSubtipoBono,
+  eliminarSubtipoBono,
+} from "@/lib/api";
 
 function FadeIn({ children, delay = 0, className = "" }) {
   const [show, setShow] = useState(false);
@@ -44,7 +57,7 @@ function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
       Swal.fire("Error", "El nombre no puede estar vacío", "error");
       return;
     }
-    onSubmit({ nombre: nombre.trim() });
+    onSubmit(nombre.trim());
     setNombre("");
   };
 
@@ -83,46 +96,53 @@ function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
   );
 }
 
-function CRUDSection({ categoryId, categoryLabel, initialData }) {
-  const [items, setItems] = useState(initialData || []);
+/* =========================
+   Catálogo genérico (Órdenes de Compra, Proveedores)
+   Conectado al backend real vía /catalogos/:tipo
+========================= */
+function CatalogoSection({ tipo, categoryLabel }) {
+  const [items, setItems] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  useEffect(() => {
-    setItems(initialData || []);
-    setEditingId(null);
-    setIsModalOpen(false);
-  }, [categoryId, initialData]);
-
-  const handleAdd = (data) => {
-    const newItem = {
-      id: Math.max(...(items.map((i) => i.id) || [0]), 0) + 1,
-      nombre: data.nombre,
-    };
-    setItems([...items, newItem]);
-    setIsModalOpen(false);
-    Swal.fire({
-      icon: "success",
-      title: "Éxito",
-      text: `${categoryLabel} agregado correctamente`,
-      timer: 1500,
-    });
+  const cargar = () => {
+    setCargando(true);
+    listarCatalogo(tipo)
+      .then(setItems)
+      .catch(() => {
+        Swal.fire("Error", "No se pudo cargar la lista. Verifica que el backend esté corriendo.", "error");
+      })
+      .finally(() => setCargando(false));
   };
 
-  const handleEdit = (data) => {
-    setItems(
-      items.map((i) =>
-        i.id === editingId ? { ...i, nombre: data.nombre } : i,
-      ),
-    );
-    setIsModalOpen(false);
+  useEffect(() => {
+    cargar();
     setEditingId(null);
-    Swal.fire({
-      icon: "success",
-      title: "Éxito",
-      text: `${categoryLabel} actualizado correctamente`,
-      timer: 1500,
-    });
+    setIsModalOpen(false);
+  }, [tipo]);
+
+  const handleAdd = async (nombre) => {
+    try {
+      await crearItemCatalogo(tipo, nombre);
+      setIsModalOpen(false);
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: `${categoryLabel} agregado correctamente`, timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleEdit = async (nombre) => {
+    try {
+      await actualizarItemCatalogo(tipo, editingId, nombre);
+      setIsModalOpen(false);
+      setEditingId(null);
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: `${categoryLabel} actualizado correctamente`, timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
   };
 
   const handleDelete = (id) => {
@@ -134,14 +154,15 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Sí, eliminar",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setItems(items.filter((i) => i.id !== id));
-        Swal.fire(
-          "Eliminado",
-          `${categoryLabel} eliminado correctamente.`,
-          "success",
-        );
+        try {
+          await eliminarItemCatalogo(tipo, id);
+          cargar();
+          Swal.fire("Eliminado", `${categoryLabel} eliminado correctamente.`, "success");
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
       }
     });
   };
@@ -170,7 +191,13 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
             </tr>
           </thead>
           <tbody>
-            {items.length > 0 ? (
+            {cargando ? (
+              <tr>
+                <td colSpan="2" className="text-center py-4 text-base-content/60">
+                  Cargando...
+                </td>
+              </tr>
+            ) : items.length > 0 ? (
               items.map((item) => (
                 <tr key={item.id} className="hover">
                   <td className="font-semibold">{item.nombre}</td>
@@ -197,10 +224,7 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
               ))
             ) : (
               <tr>
-                <td
-                  colSpan="2"
-                  className="text-center py-4 text-base-content/60"
-                >
+                <td colSpan="2" className="text-center py-4 text-base-content/60">
                   No hay registros de {categoryLabel.toLowerCase()}
                 </td>
               </tr>
@@ -216,61 +240,270 @@ function CRUDSection({ categoryId, categoryLabel, initialData }) {
           setEditingId(null);
         }}
         onSubmit={editingId ? handleEdit : handleAdd}
-        title={
-          editingId ? `Editar ${categoryLabel}` : `Agregar ${categoryLabel}`
-        }
-        initialData={
-          editingId ? items.find((i) => i.id === editingId) : undefined
-        }
+        title={editingId ? `Editar ${categoryLabel}` : `Agregar ${categoryLabel}`}
+        initialData={editingId ? items.find((i) => i.id === editingId) : undefined}
       />
     </div>
   );
 }
 
+/* =========================
+   Bonos con subtipos anidados
+   Conectado al backend real vía /bonos
+========================= */
+function BonosSection() {
+  const [bonos, setBonos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [expandidoId, setExpandidoId] = useState(null);
+
+  const [modalBono, setModalBono] = useState({ open: false, editingId: null });
+  const [modalSubtipo, setModalSubtipo] = useState({ open: false, bonoId: null, editingId: null });
+
+  const cargar = () => {
+    setCargando(true);
+    listarBonos()
+      .then(setBonos)
+      .catch(() => {
+        Swal.fire("Error", "No se pudo cargar la lista de bonos. Verifica que el backend esté corriendo.", "error");
+      })
+      .finally(() => setCargando(false));
+  };
+
+  useEffect(() => {
+    cargar();
+  }, []);
+
+  const handleAddBono = async (nombre) => {
+    try {
+      await crearBono(nombre);
+      setModalBono({ open: false, editingId: null });
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: "Bono agregado correctamente", timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleEditBono = async (nombre) => {
+    try {
+      await actualizarBono(modalBono.editingId, nombre);
+      setModalBono({ open: false, editingId: null });
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: "Bono actualizado correctamente", timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleDeleteBono = (id) => {
+    Swal.fire({
+      title: "¿Está seguro?",
+      text: "Se eliminará el bono y todos sus subtipos. Esta acción no se puede deshacer",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, eliminar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await eliminarBono(id);
+          cargar();
+          Swal.fire("Eliminado", "Bono eliminado correctamente.", "success");
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
+      }
+    });
+  };
+
+  const handleAddSubtipo = async (nombre) => {
+    try {
+      await crearSubtipoBono(modalSubtipo.bonoId, nombre);
+      setModalSubtipo({ open: false, bonoId: null, editingId: null });
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: "Subtipo agregado correctamente", timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleEditSubtipo = async (nombre) => {
+    try {
+      await actualizarSubtipoBono(modalSubtipo.bonoId, modalSubtipo.editingId, nombre);
+      setModalSubtipo({ open: false, bonoId: null, editingId: null });
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: "Subtipo actualizado correctamente", timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleDeleteSubtipo = (bonoId, subtipoId) => {
+    Swal.fire({
+      title: "¿Está seguro?",
+      text: "Esta acción no se puede deshacer",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, eliminar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await eliminarSubtipoBono(bonoId, subtipoId);
+          cargar();
+          Swal.fire("Eliminado", "Subtipo eliminado correctamente.", "success");
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
+      }
+    });
+  };
+
+  const bonoEnEdicion = bonos.find((b) => b.id === modalBono.editingId);
+  const bonoDelSubtipo = bonos.find((b) => b.id === modalSubtipo.bonoId);
+  const subtipoEnEdicion = bonoDelSubtipo?.subtipos.find((s) => s.id === modalSubtipo.editingId);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-base-content">Tipos de Bono</h2>
+        <button
+          onClick={() => setModalBono({ open: true, editingId: null })}
+          className="btn btn-primary btn-sm"
+        >
+          <Plus size={18} /> Agregar Bono
+        </button>
+      </div>
+
+      {cargando ? (
+        <div className="bg-base-100 rounded-lg shadow p-4 text-center text-base-content/60">
+          Cargando...
+        </div>
+      ) : bonos.length > 0 ? (
+        <div className="space-y-3">
+          {bonos.map((bono) => {
+            const expandido = expandidoId === bono.id;
+            return (
+              <div key={bono.id} className="bg-base-100 rounded-lg shadow overflow-hidden">
+                <div className="flex items-center justify-between p-3 sm:p-4">
+                  <button
+                    type="button"
+                    onClick={() => setExpandidoId(expandido ? null : bono.id)}
+                    className="flex items-center gap-2 flex-1 text-left min-w-0"
+                  >
+                    {expandido ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    <span className="font-bold truncate">{bono.nombre}</span>
+                    <span className="badge badge-sm badge-ghost shrink-0">
+                      {bono.subtipos.length} subtipo{bono.subtipos.length !== 1 ? "s" : ""}
+                    </span>
+                  </button>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => setModalBono({ open: true, editingId: bono.id })}
+                      className="btn btn-ghost btn-xs"
+                      title="Editar bono"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteBono(bono.id)}
+                      className="btn btn-ghost btn-xs text-error"
+                      title="Eliminar bono"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {expandido && (
+                  <div className="border-t border-base-200 p-3 sm:p-4 bg-base-200/40 space-y-2">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold uppercase text-base-content/60">
+                        Subtipos de bono
+                      </span>
+                      <button
+                        onClick={() => setModalSubtipo({ open: true, bonoId: bono.id, editingId: null })}
+                        className="btn btn-ghost btn-xs gap-1"
+                      >
+                        <Plus size={14} /> Agregar Subtipo
+                      </button>
+                    </div>
+                    {bono.subtipos.length > 0 ? (
+                      <ul className="space-y-1">
+                        {bono.subtipos.map((subtipo) => (
+                          <li
+                            key={subtipo.id}
+                            className="flex items-center justify-between bg-base-100 rounded-md px-3 py-2"
+                          >
+                            <span className="text-sm">{subtipo.nombre}</span>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() =>
+                                  setModalSubtipo({ open: true, bonoId: bono.id, editingId: subtipo.id })
+                                }
+                                className="btn btn-ghost btn-xs"
+                                title="Editar subtipo"
+                              >
+                                <Edit size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSubtipo(bono.id, subtipo.id)}
+                                className="btn btn-ghost btn-xs text-error"
+                                title="Eliminar subtipo"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-base-content/50 text-center py-2">
+                        Este bono no tiene subtipos
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-base-100 rounded-lg shadow p-4 text-center text-base-content/60">
+          No hay bonos registrados
+        </div>
+      )}
+
+      <FormModal
+        isOpen={modalBono.open}
+        onClose={() => setModalBono({ open: false, editingId: null })}
+        onSubmit={modalBono.editingId ? handleEditBono : handleAddBono}
+        title={modalBono.editingId ? "Editar Bono" : "Agregar Bono"}
+        initialData={bonoEnEdicion}
+      />
+
+      <FormModal
+        isOpen={modalSubtipo.open}
+        onClose={() => setModalSubtipo({ open: false, bonoId: null, editingId: null })}
+        onSubmit={modalSubtipo.editingId ? handleEditSubtipo : handleAddSubtipo}
+        title={modalSubtipo.editingId ? "Editar Subtipo" : "Agregar Subtipo"}
+        initialData={subtipoEnEdicion}
+      />
+    </div>
+  );
+}
+
+const CATEGORIAS = [
+  { id: "bonos", label: "Tipos de Bono" },
+  { id: "ordenes-compra", label: "Órdenes de Compra" },
+  { id: "proveedores", label: "Proveedores" },
+];
+
 export default function Settings() {
-  const [activeCategory, setActiveCategory] = useState("tiposDeBO");
-
-  const categories = [
-    {
-      id: "tiposDeBO",
-      label: "Tipos de Bono",
-      initialData: [
-        { id: 1, nombre: "Bonificación Art. 59" },
-        { id: 2, nombre: "Bonificación CLP" },
-        { id: 3, nombre: "Bonificación Catorcenal" },
-        { id: 4, nombre: "Bono Navideño" },
-        { id: 5, nombre: "Bono de Productividad" },
-        { id: 6, nombre: "Bono de Puntualidad" },
-      ],
-    },
-    {
-      id: "ordenesCompra",
-      label: "Órdenes de Compra",
-      initialData: [
-        { id: 1, nombre: "OC-2024-001-Materiales de Construcción" },
-        { id: 2, nombre: "OC-2024-002-Herramientas y Equipos" },
-        { id: 3, nombre: "OC-2024-003-Servicios Profesionales" },
-        { id: 4, nombre: "OC-2024-004-Sistemas Eléctricos" },
-        { id: 5, nombre: "OC-2024-005-Fontanería" },
-        { id: 6, nombre: "OC-2024-006-Acabados" },
-      ],
-    },
-    {
-      id: "proveedores",
-      label: "Proveedores",
-      initialData: [
-        { id: 1, nombre: "Distribuidora Nacional de Materiales" },
-        { id: 2, nombre: "Importadora Latinoamérica" },
-        { id: 3, nombre: "Servicios de Ingeniería y Construcción" },
-        { id: 4, nombre: "Electro Suministros de Costa Rica" },
-        { id: 5, nombre: "Ferretería Industrial" },
-        { id: 6, nombre: "Acabados Premium S.A." },
-        { id: 7, nombre: "Logística y Transporte Directo" },
-      ],
-    },
-  ];
-
-  const activeCategory_ = categories.find((cat) => cat.id === activeCategory);
+  const [activeCategory, setActiveCategory] = useState("bonos");
+  const categoria = CATEGORIAS.find((cat) => cat.id === activeCategory);
 
   return (
     <div className="min-h-[calc(100svh-64px)] bg-base-200 p-4 md:p-8">
@@ -303,7 +536,7 @@ export default function Settings() {
               onChange={(e) => setActiveCategory(e.target.value)}
               className="select select-bordered w-full"
             >
-              {categories.map((cat) => (
+              {CATEGORIAS.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.label}
                 </option>
@@ -312,16 +545,11 @@ export default function Settings() {
           </div>
         </FadeIn>
 
-        <FadeIn
-          delay={200}
-          className="bg-base-100 rounded-lg shadow-lg p-6 md:p-8"
-        >
-          {activeCategory_ && (
-            <CRUDSection
-              categoryId={activeCategory_.id}
-              categoryLabel={activeCategory_.label}
-              initialData={activeCategory_.initialData}
-            />
+        <FadeIn delay={200} className="bg-base-100 rounded-lg shadow-lg p-6 md:p-8">
+          {categoria?.id === "bonos" ? (
+            <BonosSection />
+          ) : (
+            <CatalogoSection tipo={categoria.id} categoryLabel={categoria.label} />
           )}
         </FadeIn>
       </div>
