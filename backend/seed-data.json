@@ -2220,7 +2220,8 @@
   ],
   "catalogos": {
     "ordenes-compra": [],
-    "proveedores": []
+    "proveedores": [],
+    "contratistas": []
   },
   "bonos": [
     {
