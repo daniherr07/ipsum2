@@ -1,11 +1,25 @@
 import { randomUUID } from "node:crypto";
 import { ApiError } from "../middlewares/errorHandler.js";
 import type { CrearMovimientoInput } from "../validators/movimientos.js";
+import { mesAnioDe, mesAnioDeFechaPago } from "../utils/fechas.js";
 
 export type Movimiento = CrearMovimientoInput & {
   id: string;
   creadoEn: string;
 };
+
+/* H3: mes/anio de negocio de un movimiento, no la fecha en que se inserto.
+   - ingreso: la fechaPago que el usuario eligio.
+   - egreso-administrativo: el mes/ano que el usuario eligio.
+   - egreso-general: no tiene un campo de fecha elegido por el usuario (esta
+     atado a un proyecto, no a un periodo puntual), asi que usa creadoEn. */
+export function mesAnioDeMovimiento(m: Movimiento): { mes: string; anio: string } {
+  if (m.tipo === "ingreso") return mesAnioDeFechaPago(m.fechaPago);
+  if (m.tipo === "egreso" && m.tipoEgreso === "egreso-administrativo") {
+    return { mes: m.mes, anio: m.ano };
+  }
+  return mesAnioDe(m.creadoEn);
+}
 
 const movimientos: Movimiento[] = [];
 

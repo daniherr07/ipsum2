@@ -1,5 +1,7 @@
 import { ApiError } from "../middlewares/errorHandler.js";
 import { MESES } from "../utils/fechas.js";
+import { listarBonos } from "../services/bonos.js";
+import { listarCatalogo } from "../services/catalogos.js";
 
 const ANIO_REGEX = /^\d{4}$/;
 
@@ -30,6 +32,45 @@ function toNumber(value: unknown): number | undefined {
     if (Number.isFinite(parsed)) return parsed;
   }
   return undefined;
+}
+
+/* H1: bono/subtipoBono deben existir en el catalogo de bonos (antes se
+   aceptaba cualquier texto). Devuelve el nombre canonico del catalogo para
+   que no queden variantes de mayusculas/espacios guardadas en el proyecto. */
+function validarBonoYSubtipo(
+  bonoInput: string,
+  subtipoInput: string | undefined
+): { bono: string; subtipoBono?: string } {
+  const bono = listarBonos().find((b) => b.nombre.toLowerCase() === bonoInput.toLowerCase());
+  if (!bono) {
+    throw new ApiError(400, "VALIDATION_ERROR", `bono "${bonoInput}" no existe en el catalogo de bonos`);
+  }
+  if (bono.subtipos.length === 0) {
+    return { bono: bono.nombre };
+  }
+  if (!subtipoInput) {
+    throw new ApiError(400, "VALIDATION_ERROR", "subtipoBono es obligatorio para este bono");
+  }
+  const subtipo = bono.subtipos.find((s) => s.nombre.toLowerCase() === subtipoInput.toLowerCase());
+  if (!subtipo) {
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      `subtipoBono "${subtipoInput}" no pertenece al bono "${bono.nombre}"`
+    );
+  }
+  return { bono: bono.nombre, subtipoBono: subtipo.nombre };
+}
+
+/* H1: contratista debe existir en el catalogo de contratistas */
+function validarContratista(input: string): string {
+  const contratista = listarCatalogo("contratistas").find(
+    (c) => c.nombre.toLowerCase() === input.toLowerCase()
+  );
+  if (!contratista) {
+    throw new ApiError(400, "VALIDATION_ERROR", `contratista "${input}" no existe en el catalogo de contratistas`);
+  }
+  return contratista.nombre;
 }
 
 export function validarCrearProyecto(body: unknown): CrearProyectoInput {
@@ -72,20 +113,17 @@ export function validarCrearProyecto(body: unknown): CrearProyectoInput {
     throw new ApiError(400, "VALIDATION_ERROR", "estado debe ser 'Revisión' o 'Finalizado'");
   }
 
-  const bono = toTrimmedString(data.bono);
-  if (!bono) {
+  const bonoInput = toTrimmedString(data.bono);
+  if (!bonoInput) {
     throw new ApiError(400, "VALIDATION_ERROR", "bono es obligatorio");
   }
+  const { bono, subtipoBono } = validarBonoYSubtipo(bonoInput, toTrimmedString(data.subtipoBono));
 
-  const subtipoBono = toTrimmedString(data.subtipoBono);
-  if (!subtipoBono) {
-    throw new ApiError(400, "VALIDATION_ERROR", "subtipoBono es obligatorio");
-  }
-
-  const contratista = toTrimmedString(data.contratista);
-  if (!contratista) {
+  const contratistaInput = toTrimmedString(data.contratista);
+  if (!contratistaInput) {
     throw new ApiError(400, "VALIDATION_ERROR", "contratista es obligatorio");
   }
+  const contratista = validarContratista(contratistaInput);
 
   return { nombre, presupuesto, presupuestoManoObra, mesAsignacion, anioAsignacion, estado, bono, subtipoBono, contratista };
 }
@@ -120,7 +158,7 @@ export function validarActualizarProyecto(body: unknown): ActualizarProyectoInpu
     if (!valor) {
       throw new ApiError(400, "VALIDATION_ERROR", "contratista no puede estar vacio");
     }
-    cambios.contratista = valor;
+    cambios.contratista = validarContratista(valor);
   }
 
   if (data.mesAsignacion !== undefined) {
