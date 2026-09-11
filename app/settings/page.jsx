@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Plus, Edit, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Edit, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import BackButton from "@/components/BackButton";
 import {
   listarCatalogo,
   crearItemCatalogo,
@@ -499,6 +500,7 @@ const CATEGORIAS = [
   { id: "bonos", label: "Tipos de Bono" },
   { id: "ordenes-compra", label: "Órdenes de Compra" },
   { id: "proveedores", label: "Proveedores" },
+  { id: "contratistas", label: "Contratistas" },
 ];
 
 export default function Settings() {
@@ -510,9 +512,12 @@ export default function Settings() {
       <div className="max-w-6xl mx-auto">
         <FadeIn delay={0} className="mb-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/" className="btn btn-ghost btn-circle">
-              <ChevronLeft size={24} />
-            </Link>
+            <BackButton
+              fallback="/"
+              label="Volver"
+              className="btn btn-ghost btn-circle"
+              iconSize={24}
+            />
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-base-content">
                 Configuración

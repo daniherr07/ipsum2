@@ -12,10 +12,11 @@ import {
   FileText,
   FolderOpen,
   FolderPlus,
-  BarChart3,
+  Landmark,
   Settings,
   ExternalLink,
   TriangleAlert,
+  Percent,
 } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
@@ -116,9 +117,9 @@ const ACCESOS_RAPIDOS = [
   },
   {
     href: "/stats",
-    label: "Estadísticas",
-    desc: "Gráficos y resúmenes",
-    icon: BarChart3,
+    label: "Control de Cuentas",
+    desc: "Conciliación bancaria",
+    icon: Landmark,
     iconBg: "bg-warning/10",
     iconColor: "text-warning",
   },
@@ -154,8 +155,7 @@ function GastosAdministrativosCard({
           ₵{formatNumber(gastosAdmin)}
         </span>
         <p className="text-[11px] sm:text-xs text-base-content/70 mt-1">
-          {ratioPeriodo.toFixed(1)}% del presupuesto del período · distribuido
-          por peso presupuestario
+          Distribuido por peso presupuestario
         </p>
       </div>
 
@@ -214,6 +214,7 @@ function GastosAdministrativosCard({
 
 /* =========================
    Proyectos del Mes component
+   (acordeón por proyecto: desglose de egresos + estado)
 ========================= */
 function ProyectosDelMesCard({ proyectos }) {
   return (
@@ -225,25 +226,92 @@ function ProyectosDelMesCard({ proyectos }) {
       </div>
 
       {proyectos.length > 0 ? (
-        <ul className="list bg-base-200 rounded-box">
-          {proyectos.map((proyecto) => (
-            <li className="list-row" key={proyecto.id ?? proyecto.nombre}>
-              <div className="list-col-grow">
-                <div className="text-sm sm:text-base">{proyecto.nombre}</div>
-                <div className="text-xs uppercase font-semibold opacity-70">
-                  {proyecto.tipo ?? proyecto.bono}
+        <div className="flex flex-col gap-2">
+          {proyectos.map((proyecto) => {
+            const egresos = proyecto.egresos ?? [];
+            /* Resumen por categoría (una línea por categoría, no por egreso) */
+            const porCategoria = Object.entries(
+              egresos.reduce((acc, e) => {
+                acc[e.categoria] = (acc[e.categoria] ?? 0) + e.monto;
+                return acc;
+              }, {})
+            ).sort((a, b) => b[1] - a[1]);
+            const totalEgresos = egresos.reduce((sum, e) => sum + e.monto, 0);
+            return (
+              <div
+                key={proyecto.id ?? proyecto.nombre}
+                className="collapse collapse-arrow bg-base-200 rounded-lg"
+              >
+                <input
+                  type="checkbox"
+                  aria-label={`Desplegar desglose de ${proyecto.nombre}`}
+                />
+                <div className="collapse-title min-h-0 py-3 pe-10">
+                  <div className="flex items-center gap-2">
+                    <div className="min-w-0 grow">
+                      <div className="text-sm sm:text-base font-semibold truncate">
+                        {proyecto.nombre}
+                      </div>
+                      <div className="text-xs uppercase font-semibold opacity-70 truncate">
+                        {proyecto.bono} · ₵{formatNumber(proyecto.presupuesto ?? 0)}
+                      </div>
+                    </div>
+                    {proyecto.estado && (
+                      <span
+                        className={`badge badge-sm shrink-0 ${
+                          proyecto.estado === "Finalizado"
+                            ? "badge-success"
+                            : "badge-warning"
+                        }`}
+                      >
+                        {proyecto.estado}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="collapse-content text-sm">
+                  {porCategoria.length > 0 ? (
+                    <ul className="flex flex-col divide-y divide-base-300">
+                      {porCategoria.map(([categoria, monto]) => (
+                        <li
+                          key={categoria}
+                          className="flex items-center justify-between gap-2 py-1.5"
+                        >
+                          <span className="text-xs font-semibold uppercase opacity-70">
+                            {categoria}
+                          </span>
+                          <span className="font-bold text-error shrink-0">
+                            ₵{formatNumber(monto)}
+                          </span>
+                        </li>
+                      ))}
+                      <li className="flex items-center justify-between gap-2 py-1.5 font-bold">
+                        <span className="text-xs uppercase">Total egresos</span>
+                        <span className="text-error">
+                          ₵{formatNumber(totalEgresos)}
+                        </span>
+                      </li>
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-base-content/60 py-1">
+                      Sin egresos registrados
+                    </p>
+                  )}
+                  <div className="flex justify-end pt-2">
+                    <Link
+                      href={`/proyecto/${proyecto.id}`}
+                      className="btn btn-ghost btn-xs gap-1 text-primary"
+                      aria-label={`Ver detalle de ${proyecto.nombre}`}
+                    >
+                      Ver detalle
+                      <ExternalLink size={14} />
+                    </Link>
+                  </div>
                 </div>
               </div>
-              <Link
-                href={`/proyecto/${proyecto.id}`}
-                className="btn btn-square btn-primary btn-sm sm:btn-md"
-                aria-label={`Ver ${proyecto.nombre}`}
-              >
-                <ExternalLink size={18} />
-              </Link>
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
       ) : (
         <p className="text-center text-sm text-base-content/50">
           Sin proyectos asignados este mes
@@ -263,6 +331,8 @@ const DATA_VACIA = {
   superaLimiteAdministrativo: false,
   distribucionGastosAdministrativos: [],
   proyectosDelMes: [],
+  presupuestoTotal: 0,
+  estadoMes: null,
 };
 
 export default function Home() {
@@ -367,9 +437,23 @@ export default function Home() {
               <ChevronLeft size={20} />
             </button>
 
-            <h1 className="text-2xl sm:text-4xl font-black w-40 sm:w-64 text-center">
-              {MESES[mesIndex]}
-            </h1>
+            <div className="w-40 sm:w-64 flex flex-col items-center gap-1">
+              <h1 className="text-2xl sm:text-4xl font-black text-center">
+                {MESES[mesIndex]}
+              </h1>
+              {/* C4: estado del mes (En proceso / Cerrado) */}
+              {data.estadoMes && (
+                <span
+                  className={`badge badge-sm sm:badge-md ${
+                    data.estadoMes === "Cerrado"
+                      ? "badge-success"
+                      : "badge-warning"
+                  }`}
+                >
+                  {data.estadoMes}
+                </span>
+              )}
+            </div>
 
             <button
               onClick={mesSiguiente}
@@ -380,6 +464,73 @@ export default function Home() {
             </button>
           </div>
         </FadeIn>
+
+        {/* Fila superior: Presupuesto total + % gastos administrativos */}
+        <div
+          style={fadeStyle}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5"
+        >
+          <FadeIn delay={50} className="h-full">
+            <div className="w-full h-full bg-base-100 rounded-lg shadow-md p-4 sm:p-6 flex items-center gap-4">
+              <div className="bg-info/10 p-3 rounded-lg shrink-0">
+                <Wallet size={22} className="text-info" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] sm:text-xs uppercase font-black text-base-content/70">
+                  Presupuestado en {MESES[mesIndex]}
+                </span>
+                <span className="block font-black text-2xl sm:text-3xl text-info leading-tight truncate">
+                  ₵{formatNumber(data.presupuestoTotal)}
+                </span>
+                <p className="text-[10px] sm:text-xs text-base-content/60">
+                  {data.proyectosDelMes.length}{" "}
+                  {data.proyectosDelMes.length === 1
+                    ? "proyecto"
+                    : "proyectos"}
+                </p>
+              </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={100} className="h-full sm:col-span-2">
+            <div
+              className={`w-full h-full rounded-lg shadow-md p-4 sm:p-6 flex flex-col justify-center gap-3 ${
+                data.superaLimiteAdministrativo
+                  ? "bg-warning/15 border-2 border-warning/40"
+                  : "bg-base-100"
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="bg-warning/10 p-3 rounded-lg shrink-0">
+                    <Percent size={22} className="text-warning" />
+                  </div>
+                  <span className="text-[10px] sm:text-xs uppercase font-black text-base-content/70">
+                    Gastos administrativos sobre presupuesto
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 sm:gap-3 ms-auto">
+                  <span className="font-black text-warning text-5xl sm:text-6xl leading-none">
+                    {data.pctGastosAdministrativos.toFixed(1)}%
+                  </span>
+                  <span className="text-xs sm:text-sm text-base-content/70 font-semibold">
+                    ₵{formatNumber(data.gastosAdministrativos)} de ₵
+                    {formatNumber(data.presupuestoTotal)}
+                  </span>
+                </div>
+              </div>
+              <progress
+                className={`progress w-full ${
+                  data.superaLimiteAdministrativo
+                    ? "progress-error"
+                    : "progress-warning"
+                }`}
+                value={Math.min(data.pctGastosAdministrativos, 100)}
+                max="100"
+              ></progress>
+            </div>
+          </FadeIn>
+        </div>
 
         {/* Fila principal: Resumen del mes + CTA Agregar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">

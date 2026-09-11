@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  ChevronLeft,
   Plus,
   Search,
   X,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import BackButton from "@/components/BackButton";
 import { listarMovimientos, actualizarMovimiento, eliminarMovimiento } from "@/lib/api";
 
 /* =========================
@@ -296,13 +296,7 @@ export default function MovimientosPage() {
           {/* Header: volver + título + CTA */}
           <FadeIn delay={0} className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Link
-                href="/"
-                className="btn btn-ghost btn-circle btn-sm sm:btn-md shrink-0"
-                aria-label="Volver al inicio"
-              >
-                <ChevronLeft size={22} />
-              </Link>
+              <BackButton fallback="/" label="Volver" />
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl font-black truncate">
                   Movimientos

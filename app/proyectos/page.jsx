@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  ChevronLeft,
   Plus,
   Search,
   X,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
+import BackButton from "@/components/BackButton";
 import { listarProyectos } from "@/lib/api";
 
 /* =========================
@@ -106,13 +106,7 @@ export default function ProyectosPage() {
         {/* Header: volver + título + CTA */}
         <FadeIn delay={0} className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Link
-              href="/"
-              className="btn btn-ghost btn-circle btn-sm sm:btn-md shrink-0"
-              aria-label="Volver al inicio"
-            >
-              <ChevronLeft size={22} />
-            </Link>
+            <BackButton fallback="/" label="Volver" />
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-black truncate">
                 Proyectos
@@ -209,9 +203,9 @@ export default function ProyectosPage() {
                     </span>
                   </div>
 
-                  {/* Bono, subtipo y presupuesto */}
+                  {/* Bono, subtipo, contratista, mano de obra y ganancia */}
                   <div className="mt-auto pt-3 border-t border-base-200">
-                    <div className="flex justify-between gap-2 text-xs mb-2">
+                    <div className="flex justify-between gap-2 text-xs mb-1">
                       <span className="text-base-content/50">
                         Bono:{" "}
                         <span className="font-semibold text-base-content">
@@ -225,11 +219,41 @@ export default function ProyectosPage() {
                         </span>
                       </span>
                     </div>
-                    <p className="text-[10px] uppercase font-bold text-base-content/50">
-                      Presupuesto
+                    <p className="text-xs text-base-content/50 mb-2">
+                      Contratista:{" "}
+                      <span className="font-semibold text-base-content">
+                        {project.contratista}
+                      </span>
                     </p>
-                    <p className="font-black text-primary text-lg sm:text-xl">
-                      ₵{formatNumber(project.presupuesto)}
+
+                    {/* Avance de Mano de Obra (C2) */}
+                    <div className="mb-2">
+                      <div className="flex justify-between gap-2 text-[10px] uppercase font-bold text-base-content/50 mb-0.5">
+                        <span>Mano de Obra</span>
+                        <span className="normal-case font-semibold text-base-content/60">
+                          ₡{formatNumber(project.gastadoManoObra ?? 0)} de ₡
+                          {formatNumber(project.presupuestoManoObra ?? 0)}
+                        </span>
+                      </div>
+                      <progress
+                        className="progress progress-warning w-full h-1.5"
+                        value={project.gastadoManoObra ?? 0}
+                        max={project.presupuestoManoObra || 1}
+                      ></progress>
+                    </div>
+
+                    {/* Ganancia total (C6) */}
+                    <p className="text-[10px] uppercase font-bold text-base-content/50">
+                      Ganancia
+                    </p>
+                    <p
+                      className={`font-black text-lg sm:text-xl ${
+                        (project.ganancia ?? 0) >= 0
+                          ? "text-success"
+                          : "text-error"
+                      }`}
+                    >
+                      ₵{formatNumber(project.ganancia ?? 0)}
                     </p>
                   </div>
                 </Link>

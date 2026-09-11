@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import { crearProyecto, listarBonos } from "@/lib/api";
+import { crearProyecto, listarBonos, listarCatalogo } from "@/lib/api";
 
 /* =========================
    FadeIn animation component
@@ -66,11 +66,13 @@ const ANOS = [2024, 2025, 2026, 2027, 2028];
 const initialFormData = {
   nombreProyecto: "",
   presupuesto: "",
+  presupuestoManoObra: "",
   mesAsignacion: "",
   anioAsignacion: "",
   estado: "Revisión",
   bono: "",
   subtipoBonoI: "",
+  contratista: "",
 };
 
 /* Mismo separador de miles que el resto de la app (₡1.500.000) */
@@ -86,6 +88,7 @@ export default function AgregarProyecto() {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [bonos, setBonos] = useState([]);
+  const [contratistas, setContratistas] = useState([]);
 
   useEffect(() => {
     listarBonos()
@@ -94,6 +97,15 @@ export default function AgregarProyecto() {
         Swal.fire({
           icon: "error",
           title: "No se pudieron cargar los bonos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        });
+      });
+    listarCatalogo("contratistas")
+      .then(setContratistas)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los contratistas",
           text: "Verifica que el backend esté corriendo en localhost:4000",
         });
       });
@@ -126,13 +138,19 @@ export default function AgregarProyecto() {
     }));
   };
 
-  /* Presupuesto: solo dígitos, se muestra formateado en ₡ */
+  /* Presupuestos: solo dígitos, se muestran formateados en ₡ */
   const handlePresupuestoChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "");
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      presupuesto: value,
+      [name]: value.replace(/\D/g, ""),
     }));
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   const validateForm = () => {
@@ -140,6 +158,19 @@ export default function AgregarProyecto() {
 
     if (!formData.nombreProyecto.trim()) {
       newErrors.nombreProyecto = "El nombre del proyecto es requerido";
+    }
+    if (!formData.presupuestoManoObra || Number(formData.presupuestoManoObra) <= 0) {
+      newErrors.presupuestoManoObra =
+        "El presupuesto de mano de obra es requerido y debe ser mayor a 0";
+    } else if (
+      formData.presupuesto &&
+      Number(formData.presupuestoManoObra) > Number(formData.presupuesto)
+    ) {
+      /* La mano de obra no puede superar el presupuesto total del proyecto */
+      newErrors.presupuestoManoObra = `No puede superar el presupuesto total del proyecto (${formatCurrency(formData.presupuesto)})`;
+    }
+    if (!formData.contratista) {
+      newErrors.contratista = "El contratista de mano de obra es requerido";
     }
     if (!formData.mesAsignacion) {
       newErrors.mesAsignacion = "El mes de asignación es requerido";
@@ -166,6 +197,8 @@ export default function AgregarProyecto() {
       await crearProyecto({
         nombre: formData.nombreProyecto,
         presupuesto: Number(formData.presupuesto),
+        presupuestoManoObra: Number(formData.presupuestoManoObra),
+        contratista: formData.contratista,
         mesAsignacion: formData.mesAsignacion,
         anioAsignacion: String(formData.anioAsignacion),
         estado: formData.estado,
@@ -199,13 +232,7 @@ export default function AgregarProyecto() {
         <div className="max-w-2xl mx-auto flex flex-col gap-4 sm:gap-5">
           {/* Header */}
           <FadeIn delay={0} className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/"
-              className="btn btn-ghost btn-circle btn-sm sm:btn-md shrink-0"
-              aria-label="Volver al inicio"
-            >
-              <ChevronLeft size={22} />
-            </Link>
+            <BackButton fallback="/" label="Volver" />
             <div>
               <h1 className="text-xl sm:text-2xl font-black">
                 Agregar Proyecto
@@ -254,6 +281,38 @@ export default function AgregarProyecto() {
                     className="grow"
                   />
                 </label>
+              </Field>
+
+              {/* Presupuesto de Mano de Obra */}
+              <Field
+                label="Presupuesto de Mano de Obra"
+                error={errors.presupuestoManoObra}
+              >
+                <label
+                  className={`input input-bordered flex items-center gap-2 w-full ${
+                    errors.presupuestoManoObra ? "input-error" : ""
+                  }`}
+                >
+                  <span className="text-primary font-bold">₡</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="presupuestoManoObra"
+                    value={
+                      formData.presupuestoManoObra
+                        ? formatCurrency(formData.presupuestoManoObra)
+                        : ""
+                    }
+                    onChange={handlePresupuestoChange}
+                    placeholder="₡0"
+                    className="grow"
+                  />
+                </label>
+                {formData.presupuesto && Number(formData.presupuesto) > 0 && (
+                  <span className="text-xs text-base-content/50 mt-1">
+                    Máximo: {formatCurrency(formData.presupuesto)}
+                  </span>
+                )}
               </Field>
 
               {/* Mes y Año de Asignación */}
@@ -305,6 +364,25 @@ export default function AgregarProyecto() {
                 >
                   <option value="Revisión">Revisión</option>
                   <option value="Finalizado">Finalizado</option>
+                </select>
+              </Field>
+
+              {/* Contratista de Mano de Obra */}
+              <Field label="Contratista de Mano de Obra" error={errors.contratista}>
+                <select
+                  name="contratista"
+                  value={formData.contratista}
+                  onChange={handleInputChange}
+                  className={`select select-bordered w-full ${
+                    errors.contratista ? "select-error" : ""
+                  }`}
+                >
+                  <option value="">Seleccionar...</option>
+                  {contratistas.map((c) => (
+                    <option key={c.id} value={c.nombre}>
+                      {c.nombre}
+                    </option>
+                  ))}
                 </select>
               </Field>
 
