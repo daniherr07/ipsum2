@@ -96,9 +96,9 @@ export function restaurarProyectos(lista: Proyecto[]): void {
   /* Normaliza proyectos legacy que no tengan los campos nuevos (C2, C3) */
   proyectos.push(
     ...lista.map((p) => ({
-      presupuestoManoObra: 0,
-      contratista: "-",
       ...p,
+      presupuestoManoObra: p.presupuestoManoObra ?? 0,
+      contratista: p.contratista ?? "-",
     }))
   );
 }
