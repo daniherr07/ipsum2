@@ -1,28 +1,34 @@
 {
   "proyectos": [
     {
+      "presupuestoManoObra": 10000,
+      "contratista": "-",
       "nombre": "Thais Rosita Coronado Espinoza",
       "presupuesto": 12306000,
       "mesAsignacion": "Junio",
       "anioAsignacion": "2026",
-      "estado": "Revisión",
+      "estado": "Finalizado",
       "bono": "Art.59",
       "subtipoBono": "Art.59",
       "creadoEn": "2026-06-06T00:00:00.000Z",
       "id": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a"
     },
     {
+      "presupuestoManoObra": 1200000,
+      "contratista": "-",
       "nombre": "Luceli Fabiola Blandón Lopez",
       "presupuesto": 12810000,
       "mesAsignacion": "Junio",
       "anioAsignacion": "2026",
-      "estado": "Revisión",
+      "estado": "Finalizado",
       "bono": "Art.59",
       "subtipoBono": "Art.59",
       "creadoEn": "2026-06-27T00:00:00.000Z",
       "id": "672c4b35-2f8f-409f-baad-c12edf2416a2"
     },
     {
+      "presupuestoManoObra": 0,
+      "contratista": "-",
       "nombre": "Jorge Luis Badilla Rodriguez",
       "presupuesto": 10300000,
       "mesAsignacion": "Julio",
@@ -34,6 +40,8 @@
       "id": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7"
     },
     {
+      "presupuestoManoObra": 0,
+      "contratista": "-",
       "nombre": "Jeniffer Rojas Araya",
       "presupuesto": 12810000,
       "mesAsignacion": "Mayo",
@@ -45,6 +53,8 @@
       "id": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3"
     },
     {
+      "presupuestoManoObra": 0,
+      "contratista": "-",
       "nombre": "Marianela Navarro Rodriguez",
       "presupuesto": 12306000,
       "mesAsignacion": "Mayo",
@@ -54,6 +64,45 @@
       "subtipoBono": "Art.59",
       "creadoEn": "2026-05-30T00:00:00.000Z",
       "id": "a9ea70f5-f694-4992-bfb6-12fd162cd54a"
+    },
+    {
+      "presupuestoManoObra": 0,
+      "contratista": "-",
+      "nombre": "Maria",
+      "presupuesto": 1250000,
+      "mesAsignacion": "Abril",
+      "anioAsignacion": "2026",
+      "estado": "Revisión",
+      "bono": "Crédito",
+      "subtipoBono": "CLP",
+      "id": "d58d9722-8080-4657-8740-989c8e6991fe",
+      "creadoEn": "2026-07-31T02:47:28.196Z"
+    },
+    {
+      "presupuestoManoObra": 5500000,
+      "contratista": "Mauricio Solís Vargas",
+      "nombre": "Daniela Rojas Cordero",
+      "presupuesto": 18500000,
+      "mesAsignacion": "Enero",
+      "anioAsignacion": "2026",
+      "estado": "Finalizado",
+      "bono": "Crédito",
+      "subtipoBono": "CLP",
+      "creadoEn": "2026-01-05T08:00:00.000Z",
+      "id": "41ac5a49-6b7e-493a-90f9-e131a61ab140"
+    },
+    {
+      "presupuestoManoObra": 6800000,
+      "contratista": "Ronald Cordero Mora",
+      "nombre": "Viviana Chacón Hernández",
+      "presupuesto": 21750000,
+      "mesAsignacion": "Febrero",
+      "anioAsignacion": "2026",
+      "estado": "Finalizado",
+      "bono": "Art.59",
+      "subtipoBono": "Art.59",
+      "creadoEn": "2026-02-03T08:12:00.000Z",
+      "id": "3e94f5f1-07fd-4385-b446-23a3ef066d6c"
     }
   ],
   "movimientos": [
@@ -2216,11 +2265,424 @@
       "creadoEn": "2026-08-07T00:00:00.000Z",
       "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
       "id": "3b2bfb17-4809-464f-8bbb-1d5179b69b6c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "monto": 25000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC3",
+      "descripcion": "Materiales segunda etapa construccion rosa",
+      "id": "ae98c756-ebb7-4153-9e09-a5a2c1ca113e",
+      "creadoEn": "2026-07-31T01:51:00.951Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 75000,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Pago apartamentos constructores limon",
+      "id": "b8747432-d05b-4e46-8d07-af8a3f86dec6",
+      "creadoEn": "2026-07-31T01:51:00.956Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "monto": 5000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC1",
+      "descripcion": "Compra de materiales casa Thais",
+      "id": "e008988b-9971-4ced-98a6-dcd1fef9ef32",
+      "creadoEn": "2026-07-31T02:14:43.370Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 5000,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Alquiler apartamento trabajadores",
+      "id": "76d85d52-69ca-4a29-b60b-868ace76d01a",
+      "creadoEn": "2026-07-31T02:14:43.373Z"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "672c4b35-2f8f-409f-baad-c12edf2416a2",
+      "monto": 25000,
+      "nombreIngreso": "Ingreso Mutual",
+      "fechaPago": "30/07/2026",
+      "descripcion": "Ejemplo",
+      "id": "c8d88edf-1c1a-4a67-8c97-4b7d75df4e62",
+      "creadoEn": "2026-07-31T02:25:32.642Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "1d5b8ce6-1127-4c73-8b8f-493f0b4b95d3",
+      "monto": 10000,
+      "categoria": "Equipamiento",
+      "ordenCompra": "OC3",
+      "descripcion": "Equipamento para constructores",
+      "id": "73ecf1c7-4fbd-4cad-b99d-b95c8342080e",
+      "creadoEn": "2026-07-31T02:56:09.717Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "a9ea70f5-f694-4992-bfb6-12fd162cd54a",
+      "monto": 2000,
+      "categoria": "Servicios",
+      "descripcion": "Consultoria",
+      "id": "95160610-553a-42fa-ab31-c423c077e38e",
+      "creadoEn": "2026-07-31T02:56:09.740Z"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 14000,
+      "mes": "Mayo",
+      "ano": "2026",
+      "descripcion": "Alquiler habitaciones trabajadores",
+      "id": "395c8772-825e-4f24-8e6a-3afed2a99216",
+      "creadoEn": "2026-07-31T02:56:09.748Z"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "4bfd7c81-cf25-4584-8179-696a6e5f8fc7",
+      "monto": 25000,
+      "nombreIngreso": "Pago mensual",
+      "fechaPago": "12/07/2026",
+      "descripcion": "Pago mensual casa",
+      "id": "b39d95e8-ec65-4392-a83f-ffbc6449571c",
+      "creadoEn": "2026-07-31T02:57:11.534Z"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 6000000,
+      "nombreIngreso": "Primer desembolso",
+      "fechaPago": "10/01/2026",
+      "descripcion": "Desembolso inicial del crédito",
+      "creadoEn": "2026-01-10T15:20:00.000Z",
+      "id": "3a5877f2-2d3a-46be-9a00-5d439036b3bf"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 7500000,
+      "nombreIngreso": "Segundo desembolso",
+      "fechaPago": "20/01/2026",
+      "descripcion": "Desembolso de media obra",
+      "creadoEn": "2026-01-20T10:05:00.000Z",
+      "id": "89792a44-c978-442e-8603-b71890533271"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 5000000,
+      "nombreIngreso": "Desembolso final",
+      "fechaPago": "30/01/2026",
+      "descripcion": "Desembolso de cierre del crédito",
+      "creadoEn": "2026-01-30T09:45:00.000Z",
+      "id": "02eeac5c-ae98-43ad-8091-0f31f9522ae8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 1800000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC-001",
+      "descripcion": "Pago primera quincena cuadrilla",
+      "creadoEn": "2026-01-12T08:30:00.000Z",
+      "id": "3fc5c468-107b-4433-819d-2f4a61a870c0"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 3200000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC-002",
+      "descripcion": "Compra de cemento, acero y agregados",
+      "creadoEn": "2026-01-13T11:10:00.000Z",
+      "id": "203a7abf-0a9e-4537-bd21-00f064e96721"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 2450000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC-003",
+      "descripcion": "Compra de bloques, malla electrosoldada y fontanería",
+      "creadoEn": "2026-01-16T14:00:00.000Z",
+      "id": "a86f28c8-c07d-412b-8553-ef3556b44d20"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 2100000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC-004",
+      "descripcion": "Pago segunda quincena cuadrilla y maestro de obras",
+      "creadoEn": "2026-01-19T08:15:00.000Z",
+      "id": "77a5d457-4829-4e95-952c-e0ebd2a4aae8"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 890000,
+      "categoria": "Equipamiento",
+      "ordenCompra": "OC-005",
+      "descripcion": "Alquiler de mezcladora, andamios y vibrador de concreto",
+      "creadoEn": "2026-01-21T16:40:00.000Z",
+      "id": "87fdbc6c-dc98-4a98-85c2-55df7b0df71d"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 640000,
+      "categoria": "Servicios",
+      "ordenCompra": "OC-006",
+      "descripcion": "Subcontrato de instalación eléctrica y plomería",
+      "creadoEn": "2026-01-23T09:25:00.000Z",
+      "id": "107ae56b-edf8-4342-a21e-c76834fb0f46"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 1750000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC-007",
+      "descripcion": "Acabados: pisos, pintura, puertas y ventanas",
+      "creadoEn": "2026-01-26T13:50:00.000Z",
+      "id": "8cbc5ec8-f093-412c-8bd3-e35505e1898c"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 1350000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC-008",
+      "descripcion": "Pago final cuadrilla, etapa de acabados",
+      "creadoEn": "2026-01-28T08:00:00.000Z",
+      "id": "9f5fe7e4-7655-400c-a39b-46a2b7c7fe90"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "41ac5a49-6b7e-493a-90f9-e131a61ab140",
+      "monto": 320000,
+      "categoria": "Otros",
+      "ordenCompra": "OC-009",
+      "descripcion": "Permisos municipales y trámites",
+      "creadoEn": "2026-01-29T10:35:00.000Z",
+      "id": "1a514041-7a08-48ea-a795-bb10ca723bd0"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 185000,
+      "mes": "Enero",
+      "ano": "2026",
+      "descripcion": "Pago contador y cargas sociales oficina",
+      "creadoEn": "2026-01-15T09:00:00.000Z",
+      "id": "e84737c0-abd5-47b5-898e-752432297bef"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 8700000,
+      "nombreIngreso": "Pago inicial entidad",
+      "fechaPago": "06/02/2026",
+      "descripcion": "Primer pago de la entidad al inicio de obra",
+      "creadoEn": "2026-02-06T14:30:00.000Z",
+      "id": "d645c713-7342-4ac9-b373-606737f8e3f0"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 8700000,
+      "nombreIngreso": "Pago avance de obra",
+      "fechaPago": "17/02/2026",
+      "descripcion": "Segundo pago contra avance de obra",
+      "creadoEn": "2026-02-17T10:48:00.000Z",
+      "id": "5ace6d5a-3793-4716-a244-6c9dd66b3a18"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 4350000,
+      "nombreIngreso": "Liquidación final",
+      "fechaPago": "27/02/2026",
+      "descripcion": "Pago de liquidación contra entrega de la vivienda",
+      "creadoEn": "2026-02-27T09:15:00.000Z",
+      "id": "696b19d3-4826-49cd-92fc-c1983868624a"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 2200000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC-010",
+      "descripcion": "Pago primera quincena cuadrilla y maestro de obras",
+      "creadoEn": "2026-02-06T08:20:00.000Z",
+      "id": "d589574e-3b6d-4e81-8b2b-a3c919975551"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 4100000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC-011",
+      "descripcion": "Compra de cemento, varilla, agregados y prefabricados",
+      "creadoEn": "2026-02-07T11:05:00.000Z",
+      "id": "4fad089c-7b46-4305-b428-5ed57c372380"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 2980000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC-012",
+      "descripcion": "Compra de bloques, repello y materiales de techumbre",
+      "creadoEn": "2026-02-10T15:42:00.000Z",
+      "id": "adec2da9-d890-4766-b6ea-6df619ed3f49"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 2400000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC-013",
+      "descripcion": "Pago segunda quincena cuadrilla",
+      "creadoEn": "2026-02-13T08:05:00.000Z",
+      "id": "6e08f42a-d92f-4291-b9f3-f290d668cbea"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 1150000,
+      "categoria": "Equipamiento",
+      "ordenCompra": "OC-014",
+      "descripcion": "Alquiler de equipo: mezcladora, vibrador y andamios",
+      "creadoEn": "2026-02-16T16:22:00.000Z",
+      "id": "04736e7b-d75d-4699-ba24-74d74da9b236"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 780000,
+      "categoria": "Servicios",
+      "ordenCompra": "OC-015",
+      "descripcion": "Subcontrato de instalaciones electromecánicas",
+      "creadoEn": "2026-02-18T09:37:00.000Z",
+      "id": "c4c10f56-9d7c-4ffd-9257-76e92f4b4e60"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 3150000,
+      "categoria": "Materiales",
+      "ordenCompra": "OC-016",
+      "descripcion": "Acabados: cerámica, grifería, pintura y carpintería",
+      "creadoEn": "2026-02-20T13:58:00.000Z",
+      "id": "61dd3191-d361-4d63-81df-67041ff4b94e"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 1800000,
+      "categoria": "Mano de Obra",
+      "ordenCompra": "OC-017",
+      "descripcion": "Pago cierre de obra y acabados",
+      "creadoEn": "2026-02-24T08:10:00.000Z",
+      "id": "7fd20053-301c-4125-9703-9a8f00dce05b"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 520000,
+      "categoria": "Servicios",
+      "ordenCompra": "OC-018",
+      "descripcion": "Fletes y acarreo de materiales al sitio",
+      "creadoEn": "2026-02-25T10:44:00.000Z",
+      "id": "d332b951-4763-45ba-bb66-3d6fed16a1cb"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "3e94f5f1-07fd-4385-b446-23a3ef066d6c",
+      "monto": 770000,
+      "categoria": "Otros",
+      "ordenCompra": "OC-019",
+      "descripcion": "Permisos, inspecciones y pólizas de construcción",
+      "creadoEn": "2026-02-26T14:56:00.000Z",
+      "id": "392edd1d-29c8-446f-9030-4e21e2878948"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 210000,
+      "mes": "Febrero",
+      "ano": "2026",
+      "descripcion": "Pago contador y mensajería bancaria",
+      "creadoEn": "2026-02-12T09:00:00.000Z",
+      "id": "745710f8-5f2f-4ead-9516-45f614d07b22"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-administrativo",
+      "monto": 165000,
+      "mes": "Febrero",
+      "ano": "2026",
+      "descripcion": "Alquiler de oficina y servicios públicos",
+      "creadoEn": "2026-02-19T09:00:00.000Z",
+      "id": "1b9248ee-29f2-48bf-8ca1-5b1d9c1fe5b2"
+    },
+    {
+      "tipo": "egreso",
+      "tipoEgreso": "egreso-general",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "monto": 3000,
+      "categoria": "Mano de Obra",
+      "descripcion": "Pago nominas",
+      "id": "f0091aac-0437-4184-8807-42506cdccd6b",
+      "creadoEn": "2026-08-28T02:11:10.985Z"
+    },
+    {
+      "tipo": "ingreso",
+      "proyectoId": "54b8dcde-b4ff-4092-8b5e-39ca4bf7579a",
+      "monto": 10000,
+      "nombreIngreso": "Pago mutual",
+      "fechaPago": "27/08/2026",
+      "descripcion": "descripcion",
+      "id": "209f2104-8a63-491b-8e75-1cc9299e25ad",
+      "creadoEn": "2026-08-28T02:12:09.316Z"
     }
   ],
   "catalogos": {
     "ordenes-compra": [],
-    "proveedores": []
+    "proveedores": [],
+    "contratistas": []
   },
   "bonos": [
     {

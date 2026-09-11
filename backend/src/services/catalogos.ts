@@ -13,6 +13,7 @@ export type Catalogos = Record<TipoCatalogo, ItemCatalogo[]>;
 const catalogos: Catalogos = {
   "ordenes-compra": [],
   proveedores: [],
+  contratistas: [],
 };
 
 export function listarCatalogo(tipo: TipoCatalogo): ItemCatalogo[] {

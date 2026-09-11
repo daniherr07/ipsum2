@@ -1,5 +1,5 @@
 import { listarProyectos } from "./proyectos.js";
-import { listarMovimientos } from "./movimientos.js";
+import { listarMovimientos, type Movimiento } from "./movimientos.js";
 import { mesAnioDe } from "../utils/fechas.js";
 
 export type DistribucionGastoAdministrativo = {
@@ -7,6 +7,23 @@ export type DistribucionGastoAdministrativo = {
   nombre: string;
   monto: number;
   porcentaje: number;
+};
+
+export type EgresoProyecto = {
+  id: string;
+  monto: number;
+  categoria: string;
+  descripcion: string;
+  creadoEn: string;
+};
+
+export type ProyectoDelMes = {
+  id: string;
+  nombre: string;
+  bono: string;
+  presupuesto: number;
+  estado: "Revisión" | "Finalizado";
+  egresos: EgresoProyecto[];
 };
 
 export type ResumenDashboard = {
@@ -20,8 +37,38 @@ export type ResumenDashboard = {
   pctGastosAdministrativos: number;
   superaLimiteAdministrativo: boolean;
   distribucionGastosAdministrativos: DistribucionGastoAdministrativo[];
-  proyectosDelMes: { id: string; nombre: string; bono: string }[];
+  proyectosDelMes: ProyectoDelMes[];
+  presupuestoTotal: number;
+  estadoMes: "En proceso" | "Cerrado" | null;
 };
+
+/* C5: prorrata de los gastos administrativos del mes por peso presupuestario.
+   Reutilizada por el dashboard y por el detalle de proyecto (gastosAdministrativosMes) */
+export function calcularDistribucionAdministrativa(mes: string, anio: string): DistribucionGastoAdministrativo[] {
+  const proyectosDelMes = listarProyectos().filter(
+    (p) => p.mesAsignacion === mes && p.anioAsignacion === anio
+  );
+
+  const gastosAdministrativos = listarMovimientos({})
+    .filter((m) => {
+      if (m.tipo !== "egreso" || m.tipoEgreso !== "egreso-administrativo") return false;
+      const fecha = mesAnioDe(m.creadoEn);
+      return fecha.mes === mes && fecha.anio === anio;
+    })
+    .reduce((sum, m) => sum + m.monto, 0);
+
+  const presupuestoTotal = proyectosDelMes.reduce((sum, p) => sum + p.presupuesto, 0);
+
+  return proyectosDelMes.map((p) => {
+    const peso = presupuestoTotal > 0 ? p.presupuesto / presupuestoTotal : 0;
+    return {
+      proyectoId: p.id,
+      nombre: p.nombre,
+      monto: gastosAdministrativos * peso,
+      porcentaje: Math.round(peso * 1000) / 10,
+    };
+  });
+}
 
 export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
   const proyectos = listarProyectos();
@@ -53,18 +100,19 @@ export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
 
   const presupuestoTotal = proyectosDelMes.reduce((sum, p) => sum + p.presupuesto, 0);
 
-  const distribucionGastosAdministrativos: DistribucionGastoAdministrativo[] = proyectosDelMes.map((p) => {
-    const peso = presupuestoTotal > 0 ? p.presupuesto / presupuestoTotal : 0;
-    return {
-      proyectoId: p.id,
-      nombre: p.nombre,
-      monto: gastosAdministrativos * peso,
-      porcentaje: Math.round(peso * 1000) / 10,
-    };
-  });
+  /* La distribucion reutiliza la funcion extraida (C5); el resultado es identico */
+  const distribucionGastosAdministrativos = calcularDistribucionAdministrativa(mes, anio);
 
   const pctGastosAdministrativos =
     presupuestoTotal > 0 ? (gastosAdministrativos / presupuestoTotal) * 100 : 0;
+
+  /* C4: estado del mes segun sus proyectos (null si el mes no tiene proyectos) */
+  const estadoMes: ResumenDashboard["estadoMes"] =
+    proyectosDelMes.length === 0
+      ? null
+      : proyectosDelMes.every((p) => p.estado === "Finalizado")
+        ? "Cerrado"
+        : "En proceso";
 
   return {
     mes,
@@ -77,6 +125,28 @@ export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
     pctGastosAdministrativos: Math.round(pctGastosAdministrativos * 10) / 10,
     superaLimiteAdministrativo: pctGastosAdministrativos > 10,
     distribucionGastosAdministrativos,
-    proyectosDelMes: proyectosDelMes.map((p) => ({ id: p.id, nombre: p.nombre, bono: p.bono })),
+    proyectosDelMes: proyectosDelMes.map((p) => ({
+      id: p.id,
+      nombre: p.nombre,
+      bono: p.bono,
+      presupuesto: p.presupuesto,
+      estado: p.estado,
+      egresos: movimientos
+        .filter(
+          (m): m is Extract<Movimiento, { tipoEgreso: "egreso-general" }> =>
+            m.tipo === "egreso" &&
+            m.tipoEgreso === "egreso-general" &&
+            m.proyectoId === p.id
+        )
+        .map((m) => ({
+          id: m.id,
+          monto: m.monto,
+          categoria: m.categoria,
+          descripcion: m.descripcion,
+          creadoEn: m.creadoEn,
+        })),
+    })),
+    presupuestoTotal,
+    estadoMes,
   };
 }

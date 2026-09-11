@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from "react"
 import { useParams } from "next/navigation"
 import {
-  ChevronLeft,
   Plus,
   TrendingUp,
   TrendingDown,
@@ -11,10 +10,21 @@ import {
   PiggyBank,
   Building2,
   Calendar,
+  Pencil,
+  CircleDollarSign,
 } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
-import { obtenerProyecto, listarMovimientos, type Proyecto, type Movimiento } from "@/lib/api"
+import BackButton from "@/components/BackButton"
+import {
+  obtenerProyecto,
+  actualizarProyecto,
+  listarMovimientos,
+  listarCatalogo,
+  type Proyecto,
+  type Movimiento,
+  type ItemCatalogo,
+} from "@/lib/api"
 
 /* =========================
    Helpers
@@ -249,6 +259,266 @@ function DonutChart({ data }: { data: { nombre: string; monto: number }[] }) {
   )
 }
 
+/* =========================
+   Modal de edición (C7A):
+   presupuesto de mano de obra + contratista
+   + mes/año de asignación y estado (M2, M3)
+   (mismo patrón que FormModal de settings)
+========================= */
+const MESES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+]
+
+const ANOS = [2024, 2025, 2026, 2027, 2028]
+
+function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
+  isOpen: boolean
+  onClose: () => void
+  proyecto: Proyecto
+  onGuardado: () => void
+}) {
+  const [presupuestoMO, setPresupuestoMO] = useState("")
+  const [contratista, setContratista] = useState("")
+  const [mesAsignacion, setMesAsignacion] = useState("")
+  const [anioAsignacion, setAnioAsignacion] = useState("")
+  const [estado, setEstado] = useState<"Revisión" | "Finalizado">("Revisión")
+  const [contratistas, setContratistas] = useState<ItemCatalogo[]>([])
+  const [guardando, setGuardando] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) return
+    setPresupuestoMO(
+      proyecto.presupuestoManoObra ? String(proyecto.presupuestoManoObra) : "",
+    )
+    setContratista(proyecto.contratista ?? "")
+    setMesAsignacion(proyecto.mesAsignacion ?? "")
+    setAnioAsignacion(proyecto.anioAsignacion ?? "")
+    setEstado(proyecto.estado ?? "Revisión")
+    listarCatalogo("contratistas")
+      .then(setContratistas)
+      .catch(() => setContratistas([]))
+  }, [isOpen, proyecto])
+
+  const formatMonto = (value: string) => {
+    const num = parseInt(value.replace(/\D/g, "")) || 0
+    return `₡${num.toLocaleString("es-ES", {
+      maximumFractionDigits: 0,
+      useGrouping: "always",
+    })}`
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const monto = Number(presupuestoMO)
+    if (!monto || monto <= 0) {
+      Swal.fire("Error", "El presupuesto de mano de obra debe ser mayor a 0", "error")
+      return
+    }
+    /* M1: la mano de obra no puede superar el presupuesto total del proyecto */
+    if (monto > proyecto.presupuesto) {
+      Swal.fire(
+        "Error",
+        `El presupuesto de mano de obra no puede superar el presupuesto total (${formatCurrency(proyecto.presupuesto)})`,
+        "error",
+      )
+      return
+    }
+    if (!contratista.trim()) {
+      Swal.fire("Error", "El contratista es requerido", "error")
+      return
+    }
+    if (!mesAsignacion || !anioAsignacion) {
+      Swal.fire("Error", "El mes y año de asignación son requeridos", "error")
+      return
+    }
+    setGuardando(true)
+    try {
+      await actualizarProyecto(proyecto.id, {
+        presupuestoManoObra: monto,
+        contratista: contratista.trim(),
+        mesAsignacion,
+        anioAsignacion,
+        estado,
+      })
+      onGuardado()
+      onClose()
+      Swal.fire({
+        icon: "success",
+        title: "Proyecto actualizado",
+        timer: 1500,
+        showConfirmButton: false,
+      })
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        error instanceof Error ? error.message : "Error desconocido",
+        "error",
+      )
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  if (!isOpen) return null
+
+  /* El contratista actual puede no estar en el catálogo (proyectos legacy) */
+  const contratistaEnCatalogo = contratistas.some(
+    (c) => c.nombre === contratista,
+  )
+  /* El año actual puede estar fuera del rango (proyectos legacy) */
+  const anioEnRango = ANOS.some((a) => String(a) === anioAsignacion)
+
+  return (
+    <div className="modal modal-open">
+      <div className="modal-box w-full max-w-md">
+        <h3 className="font-bold text-lg mb-4">Editar Proyecto</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">
+                Presupuesto de Mano de Obra
+              </span>
+            </label>
+            <label className="input input-bordered flex items-center gap-2 w-full">
+              <span className="text-primary font-bold">₡</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={presupuestoMO ? formatMonto(presupuestoMO) : ""}
+                onChange={(e) =>
+                  setPresupuestoMO(e.target.value.replace(/\D/g, ""))
+                }
+                placeholder="₡0"
+                className="grow"
+              />
+            </label>
+            {/* M1: límite según presupuesto total */}
+            <span className="text-xs text-base-content/50 mt-1">
+              Máximo: {formatCurrency(proyecto.presupuesto)}
+            </span>
+          </div>
+
+          {/* M2: mes y año de asignación */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">Asignación</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <select
+                value={mesAsignacion}
+                onChange={(e) => setMesAsignacion(e.target.value)}
+                className="select select-bordered w-full"
+              >
+                <option value="">Mes...</option>
+                {MESES.map((mes) => (
+                  <option key={mes} value={mes}>
+                    {mes}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={anioAsignacion}
+                onChange={(e) => setAnioAsignacion(e.target.value)}
+                className="select select-bordered w-full"
+              >
+                <option value="">Año...</option>
+                {!anioEnRango && anioAsignacion && (
+                  <option value={anioAsignacion}>{anioAsignacion}</option>
+                )}
+                {ANOS.map((ano) => (
+                  <option key={ano} value={String(ano)}>
+                    {ano}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* M3: estado del proyecto (segmented control) */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">Estado</span>
+            </label>
+            <div className="grid grid-cols-2 gap-1.5 bg-base-200 rounded-lg p-1.5">
+              <button
+                type="button"
+                onClick={() => setEstado("Revisión")}
+                className={`rounded-md px-3 py-2 text-xs sm:text-sm font-bold transition-all ${
+                  estado === "Revisión"
+                    ? "bg-warning text-warning-content shadow-sm"
+                    : "text-base-content/60 hover:bg-base-100"
+                }`}
+              >
+                Revisión
+              </button>
+              <button
+                type="button"
+                onClick={() => setEstado("Finalizado")}
+                className={`rounded-md px-3 py-2 text-xs sm:text-sm font-bold transition-all ${
+                  estado === "Finalizado"
+                    ? "bg-success text-success-content shadow-sm"
+                    : "text-base-content/60 hover:bg-base-100"
+                }`}
+              >
+                Finalizado
+              </button>
+            </div>
+          </div>
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">Contratista</span>
+            </label>
+            <select
+              value={contratista}
+              onChange={(e) => setContratista(e.target.value)}
+              className="select select-bordered w-full"
+            >
+              <option value="">Seleccionar...</option>
+              {!contratistaEnCatalogo && contratista && (
+                <option value={contratista}>{contratista}</option>
+              )}
+              {contratistas.map((c) => (
+                <option key={c.id} value={c.nombre}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="modal-action">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-ghost"
+              disabled={guardando}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={guardando}
+            >
+              {guardando ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
+        </form>
+      </div>
+      <div className="modal-backdrop" onClick={onClose}></div>
+    </div>
+  )
+}
+
 export default function ProyectoPage() {
   const params = useParams()
   const id = params.id as string
@@ -257,6 +527,19 @@ export default function ProyectoPage() {
   const [movimientos, setMovimientos] = useState<Movimiento[]>([])
   const [cargando, setCargando] = useState(true)
   const [activeTab, setActiveTab] = useState<"ingresos" | "egresos">("ingresos")
+  const [modalEditar, setModalEditar] = useState(false)
+
+  const recargarProyecto = () => {
+    obtenerProyecto(id)
+      .then(setProyecto)
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo recargar el proyecto",
+          text: error instanceof Error ? error.message : "Error desconocido",
+        })
+      })
+  }
 
   useEffect(() => {
     Promise.all([obtenerProyecto(id), listarMovimientos({ proyectoId: id })])
@@ -302,11 +585,11 @@ export default function ProyectoPage() {
       .filter((t) => t.tipo === "egreso")
       .forEach((t) => {
         const nombre =
-          t.tipo === "egreso" && t.tipoEgreso === "egreso-administrativo"
-            ? "Egreso Administrativo"
-            : t.tipo === "egreso"
-              ? t.categoria || "Otros"
-              : "Otros"
+          t.tipo === "egreso"
+            ? t.tipoEgreso === "egreso-administrativo"
+              ? "Egreso Administrativo"
+              : t.categoria || "Otros"
+            : "Otros"
         if (!map[nombre]) map[nombre] = { monto: 0, count: 0 }
         map[nombre].monto += t.monto
         map[nombre].count += 1
@@ -359,13 +642,7 @@ export default function ProyectoPage() {
         {/* Header: volver + título + CTA */}
         <FadeIn delay={0} className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Link
-              href="/proyectos"
-              className="btn btn-ghost btn-circle btn-sm sm:btn-md shrink-0"
-              aria-label="Volver a proyectos"
-            >
-              <ChevronLeft size={22} />
-            </Link>
+            <BackButton fallback="/proyectos" label="Volver" />
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-black truncate">
                 Detalle de Proyecto
@@ -376,8 +653,9 @@ export default function ProyectoPage() {
             </div>
           </div>
 
+          {/* C8: lleva al formulario con este proyecto preseleccionado */}
           <Link
-            href="/agregarMovimento"
+            href={`/agregarMovimento?proyectoId=${proyecto.id}`}
             className="btn btn-primary btn-circle btn-sm sm:btn-md sm:rounded-full sm:w-auto gap-1 sm:px-4 shrink-0"
             aria-label="Agregar movimiento"
           >
@@ -402,13 +680,24 @@ export default function ProyectoPage() {
                   Asignación: {proyecto.mesAsignacion} {proyecto.anioAsignacion}
                 </p>
               </div>
-              <span
-                className={`badge badge-sm sm:badge-md shrink-0 ${
-                  proyecto.estado === "Finalizado" ? "badge-success" : "badge-warning"
-                }`}
-              >
-                {proyecto.estado}
-              </span>
+              <div className="flex items-center gap-1 shrink-0">
+                <span
+                  className={`badge badge-sm sm:badge-md ${
+                    proyecto.estado === "Finalizado" ? "badge-success" : "badge-warning"
+                  }`}
+                >
+                  {proyecto.estado}
+                </span>
+                {/* C7A: edición de presupuesto MO y contratista */}
+                <button
+                  type="button"
+                  onClick={() => setModalEditar(true)}
+                  className="btn btn-ghost btn-sm btn-circle"
+                  aria-label="Editar proyecto"
+                >
+                  <Pencil size={16} />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -424,6 +713,14 @@ export default function ProyectoPage() {
                 </p>
                 <p className="text-xs sm:text-sm font-semibold">
                   {proyecto.subtipoBono}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-base-content/50">
+                  Contratista de Mano de Obra
+                </p>
+                <p className="text-xs sm:text-sm font-semibold">
+                  {proyecto.contratista}
                 </p>
               </div>
             </div>
@@ -444,11 +741,37 @@ export default function ProyectoPage() {
                 <span>Disponible: {formatCurrency(totales.disponible)}</span>
               </div>
             </div>
+
+            {/* Progreso de Mano de Obra (C2) */}
+            <div>
+              <div className="flex justify-between text-xs sm:text-sm mb-1">
+                <span className="text-base-content/60">Mano de Obra</span>
+                <span className="font-bold">
+                  {formatCurrency(proyecto.gastadoManoObra ?? 0)} de{" "}
+                  {formatCurrency(proyecto.presupuestoManoObra ?? 0)}
+                </span>
+              </div>
+              <progress
+                className="progress progress-warning w-full h-2"
+                value={proyecto.gastadoManoObra ?? 0}
+                max={proyecto.presupuestoManoObra || 1}
+              />
+            </div>
+
+            {/* Gasto administrativo asignado del mes (C5) */}
+            <div className="flex justify-between items-center text-xs sm:text-sm bg-warning/10 rounded-lg px-3 py-2">
+              <span className="text-base-content/60">
+                Gasto administrativo asignado ({proyecto.mesAsignacion})
+              </span>
+              <span className="font-bold text-warning">
+                {formatCurrency(proyecto.gastosAdministrativosMes ?? 0)}
+              </span>
+            </div>
           </div>
         </FadeIn>
 
         {/* Stat Cards */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
           <StatCard
             icon={Wallet}
             label="Presupuesto"
@@ -479,6 +802,20 @@ export default function ProyectoPage() {
             color={totales.disponible >= 0 ? "success" : "error"}
             delay={250}
             subtitle={`${totales.pctUso}% utilizado`}
+          />
+          {/* M5: ganancia = ingresos − egresos (campo derivado del backend;
+              si no viene, se calcula local con los totales ya cargados) */}
+          <StatCard
+            icon={CircleDollarSign}
+            label="Ganancia"
+            value={proyecto.ganancia ?? totales.ingresos - totales.egresos}
+            color={
+              (proyecto.ganancia ?? totales.ingresos - totales.egresos) >= 0
+                ? "success"
+                : "error"
+            }
+            delay={275}
+            subtitle="Ingresos − Egresos"
           />
         </section>
 
@@ -658,6 +995,14 @@ export default function ProyectoPage() {
             </p>
           )}
         </FadeIn>
+
+        {/* Modal de edición de presupuesto MO y contratista (C7A) */}
+        <EditarProyectoModal
+          isOpen={modalEditar}
+          onClose={() => setModalEditar(false)}
+          proyecto={proyecto}
+          onGuardado={recargarProyecto}
+        />
       </div>
     </div>
   )

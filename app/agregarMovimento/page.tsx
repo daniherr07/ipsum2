@@ -1,21 +1,27 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { Suspense, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   Plus,
   Trash2,
   FileText,
-  ChevronLeft,
   TrendingDown,
   TrendingUp,
 } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
+import BackButton from "@/components/BackButton"
 import { crearMovimiento, listarProyectos } from "@/lib/api"
 
 interface Proyecto {
   id: string
   nombre: string
+  mesAsignacion: string
+  anioAsignacion: string
+  estado: string
+  presupuestoManoObra: number
+  gastadoManoObra?: number
 }
 
 interface ComponenteEgreso {
@@ -79,21 +85,31 @@ const ANOS = [2024, 2025, 2026, 2027, 2028]
 const opcionesCategoria = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
 
 export default function AgregarMovimientoPage() {
+  /* useSearchParams requiere un boundary <Suspense> durante el prerender (C8) */
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100svh-64px)] bg-base-200 flex items-center justify-center">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      }
+    >
+      <AgregarMovimientoContenido />
+    </Suspense>
+  )
+}
+
+function AgregarMovimientoContenido() {
   const today = new Date()
+
+  const searchParams = useSearchParams()
+  const proyectoIdParam = searchParams.get("proyectoId")
 
   const [proyectos, setProyectos] = useState<Proyecto[]>([])
 
-  React.useEffect(() => {
-    listarProyectos()
-      .then((data) => setProyectos(data.map((p) => ({ id: p.id, nombre: p.nombre }))))
-      .catch(() => {
-        Swal.fire({
-          icon: "error",
-          title: "No se pudieron cargar los proyectos",
-          text: "Verifica que el backend esté corriendo en localhost:4000",
-        })
-      })
-  }, [])
+  // Filtro de mes/año para los selectores de proyecto (C1)
+  const [mesFiltro, setMesFiltro] = useState(today.getMonth() + 1)
+  const [anoFiltro, setAnoFiltro] = useState(today.getFullYear().toString())
 
   // Tipo de movimiento: solo 2 opciones
   const [tipoMovimiento, setTipoMovimiento] = useState<"egreso-proyecto" | "ingreso-proyecto">("egreso-proyecto")
@@ -119,7 +135,103 @@ export default function AgregarMovimientoPage() {
   const [componenteOC, setComponenteOC] = useState("")
   const [componenteDescripcion, setComponenteDescripcion] = useState("")
 
+  React.useEffect(() => {
+    listarProyectos()
+      .then((data) => {
+        const lista = data.map((p) => ({
+          id: p.id,
+          nombre: p.nombre,
+          mesAsignacion: p.mesAsignacion,
+          anioAsignacion: p.anioAsignacion,
+          estado: p.estado,
+          presupuestoManoObra: p.presupuestoManoObra,
+          gastadoManoObra: p.gastadoManoObra,
+        }))
+        setProyectos(lista)
+
+        /* Preselección del proyecto desde query param ?proyectoId=... (C8):
+           se ajusta el filtro de mes para que el proyecto aparezca en la lista */
+        if (proyectoIdParam) {
+          const encontrado = lista.find((p) => p.id === proyectoIdParam)
+          if (encontrado) {
+            const mesIdx = meses.indexOf(encontrado.mesAsignacion)
+            if (mesIdx >= 0) setMesFiltro(mesIdx + 1)
+            setAnoFiltro(encontrado.anioAsignacion)
+            setProyectoSeleccionado(encontrado.id)
+            setComponenteProyecto(encontrado.id)
+          }
+        }
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los proyectos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [proyectoIdParam])
+
   const esEgreso = tipoMovimiento === "egreso-proyecto"
+
+  /* Proyectos filtrados por el mes/año seleccionados (C1) */
+  const proyectosFiltrados = useMemo(
+    () =>
+      proyectos.filter(
+        (p) =>
+          p.mesAsignacion === meses[mesFiltro - 1] &&
+          p.anioAsignacion === anoFiltro,
+      ),
+    [proyectos, mesFiltro, anoFiltro],
+  )
+
+  /* Meses cerrados (C4): mes+año con ≥1 proyecto y todos "Finalizado".
+     Claves "{mes}-{año}" en un Set para consulta rápida */
+  const mesesCerrados = useMemo(() => {
+    const porMes = new Map<string, Proyecto[]>()
+    proyectos.forEach((p) => {
+      const clave = `${p.mesAsignacion}-${p.anioAsignacion}`
+      const grupo = porMes.get(clave) ?? []
+      grupo.push(p)
+      porMes.set(clave, grupo)
+    })
+    const cerrados = new Set<string>()
+    porMes.forEach((grupo, clave) => {
+      if (grupo.every((p) => p.estado === "Finalizado")) cerrados.add(clave)
+    })
+    return cerrados
+  }, [proyectos])
+
+  const esMesCerrado = (mes: string, anio: string) =>
+    mesesCerrados.has(`${mes}-${anio}`)
+
+  /* Al cambiar el filtro de mes/año, limpiar las selecciones de proyecto
+     que ya no pertenecen a la lista filtrada (C1) */
+  React.useEffect(() => {
+    if (
+      proyectoSeleccionado &&
+      !proyectosFiltrados.some((p) => p.id === proyectoSeleccionado)
+    ) {
+      setProyectoSeleccionado("")
+    }
+    if (
+      componenteProyecto &&
+      !proyectosFiltrados.some((p) => p.id === componenteProyecto)
+    ) {
+      setComponenteProyecto("")
+    }
+  }, [proyectosFiltrados, proyectoSeleccionado, componenteProyecto])
+
+  /* Info de presupuesto de Mano de Obra para el egreso general en curso (C7B) */
+  const proyectoMO =
+    tipoComponente === "egreso-general" &&
+    componenteCategoria === "Mano de Obra" &&
+    componenteProyecto
+      ? proyectos.find((p) => p.id === componenteProyecto)
+      : undefined
+  const disponibleMO = proyectoMO
+    ? proyectoMO.presupuestoManoObra - (proyectoMO.gastadoManoObra ?? 0)
+    : 0
+  const montoMONum = parseInt(componenteMonto) || 0
 
   const formatCurrency = (value: string) => {
     const num = parseInt(value.replace(/\D/g, "")) || 0
@@ -158,11 +270,20 @@ export default function AgregarMovimientoPage() {
   const cambiarTipo = (tipo: "egreso-proyecto" | "ingreso-proyecto") => {
     setTipoMovimiento(tipo)
     setMonto("")
-    setProyectoSeleccionado("")
+    /* M4: al cambiar de pestaña se re-aplica el proyecto preseleccionado (C8)
+       en lugar de perderlo, si sigue dentro del filtro de mes actual */
+    const preseleccionValida =
+      proyectoIdParam && proyectosFiltrados.some((p) => p.id === proyectoIdParam)
+        ? proyectoIdParam
+        : ""
+    setProyectoSeleccionado(tipo === "ingreso-proyecto" ? preseleccionValida : "")
     setNombreIngreso("")
     setDescripcion("")
     setComponentes([])
     resetFormComponente()
+    if (tipo === "egreso-proyecto" && preseleccionValida) {
+      setComponenteProyecto(preseleccionValida)
+    }
   }
 
   const agregarComponente = () => {
@@ -293,13 +414,7 @@ export default function AgregarMovimientoPage() {
 
           {/* Header */}
           <FadeIn delay={0} className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/"
-              className="btn btn-ghost btn-circle btn-sm sm:btn-md shrink-0"
-              aria-label="Volver al inicio"
-            >
-              <ChevronLeft size={22} />
-            </Link>
+            <BackButton fallback="/" label="Volver" />
             <div>
               <h1 className="text-xl sm:text-2xl font-black">Agregar Movimiento</h1>
               <p className="text-xs sm:text-sm text-base-content/60">
@@ -342,6 +457,47 @@ export default function AgregarMovimientoPage() {
           <FadeIn delay={100} className="bg-base-100 rounded-lg shadow-md">
             <form onSubmit={handleSubmit} className="p-4 sm:p-6 flex flex-col gap-5">
 
+              {/* ── FILTRO MES/AÑO DE PROYECTOS (C1) ── */}
+              <Field label="Mes y Año de los Proyectos">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="label py-1">
+                      <span className="label-text text-xs text-base-content/60">Mes</span>
+                    </label>
+                    <select
+                      value={mesFiltro}
+                      onChange={(e) => setMesFiltro(parseInt(e.target.value))}
+                      className="select select-bordered w-full"
+                    >
+                      {meses.map((mes, idx) => (
+                        <option
+                          key={idx}
+                          value={idx + 1}
+                          disabled={esMesCerrado(mes, anoFiltro)}
+                        >
+                          {mes}
+                          {esMesCerrado(mes, anoFiltro) ? " (Cerrado)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label py-1">
+                      <span className="label-text text-xs text-base-content/60">Año</span>
+                    </label>
+                    <select
+                      value={anoFiltro}
+                      onChange={(e) => setAnoFiltro(e.target.value)}
+                      className="select select-bordered w-full"
+                    >
+                      {ANOS.map((ano) => (
+                        <option key={ano} value={ano}>{ano}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </Field>
+
               {/* ── INGRESO DE PROYECTO ── */}
               {!esEgreso && (
                 <>
@@ -352,11 +508,17 @@ export default function AgregarMovimientoPage() {
                       className="select select-bordered w-full"
                     >
                       <option value="">Seleccionar proyecto...</option>
-                      {proyectos.map((proyecto) => (
-                        <option key={proyecto.id} value={proyecto.id}>
-                          {proyecto.nombre}
+                      {proyectosFiltrados.length === 0 ? (
+                        <option value="" disabled>
+                          No hay proyectos en {meses[mesFiltro - 1]} {anoFiltro}
                         </option>
-                      ))}
+                      ) : (
+                        proyectosFiltrados.map((proyecto) => (
+                          <option key={proyecto.id} value={proyecto.id}>
+                            {proyecto.nombre}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </Field>
 
@@ -415,8 +577,13 @@ export default function AgregarMovimientoPage() {
                           className="select select-bordered select-success w-full"
                         >
                           {meses.map((mes, idx) => (
-                            <option key={idx} value={String(idx + 1).padStart(2, "0")}>
+                            <option
+                              key={idx}
+                              value={String(idx + 1).padStart(2, "0")}
+                              disabled={esMesCerrado(mes, fechaPagoAno)}
+                            >
                               {mes}
+                              {esMesCerrado(mes, fechaPagoAno) ? " (Cerrado)" : ""}
                             </option>
                           ))}
                         </select>
@@ -632,7 +799,14 @@ export default function AgregarMovimientoPage() {
                                   className="select select-bordered w-full"
                                 >
                                   {meses.map((mes, idx) => (
-                                    <option key={idx} value={idx + 1}>{mes}</option>
+                                    <option
+                                      key={idx}
+                                      value={idx + 1}
+                                      disabled={esMesCerrado(mes, componenteAno)}
+                                    >
+                                      {mes}
+                                      {esMesCerrado(mes, componenteAno) ? " (Cerrado)" : ""}
+                                    </option>
                                   ))}
                                 </select>
                               </div>
@@ -666,11 +840,17 @@ export default function AgregarMovimientoPage() {
                                   className="select select-bordered w-full"
                                 >
                                   <option value="">Seleccionar proyecto...</option>
-                                  {proyectos.map((proyecto) => (
-                                    <option key={proyecto.id} value={proyecto.id}>
-                                      {proyecto.nombre}
+                                  {proyectosFiltrados.length === 0 ? (
+                                    <option value="" disabled>
+                                      No hay proyectos en {meses[mesFiltro - 1]} {anoFiltro}
                                     </option>
-                                  ))}
+                                  ) : (
+                                    proyectosFiltrados.map((proyecto) => (
+                                      <option key={proyecto.id} value={proyecto.id}>
+                                        {proyecto.nombre}
+                                      </option>
+                                    ))
+                                  )}
                                 </select>
                               </div>
 
@@ -726,6 +906,50 @@ export default function AgregarMovimientoPage() {
                                   <option value="agregar-nuevo">+ Agregar nuevo</option>
                                 </select>
                               </div>
+
+                              {/* Info presupuesto Mano de Obra del proyecto (C7B) */}
+                              {proyectoMO && (
+                                <div className="bg-base-100 border border-base-300 rounded-lg p-3 sm:p-4">
+                                  <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/60 mb-2">
+                                    Presupuesto de Mano de Obra
+                                  </p>
+                                  <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div>
+                                      <p className="text-[10px] sm:text-xs text-base-content/50">
+                                        Total
+                                      </p>
+                                      <p className="font-bold text-xs sm:text-sm">
+                                        {formatCurrency(String(proyectoMO.presupuestoManoObra))}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] sm:text-xs text-base-content/50">
+                                        Utilizado
+                                      </p>
+                                      <p className="font-bold text-xs sm:text-sm text-warning">
+                                        {formatCurrency(String(proyectoMO.gastadoManoObra ?? 0))}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] sm:text-xs text-base-content/50">
+                                        Disponible
+                                      </p>
+                                      <p
+                                        className={`font-bold text-xs sm:text-sm ${
+                                          disponibleMO < 0 ? "text-error" : "text-success"
+                                        }`}
+                                      >
+                                        {formatCurrency(String(disponibleMO))}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  {montoMONum > disponibleMO && (
+                                    <p className="text-error text-xs font-semibold mt-2">
+                                      Excede el presupuesto de mano de obra disponible
+                                    </p>
+                                  )}
+                                </div>
+                              )}
                             </>
                           )}
 

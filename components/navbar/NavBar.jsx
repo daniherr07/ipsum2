@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   ChartColumn,
-  ChartPie,
+  Landmark,
   Plus,
   ChevronDown,
   Settings,
@@ -24,7 +24,7 @@ import {
 const NAV_LINKS = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/movs", label: "Movimientos", icon: ChartColumn },
-  { href: "/stats", label: "Estadísticas", icon: ChartPie },
+  { href: "/stats", label: "Control de Cuentas", icon: Landmark },
 ];
 
 export default function NavBar() {

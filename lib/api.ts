@@ -26,12 +26,20 @@ export type Proyecto = {
   id: string;
   nombre: string;
   presupuesto: number;
+  presupuestoManoObra: number;
+  contratista: string;
   mesAsignacion: string;
   anioAsignacion: string;
   estado: "Revisión" | "Finalizado";
   bono: string;
   subtipoBono: string;
   creadoEn: string;
+  /* Campos derivados, calculados por el backend en el enriquecimiento */
+  gastadoManoObra?: number;
+  gastosAdministrativosMes?: number;
+  totalIngresos?: number;
+  totalEgresos?: number;
+  ganancia?: number;
 };
 
 export function listarProyectos(): Promise<Proyecto[]> {
@@ -49,6 +57,24 @@ export function crearProyecto(
 
 export function obtenerProyecto(id: string): Promise<Proyecto> {
   return apiFetch<Proyecto>(`/proyectos/${id}`);
+}
+
+export type ActualizarProyectoInput = {
+  presupuestoManoObra?: number;
+  contratista?: string;
+  mesAsignacion?: string;
+  anioAsignacion?: string;
+  estado?: "Revisión" | "Finalizado";
+};
+
+export function actualizarProyecto(
+  id: string,
+  input: ActualizarProyectoInput
+): Promise<Proyecto> {
+  return apiFetch<Proyecto>(`/proyectos/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
 }
 
 export type CrearMovimientoInput =
@@ -122,6 +148,23 @@ export type DistribucionGastoAdministrativo = {
   porcentaje: number;
 };
 
+export type EgresoProyecto = {
+  id: string;
+  monto: number;
+  categoria: string;
+  descripcion: string;
+  creadoEn: string;
+};
+
+export type ProyectoDelMes = {
+  id: string;
+  nombre: string;
+  bono: string;
+  presupuesto: number;
+  estado: "Revisión" | "Finalizado";
+  egresos: EgresoProyecto[];
+};
+
 export type ResumenDashboard = {
   mes: string;
   anio: string;
@@ -133,7 +176,9 @@ export type ResumenDashboard = {
   pctGastosAdministrativos: number;
   superaLimiteAdministrativo: boolean;
   distribucionGastosAdministrativos: DistribucionGastoAdministrativo[];
-  proyectosDelMes: { id: string; nombre: string; bono: string }[];
+  proyectosDelMes: ProyectoDelMes[];
+  presupuestoTotal: number;
+  estadoMes: "En proceso" | "Cerrado" | null;
 };
 
 export function obtenerDashboard(mes: string, anio: string): Promise<ResumenDashboard> {
@@ -162,7 +207,7 @@ export function obtenerStats(anio: string, tipoBono?: string): Promise<ResumenSt
   return apiFetch<ResumenStats>(`/stats?${query.toString()}`);
 }
 
-export type TipoCatalogo = "ordenes-compra" | "proveedores";
+export type TipoCatalogo = "ordenes-compra" | "proveedores" | "contratistas";
 
 export type ItemCatalogo = {
   id: string;
