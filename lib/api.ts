@@ -187,26 +187,6 @@ export function obtenerDashboard(mes: string, anio: string): Promise<ResumenDash
   );
 }
 
-export type ResumenMensual = { mes: string; ingresos: number; egresos: number };
-
-export type ResumenStats = {
-  anio: string;
-  tipoBono?: string;
-  ingresos: number;
-  egresos: number;
-  balance: number;
-  serieMensual: ResumenMensual[];
-  mejorMes: { mes: string; neto: number } | null;
-  peorMes: { mes: string; neto: number } | null;
-  promedioMensualIngresos: number;
-};
-
-export function obtenerStats(anio: string, tipoBono?: string): Promise<ResumenStats> {
-  const query = new URLSearchParams({ anio });
-  if (tipoBono) query.set("tipoBono", tipoBono);
-  return apiFetch<ResumenStats>(`/stats?${query.toString()}`);
-}
-
 export type TipoCatalogo = "ordenes-compra" | "proveedores" | "contratistas";
 
 export type ItemCatalogo = {

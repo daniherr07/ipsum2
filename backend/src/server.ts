@@ -1,11 +1,11 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 import { healthRouter } from "./routes/health.js";
 import { proyectosRouter } from "./routes/proyectos.js";
 import { movimientosRouter } from "./routes/movimientos.js";
 import { dashboardRouter } from "./routes/dashboard.js";
-import { statsRouter } from "./routes/stats.js";
 import { catalogosRouter } from "./routes/catalogos.js";
 import { bonosRouter } from "./routes/bonos.js";
 import { cargarEstadoGuardado } from "./persistencia.js";
@@ -17,14 +17,21 @@ import { restaurarBonos } from "./services/bonos.js";
 const app = express();
 const PORT = process.env.PORT ?? 4000;
 
-app.use(cors());
-app.use(express.json());
+// Origenes permitidos: configurables por env (coma-separados) porque este
+// backend se va a integrar con otra web ademas del frontend local.
+const origenesPermitidos = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3000")
+  .split(",")
+  .map((origen) => origen.trim())
+  .filter(Boolean);
+
+app.use(helmet());
+app.use(cors({ origin: origenesPermitidos }));
+app.use(express.json({ limit: "1mb" }));
 
 app.use(healthRouter);
 app.use(proyectosRouter);
 app.use(movimientosRouter);
 app.use(dashboardRouter);
-app.use(statsRouter);
 app.use(catalogosRouter);
 app.use(bonosRouter);
 
