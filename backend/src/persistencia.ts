@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, renameSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { listarProyectos, type Proyecto } from "./services/proyectos.js";
@@ -33,5 +33,9 @@ export function guardarEstado(): void {
     catalogos: obtenerTodosCatalogos(),
     bonos: listarBonos(),
   };
-  writeFileSync(RUTA_ESTADO, JSON.stringify(estado, null, 2), "utf-8");
+  // Escritura atomica: si el proceso muere a mitad de la escritura del .tmp,
+  // seed-data.json original queda intacto (writeFileSync directo lo corromperia).
+  const rutaTemporal = `${RUTA_ESTADO}.tmp`;
+  writeFileSync(rutaTemporal, JSON.stringify(estado, null, 2), "utf-8");
+  renameSync(rutaTemporal, RUTA_ESTADO);
 }

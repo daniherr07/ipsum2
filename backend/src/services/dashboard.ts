@@ -1,6 +1,5 @@
 import { listarProyectos } from "./proyectos.js";
-import { listarMovimientos, type Movimiento } from "./movimientos.js";
-import { mesAnioDe } from "../utils/fechas.js";
+import { listarMovimientos, mesAnioDeMovimiento, type Movimiento } from "./movimientos.js";
 
 export type DistribucionGastoAdministrativo = {
   proyectoId: string;
@@ -52,7 +51,7 @@ export function calcularDistribucionAdministrativa(mes: string, anio: string): D
   const gastosAdministrativos = listarMovimientos({})
     .filter((m) => {
       if (m.tipo !== "egreso" || m.tipoEgreso !== "egreso-administrativo") return false;
-      const fecha = mesAnioDe(m.creadoEn);
+      const fecha = mesAnioDeMovimiento(m);
       return fecha.mes === mes && fecha.anio === anio;
     })
     .reduce((sum, m) => sum + m.monto, 0);
@@ -75,7 +74,7 @@ export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
   const movimientos = listarMovimientos({});
 
   const movimientosDelPeriodo = movimientos.filter((m) => {
-    const fecha = mesAnioDe(m.creadoEn);
+    const fecha = mesAnioDeMovimiento(m);
     return fecha.mes === mes && fecha.anio === anio;
   });
 
