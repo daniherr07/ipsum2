@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { ApiError } from "../middlewares/errorHandler.js";
+import { supabase } from "../supabase.js";
 import type { TipoCatalogo } from "../validators/catalogos.js";
 
 export type ItemCatalogo = {
@@ -8,50 +8,67 @@ export type ItemCatalogo = {
   creadoEn: string;
 };
 
-export type Catalogos = Record<TipoCatalogo, ItemCatalogo[]>;
-
-const catalogos: Catalogos = {
-  "ordenes-compra": [],
-  proveedores: [],
-  contratistas: [],
+/* TipoCatalogo usa guiones ("ordenes-compra"), las tablas de Postgres usan
+   guion bajo (convencion snake_case) */
+const TABLAS: Record<TipoCatalogo, string> = {
+  "ordenes-compra": "ordenes_compra",
+  proveedores: "proveedores",
+  contratistas: "contratistas",
 };
 
-export function listarCatalogo(tipo: TipoCatalogo): ItemCatalogo[] {
-  return catalogos[tipo];
+function aItemCatalogo(fila: { id: string; nombre: string; creado_en: string }): ItemCatalogo {
+  return { id: fila.id, nombre: fila.nombre, creadoEn: fila.creado_en };
 }
 
-export function crearItemCatalogo(tipo: TipoCatalogo, nombre: string, creadoEn?: string): ItemCatalogo {
-  const item: ItemCatalogo = { id: randomUUID(), nombre, creadoEn: creadoEn ?? new Date().toISOString() };
-  catalogos[tipo].push(item);
-  return item;
+export async function listarCatalogo(tipo: TipoCatalogo): Promise<ItemCatalogo[]> {
+  const { data, error } = await supabase
+    .from(TABLAS[tipo])
+    .select("id, nombre, creado_en")
+    .order("nombre");
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  return data.map(aItemCatalogo);
 }
 
-export function actualizarItemCatalogo(tipo: TipoCatalogo, id: string, nombre: string): ItemCatalogo {
-  const lista = catalogos[tipo];
-  const index = lista.findIndex((i) => i.id === id);
-  if (index === -1) {
-    throw new ApiError(404, "NOT_FOUND", "Elemento no encontrado");
+export async function crearItemCatalogo(tipo: TipoCatalogo, nombre: string): Promise<ItemCatalogo> {
+  const { data, error } = await supabase
+    .from(TABLAS[tipo])
+    .insert({ nombre })
+    .select("id, nombre, creado_en")
+    .single();
+  if (error) {
+    if (error.code === "23505") {
+      throw new ApiError(400, "VALIDATION_ERROR", `Ya existe un elemento llamado "${nombre}"`);
+    }
+    throw new ApiError(500, "DB_ERROR", error.message);
   }
-  lista[index] = { ...lista[index], nombre };
-  return lista[index];
+  return aItemCatalogo(data);
 }
 
-export function eliminarItemCatalogo(tipo: TipoCatalogo, id: string): void {
-  const lista = catalogos[tipo];
-  const index = lista.findIndex((i) => i.id === id);
-  if (index === -1) {
-    throw new ApiError(404, "NOT_FOUND", "Elemento no encontrado");
+export async function actualizarItemCatalogo(
+  tipo: TipoCatalogo,
+  id: string,
+  nombre: string
+): Promise<ItemCatalogo> {
+  const { data, error } = await supabase
+    .from(TABLAS[tipo])
+    .update({ nombre })
+    .eq("id", id)
+    .select("id, nombre, creado_en")
+    .single();
+  if (error) {
+    if (error.code === "PGRST116") {
+      throw new ApiError(404, "NOT_FOUND", "Elemento no encontrado");
+    }
+    if (error.code === "23505") {
+      throw new ApiError(400, "VALIDATION_ERROR", `Ya existe un elemento llamado "${nombre}"`);
+    }
+    throw new ApiError(500, "DB_ERROR", error.message);
   }
-  lista.splice(index, 1);
+  return aItemCatalogo(data);
 }
 
-export function obtenerTodosCatalogos(): Catalogos {
-  return catalogos;
-}
-
-export function restaurarCatalogos(data: Partial<Catalogos>): void {
-  (Object.keys(catalogos) as TipoCatalogo[]).forEach((tipo) => {
-    catalogos[tipo].length = 0;
-    catalogos[tipo].push(...(data[tipo] ?? []));
-  });
+export async function eliminarItemCatalogo(tipo: TipoCatalogo, id: string): Promise<void> {
+  const { error, count } = await supabase.from(TABLAS[tipo]).delete({ count: "exact" }).eq("id", id);
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  if (!count) throw new ApiError(404, "NOT_FOUND", "Elemento no encontrado");
 }
