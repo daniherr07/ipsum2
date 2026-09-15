@@ -59,16 +59,13 @@ function toNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-export function validarCrearMovimiento(body: unknown): CrearMovimientoInput {
+export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimientoInput> {
   if (typeof body !== "object" || body === null) {
     throw new ApiError(400, "VALIDATION_ERROR", "El cuerpo de la solicitud es invalido");
   }
   const data = body as Record<string, unknown>;
 
   const monto = toNumber(data.monto);
-  /* M2: los montos son colones enteros (sin centavos), regla de negocio
-     documentada en PLAN CONTROL DE CUENTAS.md que antes solo vivia en el
-     frontend */
   if (monto === undefined || monto <= 0 || !Number.isInteger(monto)) {
     throw new ApiError(400, "VALIDATION_ERROR", "monto debe ser un numero entero mayor a 0");
   }
@@ -109,11 +106,10 @@ export function validarCrearMovimiento(body: unknown): CrearMovimientoInput {
         );
       }
       const ordenCompraInput = toTrimmedString(data.ordenCompra);
-      /* H2: si se indica una orden de compra, debe existir en el catalogo real
-         (antes se aceptaba cualquier texto suelto) */
       let ordenCompra: string | undefined;
       if (ordenCompraInput) {
-        const encontrada = listarCatalogo("ordenes-compra").find(
+        const catalogo = await listarCatalogo("ordenes-compra");
+        const encontrada = catalogo.find(
           (o) => o.nombre.toLowerCase() === ordenCompraInput.toLowerCase()
         );
         if (!encontrada) {

@@ -11,14 +11,10 @@ import { bonosRouter } from "./routes/bonos.js";
 import { cargarEstadoGuardado } from "./persistencia.js";
 import { restaurarProyectos } from "./services/proyectos.js";
 import { restaurarMovimientos } from "./services/movimientos.js";
-import { restaurarCatalogos } from "./services/catalogos.js";
-import { restaurarBonos } from "./services/bonos.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
 
-// Origenes permitidos: configurables por env (coma-separados) porque este
-// backend se va a integrar con otra web ademas del frontend local.
 const origenesPermitidos = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3000")
   .split(",")
   .map((origen) => origen.trim())
@@ -41,13 +37,10 @@ app.use(errorHandler);
 const estado = cargarEstadoGuardado();
 restaurarProyectos(estado.proyectos);
 restaurarMovimientos(estado.movimientos);
-restaurarCatalogos(estado.catalogos ?? {});
-restaurarBonos(estado.bonos ?? []);
 console.log(
-  `Datos cargados desde seed-data.json: ${estado.proyectos.length} proyectos, ${estado.movimientos.length} movimientos, ${(estado.bonos ?? []).length} bonos.`
+  `Datos cargados desde seed-data.json: ${estado.proyectos.length} proyectos, ${estado.movimientos.length} movimientos. Catalogos y bonos viven en Supabase.`
 );
 
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
-
