@@ -34,14 +34,14 @@ function toNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-/* H1: bono/subtipoBono deben existir en el catalogo de bonos (antes se
-   aceptaba cualquier texto). Devuelve el nombre canonico del catalogo para
-   que no queden variantes de mayusculas/espacios guardadas en el proyecto. */
-function validarBonoYSubtipo(
+/* H1: bono/subtipoBono deben existir en el catalogo de bonos.
+   Ahora es async porque listarBonos consulta Supabase. */
+async function validarBonoYSubtipo(
   bonoInput: string,
   subtipoInput: string | undefined
-): { bono: string; subtipoBono?: string } {
-  const bono = listarBonos().find((b) => b.nombre.toLowerCase() === bonoInput.toLowerCase());
+): Promise<{ bono: string; subtipoBono?: string }> {
+  const bonos = await listarBonos();
+  const bono = bonos.find((b) => b.nombre.toLowerCase() === bonoInput.toLowerCase());
   if (!bono) {
     throw new ApiError(400, "VALIDATION_ERROR", `bono "${bonoInput}" no existe en el catalogo de bonos`);
   }
@@ -63,17 +63,16 @@ function validarBonoYSubtipo(
 }
 
 /* H1: contratista debe existir en el catalogo de contratistas */
-function validarContratista(input: string): string {
-  const contratista = listarCatalogo("contratistas").find(
-    (c) => c.nombre.toLowerCase() === input.toLowerCase()
-  );
+async function validarContratista(input: string): Promise<string> {
+  const catalogo = await listarCatalogo("contratistas");
+  const contratista = catalogo.find((c) => c.nombre.toLowerCase() === input.toLowerCase());
   if (!contratista) {
     throw new ApiError(400, "VALIDATION_ERROR", `contratista "${input}" no existe en el catalogo de contratistas`);
   }
   return contratista.nombre;
 }
 
-export function validarCrearProyecto(body: unknown): CrearProyectoInput {
+export async function validarCrearProyecto(body: unknown): Promise<CrearProyectoInput> {
   if (typeof body !== "object" || body === null) {
     throw new ApiError(400, "VALIDATION_ERROR", "El cuerpo de la solicitud es invalido");
   }
@@ -93,7 +92,6 @@ export function validarCrearProyecto(body: unknown): CrearProyectoInput {
   if (presupuestoManoObra === undefined || presupuestoManoObra <= 0) {
     throw new ApiError(400, "VALIDATION_ERROR", "presupuestoManoObra debe ser un numero mayor a 0");
   }
-  /* M1: la mano de obra no puede superar el presupuesto total del proyecto */
   if (presupuestoManoObra > presupuesto) {
     throw new ApiError(400, "VALIDATION_ERROR", "presupuestoManoObra no puede superar el presupuesto del proyecto");
   }
@@ -117,19 +115,17 @@ export function validarCrearProyecto(body: unknown): CrearProyectoInput {
   if (!bonoInput) {
     throw new ApiError(400, "VALIDATION_ERROR", "bono es obligatorio");
   }
-  const { bono, subtipoBono } = validarBonoYSubtipo(bonoInput, toTrimmedString(data.subtipoBono));
+  const { bono, subtipoBono } = await validarBonoYSubtipo(bonoInput, toTrimmedString(data.subtipoBono));
 
   const contratistaInput = toTrimmedString(data.contratista);
   if (!contratistaInput) {
     throw new ApiError(400, "VALIDATION_ERROR", "contratista es obligatorio");
   }
-  const contratista = validarContratista(contratistaInput);
+  const contratista = await validarContratista(contratistaInput);
 
   return { nombre, presupuesto, presupuestoManoObra, mesAsignacion, anioAsignacion, estado, bono, subtipoBono, contratista };
 }
 
-/* Esquema parcial para PUT /proyectos/:id (C7, M1, M2, M3):
-   el frontend envia cualquier subconjunto de estos campos */
 export type ActualizarProyectoInput = {
   presupuestoManoObra?: number;
   contratista?: string;
@@ -138,7 +134,7 @@ export type ActualizarProyectoInput = {
   estado?: EstadoProyecto;
 };
 
-export function validarActualizarProyecto(body: unknown): ActualizarProyectoInput {
+export async function validarActualizarProyecto(body: unknown): Promise<ActualizarProyectoInput> {
   if (typeof body !== "object" || body === null) {
     throw new ApiError(400, "VALIDATION_ERROR", "El cuerpo de la solicitud es invalido");
   }
@@ -158,7 +154,7 @@ export function validarActualizarProyecto(body: unknown): ActualizarProyectoInpu
     if (!valor) {
       throw new ApiError(400, "VALIDATION_ERROR", "contratista no puede estar vacio");
     }
-    cambios.contratista = validarContratista(valor);
+    cambios.contratista = await validarContratista(valor);
   }
 
   if (data.mesAsignacion !== undefined) {

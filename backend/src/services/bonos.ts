@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { ApiError } from "../middlewares/errorHandler.js";
+import { supabase } from "../supabase.js";
 
 export type SubtipoBono = {
   id: string;
@@ -13,72 +13,107 @@ export type Bono = {
   creadoEn: string;
 };
 
-const bonos: Bono[] = [];
+type FilaBono = {
+  id: string;
+  nombre: string;
+  creado_en: string;
+  subtipos_bono: { id: string; nombre: string }[];
+};
 
-export function listarBonos(): Bono[] {
-  return bonos;
-}
-
-function encontrarBono(id: string): Bono {
-  const bono = bonos.find((b) => b.id === id);
-  if (!bono) {
-    throw new ApiError(404, "NOT_FOUND", "Bono no encontrado");
-  }
-  return bono;
-}
-
-export function crearBono(nombre: string, creadoEn?: string): Bono {
-  const bono: Bono = {
-    id: randomUUID(),
-    nombre,
-    subtipos: [],
-    creadoEn: creadoEn ?? new Date().toISOString(),
+function aBono(fila: FilaBono): Bono {
+  return {
+    id: fila.id,
+    nombre: fila.nombre,
+    creadoEn: fila.creado_en,
+    subtipos: fila.subtipos_bono.map((s) => ({ id: s.id, nombre: s.nombre })),
   };
-  bonos.push(bono);
-  return bono;
 }
 
-export function actualizarBono(id: string, nombre: string): Bono {
-  const bono = encontrarBono(id);
-  bono.nombre = nombre;
-  return bono;
+export async function listarBonos(): Promise<Bono[]> {
+  const { data, error } = await supabase
+    .from("bonos")
+    .select("id, nombre, creado_en, subtipos_bono(id, nombre)")
+    .order("nombre");
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  return (data as FilaBono[]).map(aBono);
 }
 
-export function eliminarBono(id: string): void {
-  const index = bonos.findIndex((b) => b.id === id);
-  if (index === -1) {
-    throw new ApiError(404, "NOT_FOUND", "Bono no encontrado");
+export async function crearBono(nombre: string): Promise<Bono> {
+  const { data, error } = await supabase
+    .from("bonos")
+    .insert({ nombre })
+    .select("id, nombre, creado_en")
+    .single();
+  if (error) {
+    if (error.code === "23505") {
+      throw new ApiError(400, "VALIDATION_ERROR", `Ya existe un bono llamado "${nombre}"`);
+    }
+    throw new ApiError(500, "DB_ERROR", error.message);
   }
-  bonos.splice(index, 1);
+  return { id: data.id, nombre: data.nombre, creadoEn: data.creado_en, subtipos: [] };
 }
 
-export function crearSubtipo(bonoId: string, nombre: string): SubtipoBono {
-  const bono = encontrarBono(bonoId);
-  const subtipo: SubtipoBono = { id: randomUUID(), nombre };
-  bono.subtipos.push(subtipo);
-  return subtipo;
-}
-
-export function actualizarSubtipo(bonoId: string, subtipoId: string, nombre: string): SubtipoBono {
-  const bono = encontrarBono(bonoId);
-  const subtipo = bono.subtipos.find((s) => s.id === subtipoId);
-  if (!subtipo) {
-    throw new ApiError(404, "NOT_FOUND", "Subtipo de bono no encontrado");
+export async function actualizarBono(id: string, nombre: string): Promise<Bono> {
+  const { data, error } = await supabase
+    .from("bonos")
+    .update({ nombre })
+    .eq("id", id)
+    .select("id, nombre, creado_en, subtipos_bono(id, nombre)")
+    .single();
+  if (error) {
+    if (error.code === "PGRST116") throw new ApiError(404, "NOT_FOUND", "Bono no encontrado");
+    if (error.code === "23505") throw new ApiError(400, "VALIDATION_ERROR", `Ya existe un bono llamado "${nombre}"`);
+    throw new ApiError(500, "DB_ERROR", error.message);
   }
-  subtipo.nombre = nombre;
-  return subtipo;
+  return aBono(data as FilaBono);
 }
 
-export function eliminarSubtipo(bonoId: string, subtipoId: string): void {
-  const bono = encontrarBono(bonoId);
-  const index = bono.subtipos.findIndex((s) => s.id === subtipoId);
-  if (index === -1) {
-    throw new ApiError(404, "NOT_FOUND", "Subtipo de bono no encontrado");
+export async function eliminarBono(id: string): Promise<void> {
+  const { error, count } = await supabase.from("bonos").delete({ count: "exact" }).eq("id", id);
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  if (!count) throw new ApiError(404, "NOT_FOUND", "Bono no encontrado");
+}
+
+export async function crearSubtipo(bonoId: string, nombre: string): Promise<SubtipoBono> {
+  const { data, error } = await supabase
+    .from("subtipos_bono")
+    .insert({ bono_id: bonoId, nombre })
+    .select("id, nombre")
+    .single();
+  if (error) {
+    if (error.code === "23505") {
+      throw new ApiError(400, "VALIDATION_ERROR", `Ya existe un subtipo llamado "${nombre}" para este bono`);
+    }
+    if (error.code === "23503") throw new ApiError(404, "NOT_FOUND", "Bono no encontrado");
+    throw new ApiError(500, "DB_ERROR", error.message);
   }
-  bono.subtipos.splice(index, 1);
+  return { id: data.id, nombre: data.nombre };
 }
 
-export function restaurarBonos(lista: Bono[]): void {
-  bonos.length = 0;
-  bonos.push(...lista);
+export async function actualizarSubtipo(bonoId: string, subtipoId: string, nombre: string): Promise<SubtipoBono> {
+  const { data, error } = await supabase
+    .from("subtipos_bono")
+    .update({ nombre })
+    .eq("id", subtipoId)
+    .eq("bono_id", bonoId)
+    .select("id, nombre")
+    .single();
+  if (error) {
+    if (error.code === "PGRST116") throw new ApiError(404, "NOT_FOUND", "Subtipo de bono no encontrado");
+    if (error.code === "23505") {
+      throw new ApiError(400, "VALIDATION_ERROR", `Ya existe un subtipo llamado "${nombre}" para este bono`);
+    }
+    throw new ApiError(500, "DB_ERROR", error.message);
+  }
+  return { id: data.id, nombre: data.nombre };
+}
+
+export async function eliminarSubtipo(bonoId: string, subtipoId: string): Promise<void> {
+  const { error, count } = await supabase
+    .from("subtipos_bono")
+    .delete({ count: "exact" })
+    .eq("id", subtipoId)
+    .eq("bono_id", bonoId);
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  if (!count) throw new ApiError(404, "NOT_FOUND", "Subtipo de bono no encontrado");
 }
