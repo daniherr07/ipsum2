@@ -1,5 +1,6 @@
 import { ApiError } from "../middlewares/errorHandler.js";
 import { existeProyecto } from "../services/proyectos.js";
+import { listarCatalogo } from "../services/catalogos.js";
 import { MESES } from "../utils/fechas.js";
 
 const ANIO_REGEX = /^\d{4}$/;
@@ -65,8 +66,11 @@ export function validarCrearMovimiento(body: unknown): CrearMovimientoInput {
   const data = body as Record<string, unknown>;
 
   const monto = toNumber(data.monto);
-  if (monto === undefined || monto <= 0) {
-    throw new ApiError(400, "VALIDATION_ERROR", "monto debe ser un numero mayor a 0");
+  /* M2: los montos son colones enteros (sin centavos), regla de negocio
+     documentada en PLAN CONTROL DE CUENTAS.md que antes solo vivia en el
+     frontend */
+  if (monto === undefined || monto <= 0 || !Number.isInteger(monto)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "monto debe ser un numero entero mayor a 0");
   }
 
   const descripcion = toTrimmedString(data.descripcion);
@@ -104,7 +108,23 @@ export function validarCrearMovimiento(body: unknown): CrearMovimientoInput {
           `categoria debe ser una de: ${OPCIONES_CATEGORIA.join(", ")}`
         );
       }
-      const ordenCompra = toTrimmedString(data.ordenCompra);
+      const ordenCompraInput = toTrimmedString(data.ordenCompra);
+      /* H2: si se indica una orden de compra, debe existir en el catalogo real
+         (antes se aceptaba cualquier texto suelto) */
+      let ordenCompra: string | undefined;
+      if (ordenCompraInput) {
+        const encontrada = listarCatalogo("ordenes-compra").find(
+          (o) => o.nombre.toLowerCase() === ordenCompraInput.toLowerCase()
+        );
+        if (!encontrada) {
+          throw new ApiError(
+            400,
+            "VALIDATION_ERROR",
+            `ordenCompra "${ordenCompraInput}" no existe en el catalogo de ordenes de compra`
+          );
+        }
+        ordenCompra = encontrada.nombre;
+      }
       return { tipo: "egreso", tipoEgreso: "egreso-general", proyectoId, monto, categoria, ordenCompra, descripcion };
     }
 
