@@ -214,7 +214,7 @@ export default function MovimientosPage() {
         monto: Number(editingItem.monto),
         nombreIngreso: editingItem.nombreIngreso,
         fechaPago: editingItem.fechaPago,
-        descripcion: editingItem.descripcion,
+        descripcion: editingItem.descripcion || "Ingreso de proyecto",
       };
     } else if (editingItem.tipoEgreso === "egreso-administrativo") {
       payload = {
@@ -223,7 +223,7 @@ export default function MovimientosPage() {
         monto: Number(editingItem.monto),
         mes: editingItem.mes,
         ano: String(editingItem.ano),
-        descripcion: editingItem.descripcion,
+        descripcion: editingItem.descripcion || "Egreso administrativo",
       };
     } else {
       payload = {
@@ -233,7 +233,7 @@ export default function MovimientosPage() {
         monto: Number(editingItem.monto),
         categoria: editingItem.categoria,
         ordenCompra: editingItem.ordenCompra || undefined,
-        descripcion: editingItem.descripcion,
+        descripcion: editingItem.descripcion || "Egreso general",
       };
     }
 
