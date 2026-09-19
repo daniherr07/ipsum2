@@ -93,6 +93,7 @@ export type CrearMovimientoInput =
       monto: number;
       categoria: string;
       ordenCompra?: string;
+      proveedor?: string;
       descripcion: string;
     }
   | {

@@ -20,7 +20,7 @@ export function mesAnioDeMovimiento(m: Movimiento): { mes: string; anio: string 
 const SELECT_MOVIMIENTO = `
   id, tipo, tipo_egreso, proyecto_id, monto, descripcion,
   nombre_ingreso, fecha_pago,
-  categoria, ordenes_compra ( nombre ),
+  categoria, ordenes_compra ( nombre ), proveedores ( nombre ),
   mes_admin, anio_admin,
   creado_en
 `;
@@ -36,6 +36,7 @@ type FilaMovimiento = {
   fecha_pago: string | null;
   categoria: string | null;
   ordenes_compra: { nombre: string } | null;
+  proveedores: { nombre: string } | null;
   mes_admin: number | null;
   anio_admin: number | null;
   creado_en: string;
@@ -81,6 +82,7 @@ function aMovimiento(fila: FilaMovimiento): Movimiento {
       proyectoId: fila.proyecto_id!,
       categoria: fila.categoria!,
       ordenCompra: fila.ordenes_compra?.nombre,
+      proveedor: fila.proveedores?.nombre,
     };
   }
   return {
@@ -94,6 +96,12 @@ function aMovimiento(fila: FilaMovimiento): Movimiento {
 
 async function resolverOrdenCompraId(nombre: string): Promise<string | null> {
   const { data, error } = await supabase.from("ordenes_compra").select("id").eq("nombre", nombre).maybeSingle();
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  return data?.id ?? null;
+}
+
+async function resolverProveedorId(nombre: string): Promise<string | null> {
+  const { data, error } = await supabase.from("proveedores").select("id").eq("nombre", nombre).maybeSingle();
   if (error) throw new ApiError(500, "DB_ERROR", error.message);
   return data?.id ?? null;
 }
@@ -112,6 +120,7 @@ async function construirPayload(input: CrearMovimientoInput): Promise<Record<str
     fecha_pago: null,
     categoria: null,
     orden_compra_id: null,
+    proveedor_id: null,
     mes_admin: null,
     anio_admin: null,
   };
@@ -125,6 +134,7 @@ async function construirPayload(input: CrearMovimientoInput): Promise<Record<str
     payload.proyecto_id = input.proyectoId;
     payload.categoria = input.categoria;
     payload.orden_compra_id = input.ordenCompra ? await resolverOrdenCompraId(input.ordenCompra) : null;
+    payload.proveedor_id = input.proveedor ? await resolverProveedorId(input.proveedor) : null;
   } else {
     payload.tipo_egreso = "egreso-administrativo";
     payload.mes_admin = mesANumero(input.mes);

@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import Swal from "sweetalert2";
 import BackButton from "@/components/BackButton";
-import { listarMovimientos, actualizarMovimiento, eliminarMovimiento } from "@/lib/api";
+import { listarMovimientos, actualizarMovimiento, eliminarMovimiento, listarCatalogo } from "@/lib/api";
 
 /* =========================
    Formato de número consistente (evita mismatch de locale):
@@ -94,7 +94,7 @@ const getTitulo = (m) => (m.tipo === "ingreso" ? m.nombreIngreso : m.descripcion
 const getMetaEgreso = (m) =>
   m.tipoEgreso === "egreso-administrativo"
     ? `${m.mes} ${m.ano}`
-    : [m.categoria, m.ordenCompra].filter(Boolean).join(" · ");
+    : [m.categoria, m.ordenCompra, m.proveedor].filter(Boolean).join(" · ");
 
 export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState([]);
@@ -203,6 +203,17 @@ export default function MovimientosPage() {
   const openEditModal = (item) => setEditingItem({ ...item });
   const closeEditModal = () => setEditingItem(null);
 
+  /* Catalogos reales para los selects de Orden de Compra y Proveedor al
+     editar (antes eran campos de texto libre que el backend rechazaba si
+     no coincidian exactamente con un elemento del catalogo) */
+  const [ordenesCompra, setOrdenesCompra] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
+
+  useEffect(() => {
+    listarCatalogo("ordenes-compra").then(setOrdenesCompra).catch(() => {});
+    listarCatalogo("proveedores").then(setProveedores).catch(() => {});
+  }, []);
+
   const handleSave = async () => {
     if (!editingItem) return;
 
@@ -233,6 +244,7 @@ export default function MovimientosPage() {
         monto: Number(editingItem.monto),
         categoria: editingItem.categoria,
         ordenCompra: editingItem.ordenCompra || undefined,
+        proveedor: editingItem.proveedor || undefined,
         descripcion: editingItem.descripcion || "Egreso general",
       };
     }
@@ -706,15 +718,39 @@ export default function MovimientosPage() {
                         <legend className="fieldset-legend text-xs">
                           Orden de Compra
                         </legend>
-                        <input
-                          type="text"
-                          className="input input-sm w-full"
+                        <select
+                          className="select select-sm w-full"
                           value={editingItem.ordenCompra || ""}
-                          placeholder="Opcional"
                           onChange={(e) =>
                             handleInputChange("ordenCompra", e.target.value)
                           }
-                        />
+                        >
+                          <option value="">Sin especificar</option>
+                          {ordenesCompra.map((oc) => (
+                            <option key={oc.id} value={oc.nombre}>
+                              {oc.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </fieldset>
+                      <fieldset className="fieldset w-full">
+                        <legend className="fieldset-legend text-xs">
+                          Proveedor
+                        </legend>
+                        <select
+                          className="select select-sm w-full"
+                          value={editingItem.proveedor || ""}
+                          onChange={(e) =>
+                            handleInputChange("proveedor", e.target.value)
+                          }
+                        >
+                          <option value="">Sin especificar</option>
+                          {proveedores.map((p) => (
+                            <option key={p.id} value={p.nombre}>
+                              {p.nombre}
+                            </option>
+                          ))}
+                        </select>
                       </fieldset>
                     </div>
                   )}
