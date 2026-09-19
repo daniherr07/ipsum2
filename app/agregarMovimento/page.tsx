@@ -33,6 +33,7 @@ interface ComponenteEgreso {
   proyecto?: string
   categoria?: string
   ordenCompra?: string
+  proveedor?: string
   descripcion?: string
 }
 
@@ -133,6 +134,7 @@ function AgregarMovimientoContenido() {
   const [componenteProyecto, setComponenteProyecto] = useState("")
   const [componenteCategoria, setComponenteCategoria] = useState("")
   const [componenteOC, setComponenteOC] = useState("")
+  const [componenteProveedor, setComponenteProveedor] = useState("")
   const [componenteDescripcion, setComponenteDescripcion] = useState("")
 
   // Catalogo real de ordenes de compra (antes eran opciones OC1/OC2/OC3
@@ -174,6 +176,50 @@ function AgregarMovimientoContenido() {
           Swal.fire({
             icon: "error",
             title: "No se pudo crear la orden de compra",
+            text: error instanceof Error ? error.message : "Error desconocido",
+          })
+        })
+    })
+  }
+
+  // Catalogo real de proveedores (mismo patron que ordenes de compra:
+  // se elige del catalogo real, o se crea uno nuevo de verdad)
+  const [proveedores, setProveedores] = useState<{ id: string; nombre: string }[]>([])
+
+  React.useEffect(() => {
+    listarCatalogo("proveedores")
+      .then(setProveedores)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar los proveedores",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [])
+
+  const handleAgregarProveedor = () => {
+    Swal.fire({
+      title: "Nuevo Proveedor",
+      input: "text",
+      inputLabel: "Ingrese el nombre del nuevo proveedor",
+      inputPlaceholder: "Ej: Ferretería El Colono",
+      confirmButtonText: "Crear",
+      confirmButtonColor: "#035496",
+      showCancelButton: true,
+    }).then((result) => {
+      if (!result.isConfirmed || !result.value) return
+      const nombre = result.value.trim()
+      if (!nombre) return
+      crearItemCatalogo("proveedores", nombre)
+        .then((item) => {
+          setProveedores((prev) => [...prev, item])
+          setComponenteProveedor(item.nombre)
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: "error",
+            title: "No se pudo crear el proveedor",
             text: error instanceof Error ? error.message : "Error desconocido",
           })
         })
@@ -308,6 +354,7 @@ function AgregarMovimientoContenido() {
     setComponenteProyecto("")
     setComponenteCategoria("")
     setComponenteOC("")
+    setComponenteProveedor("")
     setComponenteDescripcion("")
     setMostrarFormComponente(false)
   }
@@ -344,6 +391,8 @@ function AgregarMovimientoContenido() {
       categoria: tipoComponente === "egreso-general" ? componenteCategoria : undefined,
       ordenCompra:
         tipoComponente === "egreso-general" && componenteOC ? componenteOC : undefined,
+      proveedor:
+        tipoComponente === "egreso-general" && componenteProveedor ? componenteProveedor : undefined,
       descripcion: componenteDescripcion,
     }
 
@@ -382,6 +431,7 @@ function AgregarMovimientoContenido() {
               monto: Number(c.monto),
               categoria: c.categoria!,
               ordenCompra: c.ordenCompra,
+              proveedor: c.proveedor,
               descripcion: c.descripcion || "Egreso general",
             })
           } else {
@@ -732,6 +782,7 @@ function AgregarMovimientoContenido() {
                                     nombreProyecto(comp.proyecto),
                                     comp.categoria,
                                     comp.ordenCompra,
+                                    comp.proveedor,
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")
@@ -936,6 +987,33 @@ function AgregarMovimientoContenido() {
                                   {ordenesCompra.map((oc) => (
                                     <option key={oc.id} value={oc.nombre}>
                                       {oc.nombre}
+                                    </option>
+                                  ))}
+                                  <option value="agregar-nuevo">+ Agregar nuevo</option>
+                                </select>
+                              </div>
+
+                              <div className="form-control">
+                                <label className="label pt-0">
+                                  <span className="label-text font-semibold">
+                                    Proveedor (opcional)
+                                  </span>
+                                </label>
+                                <select
+                                  value={componenteProveedor}
+                                  onChange={(e) => {
+                                    if (e.target.value === "agregar-nuevo") {
+                                      handleAgregarProveedor()
+                                    } else {
+                                      setComponenteProveedor(e.target.value)
+                                    }
+                                  }}
+                                  className="select select-bordered w-full"
+                                >
+                                  <option value="">Seleccionar proveedor...</option>
+                                  {proveedores.map((p) => (
+                                    <option key={p.id} value={p.nombre}>
+                                      {p.nombre}
                                     </option>
                                   ))}
                                   <option value="agregar-nuevo">+ Agregar nuevo</option>

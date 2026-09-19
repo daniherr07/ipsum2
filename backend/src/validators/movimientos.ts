@@ -33,6 +33,7 @@ export type CrearMovimientoInput =
       monto: number;
       categoria: string;
       ordenCompra?: string;
+      proveedor?: string;
       descripcion: string;
     }
   | {
@@ -121,7 +122,25 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
         }
         ordenCompra = encontrada.nombre;
       }
-      return { tipo: "egreso", tipoEgreso: "egreso-general", proyectoId, monto, categoria, ordenCompra, descripcion };
+
+      const proveedorInput = toTrimmedString(data.proveedor);
+      let proveedor: string | undefined;
+      if (proveedorInput) {
+        const catalogo = await listarCatalogo("proveedores");
+        const encontrado = catalogo.find(
+          (p) => p.nombre.toLowerCase() === proveedorInput.toLowerCase()
+        );
+        if (!encontrado) {
+          throw new ApiError(
+            400,
+            "VALIDATION_ERROR",
+            `proveedor "${proveedorInput}" no existe en el catalogo de proveedores`
+          );
+        }
+        proveedor = encontrado.nombre;
+      }
+
+      return { tipo: "egreso", tipoEgreso: "egreso-general", proyectoId, monto, categoria, ordenCompra, proveedor, descripcion };
     }
 
     if (data.tipoEgreso === "egreso-administrativo") {
