@@ -381,7 +381,7 @@ function AgregarMovimientoContenido() {
           monto: Number(monto),
           nombreIngreso,
           fechaPago: `${fechaPagoDia}/${fechaPagoMes}/${fechaPagoAno}`,
-          descripcion,
+          descripcion: descripcion || "Ingreso de proyecto",
         })
 
         Swal.fire({

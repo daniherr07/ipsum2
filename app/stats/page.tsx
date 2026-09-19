@@ -125,7 +125,14 @@ export default function ControlCuentasPage() {
   const SALDO_REGEX = /^\d*(,\d{0,2})?$/
 
   const saldoDe = (id: string) => {
-    const num = parseFloat((saldos[id] ?? "").replace(",", "."))
+    /* El valor guardado puede venir formateado con puntos de miles
+       (ej. "1.500.000,00" despues del blur) o crudo sin formatear
+       (ej. "1500000" mientras se escribe) - hay que quitar los puntos
+       de miles ANTES de convertir la coma decimal a punto, si no
+       "1.500.000,00" -> "1.500.000.00" (dos puntos) y parseFloat
+       trunca en el primer error, devolviendo 1.5 en vez de 1500000. */
+    const crudo = (saldos[id] ?? "").replace(/\./g, "").replace(",", ".")
+    const num = parseFloat(crudo)
     return Number.isFinite(num) ? num : 0
   }
 
