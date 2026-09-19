@@ -2,10 +2,11 @@ import type { Request, Response } from "express";
 import { ApiError } from "../middlewares/errorHandler.js";
 import { calcularDashboard } from "../services/dashboard.js";
 import { MESES } from "../utils/fechas.js";
+import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 const ANIO_REGEX = /^\d{4}$/;
 
-export function getDashboard(req: Request, res: Response) {
+export const getDashboard = asyncHandler(async (req: Request, res: Response) => {
   const { mes, anio } = req.query;
   const ahora = new Date();
 
@@ -25,5 +26,5 @@ export function getDashboard(req: Request, res: Response) {
     anioFinal = anio;
   }
 
-  res.json({ success: true, data: calcularDashboard(mesFinal, anioFinal) });
-}
+  res.json({ success: true, data: await calcularDashboard(mesFinal, anioFinal) });
+});

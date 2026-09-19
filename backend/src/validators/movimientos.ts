@@ -77,7 +77,7 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
 
   if (data.tipo === "ingreso") {
     const proyectoId = toTrimmedString(data.proyectoId);
-    if (!proyectoId || !existeProyecto(proyectoId)) {
+    if (!proyectoId || !(await existeProyecto(proyectoId))) {
       throw new ApiError(400, "VALIDATION_ERROR", "proyectoId es obligatorio y debe existir");
     }
     const nombreIngreso = toTrimmedString(data.nombreIngreso);
@@ -94,7 +94,7 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
   if (data.tipo === "egreso") {
     if (data.tipoEgreso === "egreso-general") {
       const proyectoId = toTrimmedString(data.proyectoId);
-      if (!proyectoId || !existeProyecto(proyectoId)) {
+      if (!proyectoId || !(await existeProyecto(proyectoId))) {
         throw new ApiError(400, "VALIDATION_ERROR", "proyectoId es obligatorio y debe existir");
       }
       const categoria = toTrimmedString(data.categoria);

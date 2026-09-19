@@ -43,12 +43,14 @@ export type ResumenDashboard = {
 
 /* C5: prorrata de los gastos administrativos del mes por peso presupuestario.
    Reutilizada por el dashboard y por el detalle de proyecto (gastosAdministrativosMes) */
-export function calcularDistribucionAdministrativa(mes: string, anio: string): DistribucionGastoAdministrativo[] {
-  const proyectosDelMes = listarProyectos().filter(
-    (p) => p.mesAsignacion === mes && p.anioAsignacion === anio
-  );
+export async function calcularDistribucionAdministrativa(
+  mes: string,
+  anio: string
+): Promise<DistribucionGastoAdministrativo[]> {
+  const todos = await listarProyectos();
+  const proyectosDelMes = todos.filter((p) => p.mesAsignacion === mes && p.anioAsignacion === anio);
 
-  const gastosAdministrativos = listarMovimientos({})
+  const gastosAdministrativos = (await listarMovimientos({}))
     .filter((m) => {
       if (m.tipo !== "egreso" || m.tipoEgreso !== "egreso-administrativo") return false;
       const fecha = mesAnioDeMovimiento(m);
@@ -69,9 +71,9 @@ export function calcularDistribucionAdministrativa(mes: string, anio: string): D
   });
 }
 
-export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
-  const proyectos = listarProyectos();
-  const movimientos = listarMovimientos({});
+export async function calcularDashboard(mes: string, anio: string): Promise<ResumenDashboard> {
+  const proyectos = await listarProyectos();
+  const movimientos = await listarMovimientos({});
 
   const movimientosDelPeriodo = movimientos.filter((m) => {
     const fecha = mesAnioDeMovimiento(m);
@@ -100,7 +102,7 @@ export function calcularDashboard(mes: string, anio: string): ResumenDashboard {
   const presupuestoTotal = proyectosDelMes.reduce((sum, p) => sum + p.presupuesto, 0);
 
   /* La distribucion reutiliza la funcion extraida (C5); el resultado es identico */
-  const distribucionGastosAdministrativos = calcularDistribucionAdministrativa(mes, anio);
+  const distribucionGastosAdministrativos = await calcularDistribucionAdministrativa(mes, anio);
 
   const pctGastosAdministrativos =
     presupuestoTotal > 0 ? (gastosAdministrativos / presupuestoTotal) * 100 : 0;

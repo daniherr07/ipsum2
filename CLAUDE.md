@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Ipsum2 is a project/finance-tracking app ("control de cuentas" for a construction/contracting business). It's split into two independently-run apps in one repo:
 
 - **Frontend** (repo root): Next.js 16 (App Router), React 19, Tailwind 4 + daisyUI. Mixed `.jsx`/`.tsx` files.
-- **Backend** (`backend/`): Express + TypeScript, ESM (`"type": "module"`), run with `tsx`. No real database — see Persistence below.
+- **Backend** (`backend/`): Express + TypeScript, ESM (`"type": "module"`), run with `tsx`. Persists to Supabase (Postgres) — see Persistence below.
 
 The frontend talks to the backend over HTTP via `lib/api.ts`, which points at `NEXT_PUBLIC_API_URL` (default `http://localhost:4000`).
 
@@ -36,21 +36,20 @@ There is no test suite configured in either package.
 
 ### Backend layering (`backend/src/`)
 
-Each domain (`proyectos`, `movimientos`, `dashboard`, `stats`, `catalogos`, `bonos`) follows the same four-layer pattern, one file per layer per domain:
+Each domain (`proyectos`, `movimientos`, `dashboard`, `catalogos`, `bonos`) follows the same four-layer pattern, one file per layer per domain:
 
 - `routes/*.ts` — Express route definitions only, wire path+verb to a controller function.
-- `controllers/*.ts` — HTTP handlers: call a validator, call a service, call `guardarEstado()` after any mutation, shape the `{ success, data }` response.
-- `services/*.ts` — business logic + the actual in-memory data (plain arrays module-scoped in each service file). This is the source of truth at runtime.
-- `validators/*.ts` — hand-rolled input validation/coercion (no schema library), throws `ApiError` on invalid input.
+- `controllers/*.ts` — HTTP handlers: call a validator, call a service, shape the `{ success, data }` response. All controllers are wrapped in `asyncHandler` (`middlewares/asyncHandler.ts`) so a rejected promise reaches `errorHandler` instead of hanging.
+- `services/*.ts` — business logic + the actual Supabase queries (`supabase.ts` exports the client). Every function here is `async`.
+- `validators/*.ts` — hand-rolled input validation/coercion (no schema library), throws `ApiError` on invalid input. Several validators are also `async` because they check existence against a catalog/table in Supabase (e.g. `contratista`/`bono`/`ordenCompra` must already exist).
 
 All responses follow `{ success: true, data }` or `{ success: false, error: { code, message } }` (see `middlewares/errorHandler.ts`, `ApiError`). The frontend's `apiFetch` in `lib/api.ts` unwraps this and throws on `success: false`.
 
 ### Persistence (important, non-obvious)
 
-There is **no database**. `backend/seed-data.json` is the only datastore:
-- On boot, `server.ts` calls `cargarEstadoGuardado()` (`persistencia.ts`) and restores each service's in-memory arrays via `restaurar*` functions.
-- After every create/update/delete, controllers call `guardarEstado()`, which re-serializes all services' current in-memory state back to `seed-data.json`.
-- `@supabase/*` is a dependency and `backend/.agents/skills/supabase*` exist, but nothing in `backend/src` currently uses Supabase — data is JSON-file-only for now.
+All data lives in **Supabase (Postgres)** — there is no in-memory state and no local JSON file anymore (`backend/seed-data.json` and `persistencia.ts` were removed once every domain finished migrating). `backend/src/supabase.ts` creates the client from `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (read from `backend/.env`, gitignored — see `.env.example` for the required vars). The backend uses the **service_role** key (bypasses RLS by design), so authorization is enforced only in the Express layer today — there is no user-facing auth yet (see `PLAN BASE DE DATOS SUPABASE.md` for the RLS/roles design already applied to the schema, ready for when real auth is wired up).
+
+Naming: DB columns are `snake_case` (`presupuesto_mano_obra`, `mes_asignacion` as a `smallint` 1-12, `anio_asignacion` as `smallint`); the app's TypeScript types stay `camelCase` with `mesAsignacion` as a Spanish month name string — each `services/*.ts` file converts between the two (see `aProyecto`/`aMovimiento` mapper functions). Foreign keys (`bono`, `subtipoBono`, `contratista`, `ordenCompra`) are stored as names in the app's types but as `*_id` UUIDs in the DB — services resolve name → id on write and join name back on read. `proyectos.subtipos_bono` embeds via the explicit constraint name `proyectos_subtipo_bono_id_fkey` (there's a second, composite FK — `proyectos_subtipo_pertenece_a_bono` — between the same two tables for integrity, so PostgREST can't auto-pick one; the hint is required or every proyectos read throws).
 
 ### Derived/computed fields
 
@@ -80,7 +79,6 @@ A month is "Cerrado" (closed) when it has ≥1 project and all are `Finalizado` 
 - `GET/POST /proyectos`, `GET/PUT /proyectos/:id`
 - `GET/POST /movimientos`, `PUT/DELETE /movimientos/:id`
 - `GET /dashboard?mes=&anio=`
-- `GET /stats?anio=&tipoBono=`
 - `GET/POST /catalogos/:tipo`, `PUT/DELETE /catalogos/:tipo/:id` (`tipo` ∈ `ordenes-compra`, `proveedores`, `contratistas`)
 - `GET/POST /bonos`, `PUT/DELETE /bonos/:id`, `POST/PUT/DELETE /bonos/:id/subtipos(/:subtipoId)`
 - `GET /health`
@@ -93,4 +91,5 @@ A month is "Cerrado" (closed) when it has ≥1 project and all are `Finalizado` 
 ## Notes
 
 - Language: UI copy, domain terms, and code comments are in Spanish (`proyectos`, `movimientos`, `bonos`, `mesAsignacion`, etc.) — match this convention in new code in this repo.
-- There are two ESLint configs at the root (`eslint.config.mjs`, using `eslint-config-next`, and `eslint.config.mts`, a generic template config). `npm run lint` runs plain `eslint`, which resolves `eslint.config.mjs`.
+- ESLint config lives only in `eslint.config.mjs` (`eslint-config-next`); `npm run lint` runs plain `eslint`, which resolves it.
+- No user-facing authentication yet (`app/login/page.jsx` is cosmetic). Explicitly out of scope for the backend work done so far — it's expected to be handled by integration with another web app.
