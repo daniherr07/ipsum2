@@ -8,9 +8,6 @@ import { movimientosRouter } from "./routes/movimientos.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { catalogosRouter } from "./routes/catalogos.js";
 import { bonosRouter } from "./routes/bonos.js";
-import { cargarEstadoGuardado } from "./persistencia.js";
-import { restaurarProyectos } from "./services/proyectos.js";
-import { restaurarMovimientos } from "./services/movimientos.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -34,12 +31,7 @@ app.use(bonosRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const estado = cargarEstadoGuardado();
-restaurarProyectos(estado.proyectos);
-restaurarMovimientos(estado.movimientos);
-console.log(
-  `Datos cargados desde seed-data.json: ${estado.proyectos.length} proyectos, ${estado.movimientos.length} movimientos. Catalogos y bonos viven en Supabase.`
-);
+console.log("Catalogos, bonos, proyectos y movimientos viven en Supabase (sin datos locales).");
 
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);

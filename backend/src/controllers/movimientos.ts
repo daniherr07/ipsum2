@@ -6,19 +6,17 @@ import {
   listarMovimientos,
 } from "../services/movimientos.js";
 import { validarCrearMovimiento } from "../validators/movimientos.js";
-import { guardarEstado } from "../persistencia.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 export const postMovimiento = asyncHandler(async (req: Request, res: Response) => {
   const input = await validarCrearMovimiento(req.body);
-  const movimiento = crearMovimiento(input);
-  guardarEstado();
+  const movimiento = await crearMovimiento(input);
   res.status(201).json({ success: true, data: movimiento });
 });
 
 export const getMovimientos = asyncHandler(async (req: Request, res: Response) => {
   const { tipo, proyectoId } = req.query;
-  const movimientos = listarMovimientos({
+  const movimientos = await listarMovimientos({
     tipo: typeof tipo === "string" ? tipo : undefined,
     proyectoId: typeof proyectoId === "string" ? proyectoId : undefined,
   });
@@ -27,13 +25,11 @@ export const getMovimientos = asyncHandler(async (req: Request, res: Response) =
 
 export const putMovimiento = asyncHandler(async (req: Request, res: Response) => {
   const input = await validarCrearMovimiento(req.body);
-  const movimiento = actualizarMovimiento(req.params.id, input);
-  guardarEstado();
+  const movimiento = await actualizarMovimiento(req.params.id, input);
   res.json({ success: true, data: movimiento });
 });
 
 export const deleteMovimiento = asyncHandler(async (req: Request, res: Response) => {
-  eliminarMovimiento(req.params.id);
-  guardarEstado();
+  await eliminarMovimiento(req.params.id);
   res.json({ success: true, data: {} });
 });
