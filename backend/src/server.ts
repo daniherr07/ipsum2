@@ -8,6 +8,7 @@ import { movimientosRouter } from "./routes/movimientos.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { catalogosRouter } from "./routes/catalogos.js";
 import { bonosRouter } from "./routes/bonos.js";
+import { conciliacionRouter } from "./routes/conciliacion.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -27,6 +28,7 @@ app.use(movimientosRouter);
 app.use(dashboardRouter);
 app.use(catalogosRouter);
 app.use(bonosRouter);
+app.use(conciliacionRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

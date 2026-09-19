@@ -1,6 +1,6 @@
 import { ApiError } from "../middlewares/errorHandler.js";
 
-export const TIPOS_CATALOGO = ["ordenes-compra", "proveedores", "contratistas"] as const;
+export const TIPOS_CATALOGO = ["ordenes-compra", "proveedores", "contratistas", "cuentas-bancarias"] as const;
 export type TipoCatalogo = (typeof TIPOS_CATALOGO)[number];
 
 export function validarTipoCatalogo(tipo: string): TipoCatalogo {

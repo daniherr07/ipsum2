@@ -3,26 +3,14 @@
 import React, { useEffect, useState } from "react"
 import { CalendarClock, Info, Landmark, Plus, Scale, Trash2 } from "lucide-react"
 import Swal from "sweetalert2"
-import { listarProyectos, obtenerDashboard, type Proyecto } from "@/lib/api"
 import {
-  crearCuenta,
-  eliminarCuenta,
-  listarCuentas,
-  type CuentaBancaria,
-} from "@/lib/cuentasBancarias"
-
-type MesActivo = {
-  mes: string
-  anio: string
-  ingresos: number
-  egresos: number
-  balance: number
-}
-
-const MESES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-]
+  crearItemCatalogo,
+  eliminarItemCatalogo,
+  listarCatalogo,
+  obtenerConciliacion,
+  type ItemCatalogo,
+  type MesActivo,
+} from "@/lib/api"
 
 /* Mismo separador de miles que el resto de la app (₡1.500.000) */
 const formatNumber = (value: number) =>
@@ -63,14 +51,22 @@ function FadeIn({ children, delay = 0, className = "" }: {
 export default function ControlCuentasPage() {
   const [mesesActivos, setMesesActivos] = useState<MesActivo[]>([])
   const [cargando, setCargando] = useState(true)
-  const [cuentas, setCuentas] = useState<CuentaBancaria[]>([])
+  const [cuentas, setCuentas] = useState<ItemCatalogo[]>([])
   const [saldos, setSaldos] = useState<Record<string, string>>({})
   const [nuevaCuenta, setNuevaCuenta] = useState("")
 
-  /* Catálogo de cuentas: temporal en localStorage hasta que exista el
-     backend (ver PLAN CONTROL DE CUENTAS.md) */
+  /* Catálogo de cuentas bancarias: vive en el backend (Supabase), mismo
+     patrón que contratistas/proveedores/ordenes de compra. */
   useEffect(() => {
-    setCuentas(listarCuentas())
+    listarCatalogo("cuentas-bancarias")
+      .then(setCuentas)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar las cuentas bancarias",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
   }, [])
 
   /* Saldos digitados: se guardan en localStorage para que sobrevivan a un
@@ -94,49 +90,21 @@ export default function ControlCuentasPage() {
     }
   }, [saldos])
 
-  /* Balance acumulado de los meses con proyectos activos.
-     Un mes cerrado (todos sus proyectos "Finalizado") se excluye del cálculo. */
+  /* Balance acumulado de los meses con proyectos activos: una sola llamada
+     al backend (antes era listarProyectos + un GET /dashboard por cada mes
+     activo, patron N+1). Un mes cerrado (todos sus proyectos "Finalizado")
+     ya viene excluido por el backend. */
   useEffect(() => {
-    async function cargarMesesActivos() {
-      try {
-        const proyectos = await listarProyectos()
-
-        const porMes = new Map<string, Proyecto[]>()
-        for (const p of proyectos) {
-          const key = `${p.mesAsignacion}|${p.anioAsignacion}`
-          porMes.set(key, [...(porMes.get(key) ?? []), p])
-        }
-
-        const activos = [...porMes.keys()].filter(
-          (key) => !porMes.get(key)!.every((p) => p.estado === "Finalizado")
-        )
-
-        const conBalance = await Promise.all(
-          activos.map(async (key) => {
-            const [mes, anio] = key.split("|")
-            const d = await obtenerDashboard(mes, anio)
-            return { mes, anio, ingresos: d.ingresos, egresos: d.egresos, balance: d.balance }
-          })
-        )
-
-        conBalance.sort(
-          (a, b) =>
-            Number(a.anio) - Number(b.anio) ||
-            MESES.indexOf(a.mes) - MESES.indexOf(b.mes)
-        )
-
-        setMesesActivos(conBalance)
-      } catch {
+    obtenerConciliacion()
+      .then((res) => setMesesActivos(res.mesesActivos))
+      .catch(() => {
         Swal.fire({
           icon: "error",
           title: "No se pudo cargar el balance de los meses activos",
           text: "Verifica que el backend esté corriendo en localhost:4000",
         })
-      } finally {
-        setCargando(false)
-      }
-    }
-    cargarMesesActivos()
+      })
+      .finally(() => setCargando(false))
   }, [])
 
   /* Formato de los saldos: aceptan digitos con una coma decimal y hasta
@@ -181,7 +149,7 @@ export default function ControlCuentasPage() {
     }))
   }
 
-  const handleAgregarCuenta = (e: React.FormEvent) => {
+  const handleAgregarCuenta = async (e: React.FormEvent) => {
     e.preventDefault()
     const nombre = nuevaCuenta.trim()
     if (!nombre) return
@@ -189,19 +157,35 @@ export default function ControlCuentasPage() {
       Swal.fire({ icon: "warning", title: "Esa cuenta ya existe", text: nombre })
       return
     }
-    const cuenta = crearCuenta(nombre)
-    setCuentas((prev) => [...prev, cuenta])
-    setNuevaCuenta("")
+    try {
+      const cuenta = await crearItemCatalogo("cuentas-bancarias", nombre)
+      setCuentas((prev) => [...prev, cuenta])
+      setNuevaCuenta("")
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo agregar la cuenta",
+        text: error instanceof Error ? error.message : "Error desconocido",
+      })
+    }
   }
 
-  const handleEliminarCuenta = (id: string) => {
-    eliminarCuenta(id)
-    setCuentas((prev) => prev.filter((c) => c.id !== id))
-    setSaldos((prev) => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
+  const handleEliminarCuenta = async (id: string) => {
+    try {
+      await eliminarItemCatalogo("cuentas-bancarias", id)
+      setCuentas((prev) => prev.filter((c) => c.id !== id))
+      setSaldos((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo eliminar la cuenta",
+        text: error instanceof Error ? error.message : "Error desconocido",
+      })
+    }
   }
 
   return (

@@ -14,6 +14,7 @@ const TABLAS: Record<TipoCatalogo, string> = {
   "ordenes-compra": "ordenes_compra",
   proveedores: "proveedores",
   contratistas: "contratistas",
+  "cuentas-bancarias": "cuentas_bancarias",
 };
 
 function aItemCatalogo(fila: { id: string; nombre: string; creado_en: string }): ItemCatalogo {

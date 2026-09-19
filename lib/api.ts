@@ -187,7 +187,7 @@ export function obtenerDashboard(mes: string, anio: string): Promise<ResumenDash
   );
 }
 
-export type TipoCatalogo = "ordenes-compra" | "proveedores" | "contratistas";
+export type TipoCatalogo = "ordenes-compra" | "proveedores" | "contratistas" | "cuentas-bancarias";
 
 export type ItemCatalogo = {
   id: string;
@@ -272,4 +272,21 @@ export function eliminarSubtipoBono(
   subtipoId: string
 ): Promise<Record<string, never>> {
   return apiFetch(`/bonos/${bonoId}/subtipos/${subtipoId}`, { method: "DELETE" });
+}
+
+export type MesActivo = {
+  mes: string;
+  anio: string;
+  ingresos: number;
+  egresos: number;
+  balance: number;
+};
+
+export type ResumenConciliacion = {
+  mesesActivos: MesActivo[];
+  balanceTotal: number;
+};
+
+export function obtenerConciliacion(): Promise<ResumenConciliacion> {
+  return apiFetch<ResumenConciliacion>("/conciliacion");
 }
