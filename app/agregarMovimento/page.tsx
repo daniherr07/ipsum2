@@ -12,7 +12,7 @@ import {
 import Link from "next/link"
 import Swal from "sweetalert2"
 import BackButton from "@/components/BackButton"
-import { crearMovimiento, listarProyectos } from "@/lib/api"
+import { crearItemCatalogo, crearMovimiento, listarCatalogo, listarProyectos } from "@/lib/api"
 
 interface Proyecto {
   id: string
@@ -134,6 +134,51 @@ function AgregarMovimientoContenido() {
   const [componenteCategoria, setComponenteCategoria] = useState("")
   const [componenteOC, setComponenteOC] = useState("")
   const [componenteDescripcion, setComponenteDescripcion] = useState("")
+
+  // Catalogo real de ordenes de compra (antes eran opciones OC1/OC2/OC3
+  // escritas a mano, que no existian en el catalogo real y el backend
+  // rechazaba al validarlas contra Supabase)
+  const [ordenesCompra, setOrdenesCompra] = useState<{ id: string; nombre: string }[]>([])
+
+  React.useEffect(() => {
+    listarCatalogo("ordenes-compra")
+      .then(setOrdenesCompra)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar las ordenes de compra",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [])
+
+  const handleAgregarOrdenCompra = () => {
+    Swal.fire({
+      title: "Nueva Orden de Compra",
+      input: "text",
+      inputLabel: "Ingrese el nombre de la nueva OC",
+      inputPlaceholder: "Ej: OC4",
+      confirmButtonText: "Crear",
+      confirmButtonColor: "#035496",
+      showCancelButton: true,
+    }).then((result) => {
+      if (!result.isConfirmed || !result.value) return
+      const nombre = result.value.trim()
+      if (!nombre) return
+      crearItemCatalogo("ordenes-compra", nombre)
+        .then((item) => {
+          setOrdenesCompra((prev) => [...prev, item])
+          setComponenteOC(item.nombre)
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: "error",
+            title: "No se pudo crear la orden de compra",
+            text: error instanceof Error ? error.message : "Error desconocido",
+          })
+        })
+    })
+  }
 
   React.useEffect(() => {
     listarProyectos()
@@ -880,19 +925,7 @@ function AgregarMovimientoContenido() {
                                   value={componenteOC}
                                   onChange={(e) => {
                                     if (e.target.value === "agregar-nuevo") {
-                                      Swal.fire({
-                                        title: "Nueva Orden de Compra",
-                                        input: "text",
-                                        inputLabel: "Ingrese el nombre de la nueva OC",
-                                        inputPlaceholder: "Ej: OC4",
-                                        confirmButtonText: "Crear",
-                                        confirmButtonColor: "#035496",
-                                        showCancelButton: true,
-                                      }).then((result) => {
-                                        if (result.isConfirmed && result.value) {
-                                          setComponenteOC(result.value)
-                                        }
-                                      })
+                                      handleAgregarOrdenCompra()
                                     } else {
                                       setComponenteOC(e.target.value)
                                     }
@@ -900,9 +933,11 @@ function AgregarMovimientoContenido() {
                                   className="select select-bordered w-full"
                                 >
                                   <option value="">Seleccionar OC...</option>
-                                  <option value="OC1">OC1</option>
-                                  <option value="OC2">OC2</option>
-                                  <option value="OC3">OC3</option>
+                                  {ordenesCompra.map((oc) => (
+                                    <option key={oc.id} value={oc.nombre}>
+                                      {oc.nombre}
+                                    </option>
+                                  ))}
                                   <option value="agregar-nuevo">+ Agregar nuevo</option>
                                 </select>
                               </div>
