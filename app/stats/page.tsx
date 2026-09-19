@@ -73,6 +73,27 @@ export default function ControlCuentasPage() {
     setCuentas(listarCuentas())
   }, [])
 
+  /* Saldos digitados: se guardan en localStorage para que sobrevivan a un
+     recargo de pagina, y solo cambian si el usuario los edita. */
+  const SALDOS_STORAGE_KEY = "controlCuentasSaldos"
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SALDOS_STORAGE_KEY)
+      if (raw) setSaldos(JSON.parse(raw))
+    } catch {
+      // localStorage no disponible o dato corrupto: arranca vacio, sin romper la pagina
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SALDOS_STORAGE_KEY, JSON.stringify(saldos))
+    } catch {
+      // localStorage no disponible (ej. modo privado): no hay nada que persistir
+    }
+  }, [saldos])
+
   /* Balance acumulado de los meses con proyectos activos.
      Un mes cerrado (todos sus proyectos "Finalizado") se excluye del cálculo. */
   useEffect(() => {
@@ -118,10 +139,9 @@ export default function ControlCuentasPage() {
     cargarMesesActivos()
   }, [])
 
-  /* Saldos del ejercicio: arrancan en cero y viven solo en memoria
-     (al recargar la página el ejercicio inicia de nuevo en cero).
-     Aceptan dígitos con una coma decimal y hasta 2 céntimos (₡1.500,25),
-     para poder digitar el saldo exacto del estado de cuenta. */
+  /* Formato de los saldos: aceptan digitos con una coma decimal y hasta
+     2 centimos (₡1.500,25), para poder digitar el saldo exacto del
+     estado de cuenta. Se guardan en localStorage (ver arriba). */
   const SALDO_REGEX = /^\d*(,\d{0,2})?$/
 
   const saldoDe = (id: string) => {
@@ -265,11 +285,11 @@ export default function ControlCuentasPage() {
                     {mesesActivos.map((m) => (
                       <li
                         key={`${m.mes}-${m.anio}`}
-                        className="flex items-center justify-between gap-2 py-2.5"
+                        className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium text-sm">{m.mes} {m.anio}</span>
-                          <span className="badge badge-warning badge-sm">En proceso</span>
+                          <span className="badge badge-warning badge-sm whitespace-nowrap">En proceso</span>
                         </div>
                         <span className={`font-bold text-sm ${m.balance >= 0 ? "text-success" : "text-error"}`}>
                           {formatCurrency(m.balance)}
