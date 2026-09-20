@@ -348,10 +348,37 @@ export default function Home() {
   ========================= */
   useEffect(() => {
     const now = new Date();
-    setMesIndex(now.getMonth());
-    setAnio(now.getFullYear());
+    let mes = now.getMonth();
+    let year = now.getFullYear();
+    try {
+      const raw = sessionStorage.getItem("homeMesSeleccion");
+      if (raw) {
+        const guardado = JSON.parse(raw);
+        if (
+          Number.isInteger(guardado.mesIndex) &&
+          guardado.mesIndex >= 0 &&
+          guardado.mesIndex <= 11 &&
+          Number.isInteger(guardado.anio)
+        ) {
+          mes = guardado.mesIndex;
+          year = guardado.anio;
+        }
+      }
+    } catch {}
+    setMesIndex(mes);
+    setAnio(year);
     setListo(true);
   }, []);
+
+  useEffect(() => {
+    if (!listo) return;
+    try {
+      sessionStorage.setItem(
+        "homeMesSeleccion",
+        JSON.stringify({ mesIndex, anio })
+      );
+    } catch {}
+  }, [mesIndex, anio, listo]);
 
   /* =========================
      Cargar el dashboard real del backend cada vez que cambia mes/año
