@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import { default as helmet } from "helmet";   // antes: import helmet from "helmet";
+import helmetImport from "helmet";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 import { healthRouter } from "./routes/health.js";
 import { proyectosRouter } from "./routes/proyectos.js";
@@ -9,6 +9,9 @@ import { dashboardRouter } from "./routes/dashboard.js";
 import { catalogosRouter } from "./routes/catalogos.js";
 import { bonosRouter } from "./routes/bonos.js";
 import { conciliacionRouter } from "./routes/conciliacion.js";
+
+// En el build de Vercel el import por defecto de helmet llega tipado como namespace (TS2349); se soportan ambas formas.
+const helmet = ((helmetImport as unknown as { default?: typeof helmetImport }).default ?? helmetImport) as typeof helmetImport;
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
