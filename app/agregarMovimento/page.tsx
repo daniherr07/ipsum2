@@ -13,6 +13,7 @@ import Link from "next/link"
 import Swal from "sweetalert2"
 import BackButton from "@/components/BackButton"
 import { crearItemCatalogo, crearMovimiento, listarCatalogo, listarProyectos } from "@/lib/api"
+import { ANOS } from "@/lib/anios"
 
 interface Proyecto {
   id: string
@@ -81,9 +82,13 @@ const meses = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
 
-const ANOS = [2024, 2025, 2026, 2027, 2028]
-
 const opcionesCategoria = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
+
+/* La orden de compra solo aplica a Materiales/Equipamiento; el proveedor
+   no aplica a Servicios (mismas reglas que valida el backend). */
+const categoriaAceptaOrdenCompra = (categoria: string) =>
+  categoria === "Materiales" || categoria === "Equipamiento"
+const categoriaAceptaProveedor = (categoria: string) => categoria !== "Servicios"
 
 export default function AgregarMovimientoPage() {
   /* useSearchParams requiere un boundary <Suspense> durante el prerender (C8) */
@@ -312,6 +317,36 @@ function AgregarMovimientoContenido() {
     }
   }, [proyectosFiltrados, proyectoSeleccionado, componenteProyecto])
 
+  /* C4/UX: nunca dejar preseleccionado un mes cerrado. Si el filtro por
+     defecto (mes actual) esta cerrado, se salta al siguiente mes abierto. */
+  React.useEffect(() => {
+    if (proyectos.length === 0 || proyectoIdParam) return
+    if (!esMesCerrado(meses[mesFiltro - 1], anoFiltro)) return
+    for (let i = 0; i < meses.length; i++) {
+      const idx = (mesFiltro - 1 + i) % meses.length
+      if (!esMesCerrado(meses[idx], anoFiltro)) {
+        setMesFiltro(idx + 1)
+        return
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proyectos, mesFiltro, anoFiltro, proyectoIdParam])
+
+  /* Misma correccion para el mes del egreso administrativo */
+  React.useEffect(() => {
+    if (proyectos.length === 0) return
+    const mesIdx = parseInt(componenteMes) - 1
+    if (!esMesCerrado(meses[mesIdx], componenteAno)) return
+    for (let i = 0; i < meses.length; i++) {
+      const idx = (mesIdx + i) % meses.length
+      if (!esMesCerrado(meses[idx], componenteAno)) {
+        setComponenteMes(String(idx + 1))
+        return
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [proyectos, componenteMes, componenteAno])
+
   /* Info de presupuesto de Mano de Obra para el egreso general en curso (C7B) */
   const proyectoMO =
     tipoComponente === "egreso-general" &&
@@ -378,6 +413,20 @@ function AgregarMovimientoContenido() {
     }
   }
 
+  /* Limpia TODOS los inputs del movimiento tras guardar con éxito */
+  const resetFormulario = (tipo: "egreso-proyecto" | "ingreso-proyecto") => {
+    setTipoMovimiento(tipo)
+    setMonto("")
+    setProyectoSeleccionado("")
+    setNombreIngreso("")
+    setDescripcion("")
+    setFechaPagoDia(String(today.getDate()).padStart(2, "0"))
+    setFechaPagoMes(String(today.getMonth() + 1).padStart(2, "0"))
+    setFechaPagoAno(today.getFullYear().toString())
+    setComponentes([])
+    resetFormComponente()
+  }
+
   const agregarComponente = () => {
     if (!tipoComponente || !componenteMonto) return
 
@@ -421,6 +470,16 @@ function AgregarMovimientoContenido() {
         return
       }
 
+      if (sumaComponentes > totalNum) {
+        Swal.fire({
+          icon: "warning",
+          title: "Monto excedido",
+          text: "La suma de los egresos no puede superar el Total del egreso",
+          confirmButtonColor: "#dc2626",
+        })
+        return
+      }
+
       try {
         for (const c of componentes) {
           if (c.tipo === "egreso-general") {
@@ -459,9 +518,8 @@ function AgregarMovimientoContenido() {
           confirmButtonColor: "#dc2626",
         })
 
-        cambiarTipo("egreso-proyecto")
-      } catch (error) {
-        Swal.fire({
+        resetFormulario("egreso-proyecto")
+      } catch (error) {        Swal.fire({
           icon: "error",
           title: "Error al guardar",
           text: error instanceof Error ? error.message : "Error desconocido",
@@ -491,6 +549,8 @@ function AgregarMovimientoContenido() {
           `,
           confirmButtonColor: "#16a34a",
         })
+
+        resetFormulario("ingreso-proyecto")
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -956,7 +1016,12 @@ function AgregarMovimientoContenido() {
                                 </label>
                                 <select
                                   value={componenteCategoria}
-                                  onChange={(e) => setComponenteCategoria(e.target.value)}
+                                  onChange={(e) => {
+                                    const cat = e.target.value
+                                    setComponenteCategoria(cat)
+                                    if (!categoriaAceptaOrdenCompra(cat)) setComponenteOC("")
+                                    if (!categoriaAceptaProveedor(cat)) setComponenteProveedor("")
+                                  }}
                                   className="select select-bordered w-full"
                                 >
                                   <option value="">Seleccionar categoría...</option>
@@ -966,59 +1031,63 @@ function AgregarMovimientoContenido() {
                                 </select>
                               </div>
 
-                              <div className="form-control">
-                                <label className="label pt-0">
-                                  <span className="label-text font-semibold">
-                                    Orden de Compra (opcional)
-                                  </span>
-                                </label>
-                                <select
-                                  value={componenteOC}
-                                  onChange={(e) => {
-                                    if (e.target.value === "agregar-nuevo") {
-                                      handleAgregarOrdenCompra()
-                                    } else {
-                                      setComponenteOC(e.target.value)
-                                    }
-                                  }}
-                                  className="select select-bordered w-full"
-                                >
-                                  <option value="">Seleccionar OC...</option>
-                                  {ordenesCompra.map((oc) => (
-                                    <option key={oc.id} value={oc.nombre}>
-                                      {oc.nombre}
-                                    </option>
-                                  ))}
-                                  <option value="agregar-nuevo">+ Agregar nuevo</option>
-                                </select>
-                              </div>
+                              {categoriaAceptaOrdenCompra(componenteCategoria) && (
+                                <div className="form-control">
+                                  <label className="label pt-0">
+                                    <span className="label-text font-semibold">
+                                      Orden de Compra (opcional)
+                                    </span>
+                                  </label>
+                                  <select
+                                    value={componenteOC}
+                                    onChange={(e) => {
+                                      if (e.target.value === "agregar-nuevo") {
+                                        handleAgregarOrdenCompra()
+                                      } else {
+                                        setComponenteOC(e.target.value)
+                                      }
+                                    }}
+                                    className="select select-bordered w-full"
+                                  >
+                                    <option value="">Seleccionar OC...</option>
+                                    {ordenesCompra.map((oc) => (
+                                      <option key={oc.id} value={oc.nombre}>
+                                        {oc.nombre}
+                                      </option>
+                                    ))}
+                                    <option value="agregar-nuevo">+ Agregar nuevo</option>
+                                  </select>
+                                </div>
+                              )}
 
-                              <div className="form-control">
-                                <label className="label pt-0">
-                                  <span className="label-text font-semibold">
-                                    Proveedor (opcional)
-                                  </span>
-                                </label>
-                                <select
-                                  value={componenteProveedor}
-                                  onChange={(e) => {
-                                    if (e.target.value === "agregar-nuevo") {
-                                      handleAgregarProveedor()
-                                    } else {
-                                      setComponenteProveedor(e.target.value)
-                                    }
-                                  }}
-                                  className="select select-bordered w-full"
-                                >
-                                  <option value="">Seleccionar proveedor...</option>
-                                  {proveedores.map((p) => (
-                                    <option key={p.id} value={p.nombre}>
-                                      {p.nombre}
-                                    </option>
-                                  ))}
-                                  <option value="agregar-nuevo">+ Agregar nuevo</option>
-                                </select>
-                              </div>
+                              {categoriaAceptaProveedor(componenteCategoria) && (
+                                <div className="form-control">
+                                  <label className="label pt-0">
+                                    <span className="label-text font-semibold">
+                                      Proveedor (opcional)
+                                    </span>
+                                  </label>
+                                  <select
+                                    value={componenteProveedor}
+                                    onChange={(e) => {
+                                      if (e.target.value === "agregar-nuevo") {
+                                        handleAgregarProveedor()
+                                      } else {
+                                        setComponenteProveedor(e.target.value)
+                                      }
+                                    }}
+                                    className="select select-bordered w-full"
+                                  >
+                                    <option value="">Seleccionar proveedor...</option>
+                                    {proveedores.map((p) => (
+                                      <option key={p.id} value={p.nombre}>
+                                        {p.nombre}
+                                      </option>
+                                    ))}
+                                    <option value="agregar-nuevo">+ Agregar nuevo</option>
+                                  </select>
+                                </div>
+                              )}
 
                               {/* Info presupuesto Mano de Obra del proyecto (C7B) */}
                               {proyectoMO && (
@@ -1120,6 +1189,7 @@ function AgregarMovimientoContenido() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
+                  disabled={esEgreso && restante < 0}
                   className={`btn flex-1 ${esEgreso ? "btn-error" : "btn-success"}`}
                 >
                   Guardar Movimiento

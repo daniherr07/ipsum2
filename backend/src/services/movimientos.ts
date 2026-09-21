@@ -6,13 +6,22 @@ import type { CrearMovimientoInput } from "../validators/movimientos.js";
 export type Movimiento = CrearMovimientoInput & {
   id: string;
   creadoEn: string;
+  /* Mes/anio del proyecto al que pertenece un egreso general; se embebe en
+     las lecturas para atribuir el egreso al mes del proyecto, no a creadoEn. */
+  mesAsignacionProyecto?: string;
+  anioAsignacionProyecto?: string;
 };
 
-/* H3: mes/anio de negocio de un movimiento, no la fecha en que se inserto. */
+/* H3: mes/anio de negocio de un movimiento, no la fecha en que se inserto.
+   Los egresos generales pertenecen al mes de asignacion de su proyecto (si el
+   proyecto se movio de mes, el egreso lo sigue), no a la fecha de creacion. */
 export function mesAnioDeMovimiento(m: Movimiento): { mes: string; anio: string } {
   if (m.tipo === "ingreso") return mesAnioDeFechaPago(m.fechaPago);
   if (m.tipo === "egreso" && m.tipoEgreso === "egreso-administrativo") {
     return { mes: m.mes, anio: m.ano };
+  }
+  if (m.mesAsignacionProyecto && m.anioAsignacionProyecto) {
+    return { mes: m.mesAsignacionProyecto, anio: m.anioAsignacionProyecto };
   }
   return mesAnioDe(m.creadoEn);
 }
@@ -21,6 +30,7 @@ const SELECT_MOVIMIENTO = `
   id, tipo, tipo_egreso, proyecto_id, monto, descripcion,
   nombre_ingreso, fecha_pago,
   categoria, ordenes_compra ( nombre ), proveedores ( nombre ),
+  proyectos ( mes_asignacion, anio_asignacion ),
   mes_admin, anio_admin,
   creado_en
 `;
@@ -37,6 +47,7 @@ type FilaMovimiento = {
   categoria: string | null;
   ordenes_compra: { nombre: string } | null;
   proveedores: { nombre: string } | null;
+  proyectos: { mes_asignacion: number; anio_asignacion: number } | null;
   mes_admin: number | null;
   anio_admin: number | null;
   creado_en: string;
@@ -83,6 +94,12 @@ function aMovimiento(fila: FilaMovimiento): Movimiento {
       categoria: fila.categoria!,
       ordenCompra: fila.ordenes_compra?.nombre,
       proveedor: fila.proveedores?.nombre,
+      mesAsignacionProyecto: fila.proyectos
+        ? MESES[fila.proyectos.mes_asignacion - 1]
+        : undefined,
+      anioAsignacionProyecto: fila.proyectos
+        ? String(fila.proyectos.anio_asignacion)
+        : undefined,
     };
   }
   return {

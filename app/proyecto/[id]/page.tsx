@@ -16,15 +16,18 @@ import {
 import Link from "next/link"
 import Swal from "sweetalert2"
 import BackButton from "@/components/BackButton"
+import InfoTip from "@/components/InfoTip"
 import {
   obtenerProyecto,
   actualizarProyecto,
   listarMovimientos,
   listarCatalogo,
+  listarProyectos,
   type Proyecto,
   type Movimiento,
   type ItemCatalogo,
 } from "@/lib/api"
+import { ANOS } from "@/lib/anios"
 
 /* =========================
    Helpers
@@ -115,13 +118,14 @@ const COLOR_STYLES = {
   error: { bg: "bg-error/10", text: "text-error" },
 } as const
 
-function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle }: {
+function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle, hint }: {
   icon: typeof TrendingUp
   label: string
   value: number
   color: keyof typeof COLOR_STYLES
   delay?: number
   subtitle?: string
+  hint?: string
 }) {
   const animatedValue = useAnimatedNumber(value)
   const styles = COLOR_STYLES[color]
@@ -134,7 +138,7 @@ function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle }: {
         </div>
         <div className="min-w-0">
           <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/60">
-            {label}
+            {label} {hint && <InfoTip text={hint} />}
           </p>
           <p className={`font-black text-sm sm:text-lg truncate ${styles.text}`}>
             {formatCurrency(animatedValue)}
@@ -280,8 +284,6 @@ const MESES = [
   "Diciembre",
 ]
 
-const ANOS = [2024, 2025, 2026, 2027, 2028]
-
 function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
   isOpen: boolean
   onClose: () => void
@@ -294,6 +296,7 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
   const [anioAsignacion, setAnioAsignacion] = useState("")
   const [estado, setEstado] = useState<"Revisión" | "Finalizado">("Revisión")
   const [contratistas, setContratistas] = useState<ItemCatalogo[]>([])
+  const [otrosProyectos, setOtrosProyectos] = useState<Proyecto[]>([])
   const [guardando, setGuardando] = useState(false)
 
   useEffect(() => {
@@ -308,6 +311,10 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
     listarCatalogo("contratistas")
       .then(setContratistas)
       .catch(() => setContratistas([]))
+    /* C4: para detectar si este proyecto es el último en proceso del mes */
+    listarProyectos()
+      .then(setOtrosProyectos)
+      .catch(() => setOtrosProyectos([]))
   }, [isOpen, proyecto])
 
   const formatMonto = (value: string) => {
@@ -341,6 +348,30 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
     if (!mesAsignacion || !anioAsignacion) {
       Swal.fire("Error", "El mes y año de asignación son requeridos", "error")
       return
+    }
+    /* C4: si este proyecto es el último en proceso del mes, al finalizarlo
+       el mes se cierra; pedir confirmación antes de guardar. */
+    if (estado === "Finalizado" && proyecto.estado !== "Finalizado") {
+      const delMes = otrosProyectos.filter(
+        (p) =>
+          p.id !== proyecto.id &&
+          p.mesAsignacion === mesAsignacion &&
+          p.anioAsignacion === String(anioAsignacion),
+      )
+      const cierraMes =
+        delMes.length > 0 && delMes.every((p) => p.estado === "Finalizado")
+      if (cierraMes) {
+        const result = await Swal.fire({
+          icon: "question",
+          title: `¿Cerrar el mes de ${mesAsignacion} ${anioAsignacion}?`,
+          text: "Este es el último proyecto en proceso. Al guardarlo como Finalizado, el mes quedará cerrado y no se podrán agregar movimientos.",
+          showCancelButton: true,
+          confirmButtonText: "Sí, cerrar el mes",
+          cancelButtonText: "Cancelar",
+          confirmButtonColor: "#035496",
+        })
+        if (!result.isConfirmed) return
+      }
     }
     setGuardando(true)
     try {
@@ -728,7 +759,10 @@ export default function ProyectoPage() {
             {/* Progreso de presupuesto */}
             <div>
               <div className="flex justify-between text-xs sm:text-sm mb-1">
-                <span className="text-base-content/60">Presupuesto utilizado</span>
+                <span className="text-base-content/60">
+                  Presupuesto utilizado{" "}
+                  <InfoTip text="Porcentaje del presupuesto consumido: egresos del proyecto ÷ presupuesto del proyecto." />
+                </span>
                 <span className="font-bold">{totales.pctUso}%</span>
               </div>
               <progress
@@ -745,7 +779,10 @@ export default function ProyectoPage() {
             {/* Progreso de Mano de Obra (C2) */}
             <div>
               <div className="flex justify-between text-xs sm:text-sm mb-1">
-                <span className="text-base-content/60">Mano de Obra</span>
+                <span className="text-base-content/60">
+                  Mano de Obra{" "}
+                  <InfoTip text="Gasto en Mano de Obra ÷ presupuesto de Mano de Obra del proyecto." />
+                </span>
                 <span className="font-bold">
                   {formatCurrency(proyecto.gastadoManoObra ?? 0)} de{" "}
                   {formatCurrency(proyecto.presupuestoManoObra ?? 0)}
@@ -761,7 +798,8 @@ export default function ProyectoPage() {
             {/* Gasto administrativo asignado del mes (C5) */}
             <div className="flex justify-between items-center text-xs sm:text-sm bg-warning/10 rounded-lg px-3 py-2">
               <span className="text-base-content/60">
-                Gasto administrativo asignado ({proyecto.mesAsignacion})
+                Gasto administrativo asignado ({proyecto.mesAsignacion}){" "}
+                <InfoTip text="Parte del gasto administrativo del mes que le corresponde a este proyecto, según su peso presupuestario (presupuesto del proyecto ÷ presupuesto total del mes)." />
               </span>
               <span className="font-bold text-warning">
                 {formatCurrency(proyecto.gastosAdministrativosMes ?? 0)}
@@ -778,6 +816,7 @@ export default function ProyectoPage() {
             value={proyecto.presupuesto}
             color="primary"
             delay={100}
+            hint="Presupuesto total asignado al proyecto."
           />
           <StatCard
             icon={TrendingUp}
@@ -786,6 +825,7 @@ export default function ProyectoPage() {
             color="success"
             delay={150}
             subtitle={`${conteos.ingresos} movimientos`}
+            hint="Suma de todos los ingresos registrados en el proyecto."
           />
           <StatCard
             icon={TrendingDown}
@@ -794,6 +834,7 @@ export default function ProyectoPage() {
             color="error"
             delay={200}
             subtitle={`${conteos.egresos} movimientos`}
+            hint="Suma de todos los egresos del proyecto (generales y el gasto administrativo asignado)."
           />
           <StatCard
             icon={PiggyBank}
@@ -802,6 +843,7 @@ export default function ProyectoPage() {
             color={totales.disponible >= 0 ? "success" : "error"}
             delay={250}
             subtitle={`${totales.pctUso}% utilizado`}
+            hint="Presupuesto del proyecto − egresos del proyecto."
           />
           {/* M5: ganancia = ingresos − egresos (campo derivado del backend;
               si no viene, se calcula local con los totales ya cargados) */}
@@ -816,6 +858,7 @@ export default function ProyectoPage() {
             }
             delay={275}
             subtitle="Ingresos − Egresos"
+            hint="Ingresos del proyecto − egresos del proyecto."
           />
         </section>
 
@@ -824,7 +867,8 @@ export default function ProyectoPage() {
           {/* Desglose de egresos */}
           <FadeIn delay={300} className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 h-full">
             <h2 className="font-bold text-sm sm:text-base">
-              Desglose de Egresos
+              Desglose de Egresos{" "}
+              <InfoTip text="Porcentaje de cada categoría sobre el total de egresos del proyecto." />
             </h2>
             {egresoCategorias.length > 0 ? (
               <ul className="space-y-3 mt-3">

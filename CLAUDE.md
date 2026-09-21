@@ -57,10 +57,12 @@ Naming: DB columns are `snake_case` (`presupuesto_mano_obra`, `mes_asignacion` a
 
 `Movimiento` (transaction) is a discriminated union on `tipo`/`tipoEgreso`:
 - `ingreso` — tied to a `proyectoId`.
-- `egreso` + `tipoEgreso: "egreso-general"` — tied to a `proyectoId`, has `categoria` (e.g. `"Mano de Obra"` feeds `gastadoManoObra`) and optional `ordenCompra`.
+- `egreso` + `tipoEgreso: "egreso-general"` — tied to a `proyectoId`, has `categoria` (e.g. `"Mano de Obra"` feeds `gastadoManoObra`). `ordenCompra` only applies to `Materiales`/`Equipamiento` and `proveedor` does not apply to `Servicios` — the backend rejects them otherwise (`validators/movimientos.ts`).
 - `egreso` + `tipoEgreso: "egreso-administrativo"` — not tied to a project, tied to `mes`/`ano` instead, distributed across that month's projects (see `services/dashboard.ts#calcularDistribucionAdministrativa`).
 
-A month is "Cerrado" (closed) when it has ≥1 project and all are `Finalizado` (`services/proyectos.ts#esMesCerrado`); closed months are excluded from active reconciliation logic.
+A movement's business month is resolved by `services/movimientos.ts#mesAnioDeMovimiento`: ingresos by `fechaPago`, egresos administrativos by their `mes`/`ano`, and **egresos generales by their project's `mesAsignacion`/`anioAsignacion`** (embedded on read via `proyectos ( mes_asignacion, anio_asignacion )`; never by `creadoEn`). Both `/dashboard` and `/conciliacion` share this function.
+
+A month is "Cerrado" (closed) when it has ≥1 project and all are `Finalizado` (`services/proyectos.ts#esMesCerrado`); closed months are excluded from active reconciliation logic. Once closed, the backend rejects creating/updating movements and creating projects in that month (`validators/movimientos.ts`, `validators/proyectos.ts`); the home selector and project edit modal let you open/close a month (see `PUT /meses/:mes/:anio/estado`).
 
 ### Frontend structure (`app/`, App Router)
 
@@ -79,6 +81,7 @@ A month is "Cerrado" (closed) when it has ≥1 project and all are `Finalizado` 
 - `GET/POST /proyectos`, `GET/PUT /proyectos/:id`
 - `GET/POST /movimientos`, `PUT/DELETE /movimientos/:id`
 - `GET /dashboard?mes=&anio=`
+- `PUT /meses/:mes/:anio/estado` (body `{ estado: "Cerrado" | "En proceso" }`) — closes/opens a month by marking all its projects `Finalizado`/`Revisión`
 - `GET/POST /catalogos/:tipo`, `PUT/DELETE /catalogos/:tipo/:id` (`tipo` ∈ `ordenes-compra`, `proveedores`, `contratistas`)
 - `GET/POST /bonos`, `PUT/DELETE /bonos/:id`, `POST/PUT/DELETE /bonos/:id/subtipos(/:subtipoId)`
 - `GET /health`

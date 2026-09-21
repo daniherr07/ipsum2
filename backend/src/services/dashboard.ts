@@ -123,7 +123,7 @@ export async function calcularDashboard(mes: string, anio: string): Promise<Resu
     balance,
     pctGastado: Math.round(pctGastado * 10) / 10,
     gastosAdministrativos,
-    pctGastosAdministrativos: Math.round(pctGastosAdministrativos * 10) / 10,
+    pctGastosAdministrativos: Math.round(pctGastosAdministrativos * 100) / 100,
     superaLimiteAdministrativo: pctGastosAdministrativos > 10,
     distribucionGastosAdministrativos,
     proyectosDelMes: proyectosDelMes.map((p) => ({

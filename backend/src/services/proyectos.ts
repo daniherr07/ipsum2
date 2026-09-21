@@ -135,6 +135,21 @@ export async function existeProyecto(id: string): Promise<boolean> {
   return (count ?? 0) > 0;
 }
 
+/* Mes/anio de asignacion del proyecto; null si no existe. Usado para
+   atribuir egresos generales a su mes y para validar meses cerrados. */
+export async function obtenerMesAnioProyecto(
+  id: string
+): Promise<{ mes: string; anio: string } | null> {
+  const { data, error } = await supabase
+    .from("proyectos")
+    .select("mes_asignacion, anio_asignacion")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  if (!data) return null;
+  return { mes: MESES[data.mes_asignacion - 1], anio: String(data.anio_asignacion) };
+}
+
 /* Enriquecimiento (C2, C6): una sola pasada sobre los movimientos del proyecto.
    Sigue siendo sincrono porque movimientos todavia vive en memoria (pendiente
    Ahora async porque listarMovimientos consulta Supabase. */

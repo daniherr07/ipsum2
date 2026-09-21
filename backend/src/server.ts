@@ -9,6 +9,7 @@ import { dashboardRouter } from "./routes/dashboard.js";
 import { catalogosRouter } from "./routes/catalogos.js";
 import { bonosRouter } from "./routes/bonos.js";
 import { conciliacionRouter } from "./routes/conciliacion.js";
+import { mesesRouter } from "./routes/meses.js";
 
 // En el build de Vercel el import por defecto de helmet llega tipado como namespace (TS2349); se soportan ambas formas.
 const helmet = ((helmetImport as unknown as { default?: typeof helmetImport }).default ?? helmetImport) as typeof helmetImport;
@@ -32,6 +33,7 @@ app.use(dashboardRouter);
 app.use(catalogosRouter);
 app.use(bonosRouter);
 app.use(conciliacionRouter);
+app.use(mesesRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

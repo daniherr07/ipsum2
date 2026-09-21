@@ -15,6 +15,7 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import BackButton from "@/components/BackButton";
 import { listarMovimientos, actualizarMovimiento, eliminarMovimiento, listarCatalogo } from "@/lib/api";
+import { ANOS } from "@/lib/anios";
 
 /* =========================
    Formato de número consistente (evita mismatch de locale):
@@ -67,8 +68,6 @@ const MESES = [
   "Noviembre",
   "Diciembre",
 ];
-
-const ANOS = [2024, 2025, 2026, 2027, 2028];
 
 const CATEGORIAS = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"];
 
