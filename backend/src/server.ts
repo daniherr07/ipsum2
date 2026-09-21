@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import helmet from "helmet";
+import { default as helmet } from "helmet";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 import { healthRouter } from "./routes/health.js";
 import { proyectosRouter } from "./routes/proyectos.js";
