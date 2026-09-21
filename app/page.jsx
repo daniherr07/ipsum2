@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import { obtenerDashboard } from "@/lib/api";
+import InfoTip from "@/components/InfoTip";
+import { obtenerDashboard, cambiarEstadoMes } from "@/lib/api";
 
 /* =========================
    Formato de número consistente (evita mismatch de locale):
@@ -155,7 +156,8 @@ function GastosAdministrativosCard({
           ₵{formatNumber(gastosAdmin)}
         </span>
         <p className="text-[11px] sm:text-xs text-base-content/70 mt-1">
-          Distribuido por peso presupuestario
+          Distribuido por peso presupuestario{" "}
+          <InfoTip text="Cada gasto administrativo se reparte según el peso de cada proyecto: su presupuesto ÷ presupuesto total del mes." />
         </p>
       </div>
 
@@ -341,6 +343,7 @@ export default function Home() {
   const [isChanging, setIsChanging] = useState(false);
   const [data, setData] = useState(DATA_VACIA);
   const [listo, setListo] = useState(false);
+  const [guardandoMes, setGuardandoMes] = useState(false);
 
   /* =========================
      Inicializar con el mes actual
@@ -398,6 +401,48 @@ export default function Home() {
 
   const balance = data.balance;
   const pctGasto = Math.round(data.pctGastado);
+
+  /* =========================
+     Abrir / cerrar el mes seleccionado (C4)
+     Cerrar = marcar todos sus proyectos como Finalizado.
+     Abrir = devolverlos a Revisión. Pide confirmación.
+  ========================= */
+  const cambiarEstadoMesHandler = async (nuevoEstado) => {
+    if (!data.estadoMes || data.estadoMes === nuevoEstado) return;
+    const cerrando = nuevoEstado === "Cerrado";
+    const result = await Swal.fire({
+      icon: "question",
+      title: `¿${cerrando ? "Cerrar" : "Abrir"} el mes de ${MESES[mesIndex]}?`,
+      text: cerrando
+        ? "Todos los proyectos del mes quedarán marcados como Finalizado y no se podrán agregar movimientos."
+        : "Los proyectos del mes volverán a estado Revisión y se podrán agregar movimientos.",
+      showCancelButton: true,
+      confirmButtonText: cerrando ? "Sí, cerrar" : "Sí, abrir",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#035496",
+    });
+    if (!result.isConfirmed) return;
+
+    setGuardandoMes(true);
+    try {
+      await cambiarEstadoMes(MESES[mesIndex], String(anio), nuevoEstado);
+      setData(await obtenerDashboard(MESES[mesIndex], String(anio)));
+      Swal.fire({
+        icon: "success",
+        title: cerrando ? "Mes cerrado" : "Mes abierto",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo cambiar el estado del mes",
+        text: error instanceof Error ? error.message : "Error desconocido",
+      });
+    } finally {
+      setGuardandoMes(false);
+    }
+  };
 
   /* =========================
      Fade al cambiar de mes
@@ -468,17 +513,22 @@ export default function Home() {
               <h1 className="text-2xl sm:text-4xl font-black text-center">
                 {MESES[mesIndex]}
               </h1>
-              {/* C4: estado del mes (En proceso / Cerrado) */}
+              {/* C4: estado del mes — el select abre/cierra el mes */}
               {data.estadoMes && (
-                <span
-                  className={`badge badge-sm sm:badge-md ${
+                <select
+                  value={data.estadoMes}
+                  onChange={(e) => cambiarEstadoMesHandler(e.target.value)}
+                  disabled={guardandoMes}
+                  aria-label="Estado del mes (abrir o cerrar)"
+                  className={`select select-xs sm:select-sm font-semibold ${
                     data.estadoMes === "Cerrado"
-                      ? "badge-success"
-                      : "badge-warning"
+                      ? "select-success"
+                      : "select-warning"
                   }`}
                 >
-                  {data.estadoMes}
-                </span>
+                  <option value="En proceso">En proceso</option>
+                  <option value="Cerrado">Cerrado</option>
+                </select>
               )}
             </div>
 
@@ -503,9 +553,10 @@ export default function Home() {
                 <Wallet size={22} className="text-info" />
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] sm:text-xs uppercase font-black text-base-content/70">
-                  Presupuestado en {MESES[mesIndex]}
-                </span>
+                  <span className="text-[10px] sm:text-xs uppercase font-black text-base-content/70">
+                    Presupuestado en {MESES[mesIndex]}{" "}
+                    <InfoTip text="Suma de los presupuestos de todos los proyectos asignados a este mes." />
+                  </span>
                 <span className="block font-black text-2xl sm:text-3xl text-info leading-tight truncate">
                   ₵{formatNumber(data.presupuestoTotal)}
                 </span>
@@ -533,12 +584,13 @@ export default function Home() {
                     <Percent size={22} className="text-warning" />
                   </div>
                   <span className="text-[10px] sm:text-xs uppercase font-black text-base-content/70">
-                    Gastos administrativos sobre presupuesto
+                    Gastos administrativos sobre presupuesto{" "}
+                    <InfoTip text="Gastos administrativos del mes ÷ presupuesto total de los proyectos del mes." />
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2 sm:gap-3 ms-auto">
                   <span className="font-black text-warning text-5xl sm:text-6xl leading-none">
-                    {data.pctGastosAdministrativos.toFixed(1)}%
+                    {data.pctGastosAdministrativos.toFixed(2)}%
                   </span>
                   <span className="text-xs sm:text-sm text-base-content/70 font-semibold">
                     ₵{formatNumber(data.gastosAdministrativos)} de ₵
@@ -571,7 +623,8 @@ export default function Home() {
                     <TrendingDown size={18} />
                   </div>
                   <span className="text-xs sm:text-sm uppercase font-black">
-                    Gastado en {MESES[mesIndex]}
+                    Gastado en {MESES[mesIndex]}{" "}
+                    <InfoTip text="Suma de egresos (generales y administrativos) del mes." />
                   </span>
                 </div>
 
@@ -586,7 +639,8 @@ export default function Home() {
                 <div>
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] sm:text-xs text-base-content/70">
-                      Has gastado el {pctGasto}% de lo ingresado
+                      Has gastado el {pctGasto}% de lo ingresado{" "}
+                      <InfoTip text="Egresos del mes ÷ ingresos del mes." />
                     </span>
                   </div>
                   <progress

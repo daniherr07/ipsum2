@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
 import Swal from "sweetalert2";
-import { crearProyecto, listarBonos, listarCatalogo } from "@/lib/api";
+import { crearProyecto, listarBonos, listarCatalogo, listarProyectos } from "@/lib/api";
+import { ANOS } from "@/lib/anios";
 
 /* =========================
    FadeIn animation component
@@ -61,8 +62,6 @@ const MESES = [
   "Diciembre",
 ];
 
-const ANOS = [2024, 2025, 2026, 2027, 2028];
-
 const initialFormData = {
   nombreProyecto: "",
   presupuesto: "",
@@ -89,6 +88,7 @@ export default function AgregarProyecto() {
   const [errors, setErrors] = useState({});
   const [bonos, setBonos] = useState([]);
   const [contratistas, setContratistas] = useState([]);
+  const [proyectos, setProyectos] = useState([]);
 
   useEffect(() => {
     listarBonos()
@@ -109,7 +109,21 @@ export default function AgregarProyecto() {
           text: "Verifica que el backend esté corriendo en localhost:4000",
         });
       });
+    /* C4: proyectos para saber qué meses están cerrados y no permitir
+       crear proyectos en ellos (el backend también lo rechaza) */
+    listarProyectos()
+      .then(setProyectos)
+      .catch(() => {});
   }, []);
+
+  /* Un mes está cerrado si tiene ≥1 proyecto y todos están Finalizados */
+  const esMesCerrado = (mes, anio) => {
+    if (!mes || !anio) return false;
+    const delMes = proyectos.filter(
+      (p) => p.mesAsignacion === mes && p.anioAsignacion === String(anio)
+    );
+    return delMes.length > 0 && delMes.every((p) => p.estado === "Finalizado");
+  };
 
   const bonoSeleccionado = bonos.find((b) => b.nombre === formData.bono);
   const subtiposDisponibles = bonoSeleccionado?.subtipos ?? [];
@@ -177,6 +191,13 @@ export default function AgregarProyecto() {
     }
     if (!formData.anioAsignacion) {
       newErrors.anioAsignacion = "El año de asignación es requerido";
+    }
+    if (
+      formData.mesAsignacion &&
+      formData.anioAsignacion &&
+      esMesCerrado(formData.mesAsignacion, formData.anioAsignacion)
+    ) {
+      newErrors.mesAsignacion = `El mes de ${formData.mesAsignacion} ${formData.anioAsignacion} está cerrado. Ábralo para agregar proyectos.`;
     }
     if (!formData.bono) {
       newErrors.bono = "El bono es requerido";
@@ -328,8 +349,13 @@ export default function AgregarProyecto() {
                   >
                     <option value="">Seleccionar...</option>
                     {MESES.map((mes, index) => (
-                      <option key={index} value={mes}>
+                      <option
+                        key={index}
+                        value={mes}
+                        disabled={esMesCerrado(mes, formData.anioAsignacion)}
+                      >
                         {mes}
+                        {esMesCerrado(mes, formData.anioAsignacion) ? " (Cerrado)" : ""}
                       </option>
                     ))}
                   </select>

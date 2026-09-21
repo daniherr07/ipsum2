@@ -108,6 +108,9 @@ export type CrearMovimientoInput =
 export type Movimiento = CrearMovimientoInput & {
   id: string;
   creadoEn: string;
+  /* Mes/anio del proyecto de un egreso general (embebido por el backend) */
+  mesAsignacionProyecto?: string;
+  anioAsignacionProyecto?: string;
 };
 
 export function crearMovimiento(input: CrearMovimientoInput): Promise<Movimiento> {
@@ -290,4 +293,24 @@ export type ResumenConciliacion = {
 
 export function obtenerConciliacion(): Promise<ResumenConciliacion> {
   return apiFetch<ResumenConciliacion>("/conciliacion");
+}
+
+export type EstadoMes = "En proceso" | "Cerrado";
+
+export type ResultadoCambioMes = {
+  mes: string;
+  anio: string;
+  estado: EstadoMes;
+  proyectosActualizados: number;
+};
+
+export function cambiarEstadoMes(
+  mes: string,
+  anio: string,
+  estado: EstadoMes
+): Promise<ResultadoCambioMes> {
+  return apiFetch<ResultadoCambioMes>(
+    `/meses/${encodeURIComponent(mes)}/${encodeURIComponent(anio)}/estado`,
+    { method: "PUT", body: JSON.stringify({ estado }) }
+  );
 }
