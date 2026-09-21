@@ -1,149 +1,31 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet, ChevronLeft } from "lucide-react"
-import Link from "next/link"
-import NavBar from "@/components/navbar/NavBar"
+import React, { useEffect, useState } from "react"
+import { CalendarClock, Info, Landmark, Plus, Scale, Trash2 } from "lucide-react"
+import Swal from "sweetalert2"
+import {
+  crearItemCatalogo,
+  eliminarItemCatalogo,
+  listarCatalogo,
+  obtenerConciliacion,
+  type ItemCatalogo,
+  type MesActivo,
+} from "@/lib/api"
 
-type MonthData = { mes: string; ingresos: number; egresos: number }
-type CategoryData = { nombre: string; monto: number; tipo: "ingreso" | "egreso" }
+/* Mismo separador de miles que el resto de la app (₡1.500.000) */
+const formatNumber = (value: number) =>
+  value.toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: "always",
+  })
 
-const DATA = {
-  ingresos: 450970,
-  egresos: 900780,
-  get balance() { return this.ingresos - this.egresos },
-  
-  categorias: [
-    { nombre: "Administrativos", monto: -560000, tipo: "egreso" },
-    { nombre: "Proyectos", monto: 275000, tipo: "ingreso" },
-    { nombre: "Servicios", monto: -180000, tipo: "egreso" },
-    { nombre: "Otros", monto: -15000, tipo: "egreso" },
-  ] as CategoryData[],
-  
-  mensual: [
-    { mes: "Ago", ingresos: 320000, egresos: 280000 },
-    { mes: "Sep", ingresos: 380000, egresos: 420000 },
-    { mes: "Oct", ingresos: 290000, egresos: 350000 },
-    { mes: "Nov", ingresos: 450000, egresos: 380000 },
-    { mes: "Dic", ingresos: 520000, egresos: 610000 },
-    { mes: "Ene", ingresos: 450970, egresos: 900780 },
-  ] as MonthData[],
-}
+const formatCurrency = (value: number) => `₡${formatNumber(value)}`
 
-const AÑOS = ["2023", "2024", "2025", "2026"]
-const TIPOS_BONO = ["Todos", "RAMT", "Lote Propio", "Hipoteca", "Articulo 76"]
-
-const YEAR_SCALE: Record<string, number> = { "2023": 0.72, "2024": 0.88, "2025": 1.0, "2026": 1.18 }
-const BONO_ING_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.45, "Lote Propio": 0.25, "Hipoteca": 0.20, "Articulo 76": 0.10 }
-const BONO_EGR_SCALE: Record<string, number> = { "Todos": 1.0, "RAMT": 0.48, "Lote Propio": 0.22, "Hipoteca": 0.19, "Articulo 76": 0.11 }
-
-function getFilteredData(año: string, tipoBono: string) {
-  const ys = YEAR_SCALE[año] ?? 1.0
-  const bi = BONO_ING_SCALE[tipoBono] ?? 1.0
-  const be = BONO_EGR_SCALE[tipoBono] ?? 1.0
-  const ingresos = Math.round(DATA.ingresos * ys * bi)
-  const egresos = Math.round(DATA.egresos * ys * be)
-  return {
-    ingresos,
-    egresos,
-    balance: ingresos - egresos,
-    categorias: DATA.categorias.map(c => ({
-      ...c,
-      monto: Math.round(c.monto * ys * (c.tipo === "ingreso" ? bi : be)),
-    })) as CategoryData[],
-    mensual: DATA.mensual.map(m => ({
-      ...m,
-      ingresos: Math.round(m.ingresos * ys * bi),
-      egresos: Math.round(m.egresos * ys * be),
-    })) as MonthData[],
-  }
-}
-
-const formatCurrency = (value: number) => {
-  const prefix = value >= 0 ? "+" : ""
-  return `₵ ${prefix}${Math.abs(value).toLocaleString("es-CR")}`
-}
-
-function useAnimatedNumber(target: number, duration = 1000) {
-  const [value, setValue] = useState(0)
-
-  useEffect(() => {
-    const steps = 30
-    const increment = target / steps
-    let current = 0
-    
-    const timer = setInterval(() => {
-      current += increment
-      const done = increment > 0 ? current >= target : current <= target
-      
-      if (done) {
-        setValue(target)
-        clearInterval(timer)
-      } else {
-        setValue(Math.round(current))
-      }
-    }, duration / steps)
-    
-    return () => clearInterval(timer)
-  }, [target, duration])
-
-  return value
-}
-
-function useDelayedState<T>(initialValue: T, targetValue: T, delay: number) {
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setValue(targetValue), delay)
-    return () => clearTimeout(timer)
-  }, [targetValue, delay])
-
-  return value
-}
-
-function StatCard({ icon: Icon, label, value, colorClass, delay = 0, fullGrid = false }: {
-  icon: typeof TrendingUp
-  label: string
-  value: number
-  colorClass: string
-  delay?: number
-  fullGrid?: boolean
-}) {
-  const animatedValue = useAnimatedNumber(value)
-  const [show, setShow] = useState(false)
-
-  useEffect(() => {
-    const id = setTimeout(() => setShow(true), delay)
-    return () => clearTimeout(id)
-  }, [delay])
-
-  return (
-    <div 
-      className={`card bg-base-100 shadow-md hover:shadow-xl transition-all duration-500 ${fullGrid == true && "col-span-full"}`}
-      style={{
-        opacity: show ? 1 : 0,
-        transform: show ? "translateY(0)" : "translateY(12px)",
-        transition: "opacity 0.4s ease-out, transform 0.4s ease-out, box-shadow 0.3s",
-      }}
-    >
-      <div className="card-body p-4 lg:p-5">
-        <div className={`flex items-center gap-2 ${colorClass}`}>
-          <Icon className="size-5" />
-          <span className="text-sm font-medium">{label}</span>
-        </div>
-        <span className={`text-xl lg:text-2xl font-bold ${colorClass}`}>
-          {formatCurrency(animatedValue)}
-        </span>
-        <p className="text-xs text-base-content/60">Este mes</p>
-      </div>
-    </div>
-  )
-}
-
-function FadeIn({ children, delay = 0, className = "" }: { 
+function FadeIn({ children, delay = 0, className = "" }: {
   children: React.ReactNode
   delay?: number
-  className?: string 
+  className?: string
 }) {
   const [show, setShow] = useState(false)
 
@@ -166,261 +48,323 @@ function FadeIn({ children, delay = 0, className = "" }: {
   )
 }
 
-function LineChart({ data }: { data: MonthData[] }) {
-  const [progress, setProgress] = useState(0)
-  const [size, setSize] = useState({ width: 0, height: 0 })
-  const containerRef = React.useRef<HTMLDivElement>(null)
+export default function ControlCuentasPage() {
+  const [mesesActivos, setMesesActivos] = useState<MesActivo[]>([])
+  const [cargando, setCargando] = useState(true)
+  const [cuentas, setCuentas] = useState<ItemCatalogo[]>([])
+  const [saldos, setSaldos] = useState<Record<string, string>>({})
+  const [nuevaCuenta, setNuevaCuenta] = useState("")
+
+  /* Catálogo de cuentas bancarias: vive en el backend (Supabase), mismo
+     patrón que contratistas/proveedores/ordenes de compra. */
+  useEffect(() => {
+    listarCatalogo("cuentas-bancarias")
+      .then(setCuentas)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar las cuentas bancarias",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [])
+
+  /* Saldos digitados: se guardan en localStorage para que sobrevivan a un
+     recargo de pagina, y solo cambian si el usuario los edita. */
+  const SALDOS_STORAGE_KEY = "controlCuentasSaldos"
 
   useEffect(() => {
-    let start: number | null = null
-    let animationId: number
-    const duration = 1200
-
-    const animate = (timestamp: number) => {
-      if (!start) start = timestamp
-      const elapsed = timestamp - start
-      const t = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - t, 3)
-      setProgress(eased)
-      
-      if (t < 1) {
-        animationId = requestAnimationFrame(animate)
-      }
-    }
-
-    const delay = setTimeout(() => {
-      animationId = requestAnimationFrame(animate)
-    }, 400)
-
-    return () => {
-      clearTimeout(delay)
-      cancelAnimationFrame(animationId)
+    try {
+      const raw = localStorage.getItem(SALDOS_STORAGE_KEY)
+      if (raw) setSaldos(JSON.parse(raw))
+    } catch {
+      // localStorage no disponible o dato corrupto: arranca vacio, sin romper la pagina
     }
   }, [])
 
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
+    try {
+      localStorage.setItem(SALDOS_STORAGE_KEY, JSON.stringify(saldos))
+    } catch {
+      // localStorage no disponible (ej. modo privado): no hay nada que persistir
+    }
+  }, [saldos])
 
-    const observer = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect
-      setSize({ width, height })
-    })
-
-    observer.observe(container)
-    return () => observer.disconnect()
+  /* Balance acumulado de los meses con proyectos activos: una sola llamada
+     al backend (antes era listarProyectos + un GET /dashboard por cada mes
+     activo, patron N+1). Un mes cerrado (todos sus proyectos "Finalizado")
+     ya viene excluido por el backend. */
+  useEffect(() => {
+    obtenerConciliacion()
+      .then((res) => setMesesActivos(res.mesesActivos))
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo cargar el balance de los meses activos",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+      .finally(() => setCargando(false))
   }, [])
 
-  const chart = useMemo(() => {
-    if (size.width === 0 || size.height === 0) return null
+  /* Formato de los saldos: aceptan digitos con una coma decimal y hasta
+     2 centimos (₡1.500,25), para poder digitar el saldo exacto del
+     estado de cuenta. Se guardan en localStorage (ver arriba). */
+  const SALDO_REGEX = /^\d*(,\d{0,2})?$/
 
-    const values = data.flatMap(d => [d.ingresos, d.egresos])
-    const max = Math.max(...values)
-    const min = Math.min(...values) * 0.85
-    const padding = { top: 8, bottom: 8 }
-    const chartHeight = size.height - padding.top - padding.bottom
+  const saldoDe = (id: string) => {
+    /* El valor guardado puede venir formateado con puntos de miles
+       (ej. "1.500.000,00" despues del blur) o crudo sin formatear
+       (ej. "1500000" mientras se escribe) - hay que quitar los puntos
+       de miles ANTES de convertir la coma decimal a punto, si no
+       "1.500.000,00" -> "1.500.000.00" (dos puntos) y parseFloat
+       trunca en el primer error, devolviendo 1.5 en vez de 1500000. */
+    const crudo = (saldos[id] ?? "").replace(/\./g, "").replace(",", ".")
+    const num = parseFloat(crudo)
+    return Number.isFinite(num) ? num : 0
+  }
 
-    const normalize = (v: number) => padding.top + chartHeight - ((v - min) / (max - min)) * chartHeight
+  /* Redondeo a céntimos para evitar residuos de punto flotante al comparar contra cero */
+  const redondear = (n: number) => Math.round(n * 100) / 100
 
-    const ingresos = data.map((d, i) => ({
-      x: (i / (data.length - 1)) * size.width,
-      y: normalize(d.ingresos),
+  const totalBancos = redondear(cuentas.reduce((sum, c) => sum + saldoDe(c.id), 0))
+  const balanceMesesActivos = redondear(mesesActivos.reduce((sum, m) => sum + m.balance, 0))
+  const diferencia = redondear(totalBancos - balanceMesesActivos)
+  const todosEnCero = cuentas.every((c) => saldoDe(c.id) === 0)
+
+  const handleSaldoChange = (id: string, value: string) => {
+    const limpio = value.replace(/[^\d,]/g, "").replace(/,(?=.*,)/, "")
+    if (!SALDO_REGEX.test(limpio)) return
+    setSaldos((prev) => ({ ...prev, [id]: limpio }))
+  }
+
+  /* Formato de miles solo al salir del campo, para no mover el cursor mientras digita */
+  const formatearSaldo = (id: string) => {
+    const crudo = saldos[id]
+    if (crudo === undefined) return
+    const num = saldoDe(id)
+    setSaldos((prev) => ({
+      ...prev,
+      [id]: num.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     }))
+  }
 
-    const egresos = data.map((d, i) => ({
-      x: (i / (data.length - 1)) * size.width,
-      y: normalize(d.egresos),
-    }))
+  const handleAgregarCuenta = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const nombre = nuevaCuenta.trim()
+    if (!nombre) return
+    if (cuentas.some((c) => c.nombre.toLowerCase() === nombre.toLowerCase())) {
+      Swal.fire({ icon: "warning", title: "Esa cuenta ya existe", text: nombre })
+      return
+    }
+    try {
+      const cuenta = await crearItemCatalogo("cuentas-bancarias", nombre)
+      setCuentas((prev) => [...prev, cuenta])
+      setNuevaCuenta("")
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo agregar la cuenta",
+        text: error instanceof Error ? error.message : "Error desconocido",
+      })
+    }
+  }
 
-    const toPath = (pts: { x: number; y: number }[]) =>
-      pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ")
-
-    const toArea = (pts: { x: number; y: number }[]) =>
-      `${toPath(pts)} L${size.width},${size.height} L0,${size.height} Z`
-
-    return { ingresos, egresos, ingresosPath: toPath(ingresos), egresosPath: toPath(egresos), ingresosArea: toArea(ingresos), egresosArea: toArea(egresos) }
-  }, [data, size])
-
-  return (
-    <div className="flex flex-col h-full gap-2">
-      <div ref={containerRef} className="flex-1 min-h-0 relative">
-        {chart && (
-          <svg width={size.width} height={size.height} className="absolute inset-0">
-            <defs>
-              <linearGradient id="gradIngresos" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" className="text-success" stopColor="currentColor" stopOpacity="0.3" />
-                <stop offset="100%" className="text-success" stopColor="currentColor" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="gradEgresos" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" className="text-error" stopColor="currentColor" stopOpacity="0.3" />
-                <stop offset="100%" className="text-error" stopColor="currentColor" stopOpacity="0" />
-              </linearGradient>
-              <clipPath id="chartClip">
-                <rect x="0" y="0" width={size.width * progress} height={size.height} />
-              </clipPath>
-            </defs>
-
-            {[0.25, 0.5, 0.75].map(pct => (
-              <line 
-                key={pct} 
-                x1="0" 
-                y1={size.height * pct} 
-                x2={size.width} 
-                y2={size.height * pct} 
-                className="stroke-base-content/10" 
-                strokeWidth="1" 
-              />
-            ))}
-
-            <g clipPath="url(#chartClip)">
-              <path d={chart.ingresosArea} fill="url(#gradIngresos)" />
-              <path d={chart.egresosArea} fill="url(#gradEgresos)" />
-              <path d={chart.ingresosPath} fill="none" className="stroke-success" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d={chart.egresosPath} fill="none" className="stroke-error" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-
-              {chart.ingresos.map((p, i) => (
-                <circle key={`i${i}`} cx={p.x} cy={p.y} r="5" className="fill-success" />
-              ))}
-              {chart.egresos.map((p, i) => (
-                <circle key={`e${i}`} cx={p.x} cy={p.y} r="5" className="fill-error" />
-              ))}
-            </g>
-          </svg>
-        )}
-      </div>
-
-      <div className="flex justify-between shrink-0 px-1">
-        {data.map(d => (
-          <span key={d.mes} className="text-xs text-base-content/60">{d.mes}</span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function SummaryStats({ mensual }: { mensual: MonthData[] }) {
-  const nets = mensual.map(m => ({ mes: m.mes, net: m.ingresos - m.egresos }))
-  const best = nets.reduce((a, b) => a.net > b.net ? a : b, nets[0])
-  const worst = nets.reduce((a, b) => a.net < b.net ? a : b, nets[0])
-  const avgIngresos = Math.round(mensual.reduce((s, m) => s + m.ingresos, 0) / mensual.length)
-  return (
-    <div className="stats stats-vertical w-full bg-base-100 mt-2">
-      <div className="stat p-2 lg:p-3">
-        <div className="stat-title text-xs">Mejor mes</div>
-        <div className="stat-value text-success text-base lg:text-lg">{best?.mes ?? "—"}</div>
-        <div className="stat-desc text-xs">{formatCurrency(best?.net ?? 0)} neto</div>
-      </div>
-      <div className="stat p-2 lg:p-3">
-        <div className="stat-title text-xs">Peor mes</div>
-        <div className="stat-value text-error text-base lg:text-lg">{worst?.mes ?? "—"}</div>
-        <div className="stat-desc text-xs">{formatCurrency(worst?.net ?? 0)} neto</div>
-      </div>
-      <div className="stat p-2 lg:p-3">
-        <div className="stat-title text-xs">Promedio mensual</div>
-        <div className="stat-value text-primary text-base lg:text-lg">₵{(avgIngresos / 1000).toFixed(0)}K</div>
-        <div className="stat-desc text-xs">Ingresos</div>
-      </div>
-    </div>
-  )
-}
-
-export default function StatsPage() {
-  const [filtroAño, setFiltroAño] = useState("2025")
-  const [filtroTipoBono, setFiltroTipoBono] = useState("Todos")
-
-  const filteredData = useMemo(
-    () => getFilteredData(filtroAño, filtroTipoBono),
-    [filtroAño, filtroTipoBono]
-  )
+  const handleEliminarCuenta = async (id: string) => {
+    try {
+      await eliminarItemCatalogo("cuentas-bancarias", id)
+      setCuentas((prev) => prev.filter((c) => c.id !== id))
+      setSaldos((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "No se pudo eliminar la cuenta",
+        text: error instanceof Error ? error.message : "Error desconocido",
+      })
+    }
+  }
 
   return (
-    <>
-      <div className="h-svh flex flex-col bg-base-200 overflow-hidden">
-
+    <div className="h-svh flex flex-col bg-base-200 overflow-hidden">
       <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
         <div className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-5">
 
-          {/* Filtros */}
-          <FadeIn delay={0} className="card bg-base-100 shadow-sm shrink-0">
-            <div className="card-body p-3 lg:p-4">
-              <div className="flex flex-wrap gap-4 items-center">
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium text-base-content/60 uppercase tracking-wide whitespace-nowrap">Año</label>
-                  <select
-                    className="select select-sm select-bordered"
-                    value={filtroAño}
-                    onChange={e => setFiltroAño(e.target.value)}
-                  >
-                    {AÑOS.map(y => (
-                      <option key={y} value={y}>{y}</option>
+          {/* Título */}
+          <FadeIn delay={0}>
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Scale className="size-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold">Control de Cuentas</h1>
+                <p className="text-sm text-base-content/60">
+                  Conciliación: saldos bancarios vs. balance de meses activos
+                </p>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Resultado del "versus" */}
+          <FadeIn
+            delay={80}
+            className={`card shadow-md border-2 transition-colors ${
+              diferencia >= 0
+                ? "border-success/40 bg-success/5"
+                : "border-error/40 bg-error/5"
+            }`}
+          >
+            <div className="card-body p-4 lg:p-6 gap-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h2 className="card-title text-sm lg:text-base flex items-center gap-2">
+                  <Scale className="size-5" />
+                  Diferencia (bancos − aplicación)
+                </h2>
+                <span className={`badge badge-lg ${diferencia >= 0 ? "badge-success" : "badge-error"}`}>
+                  {diferencia === 0
+                    ? "Cuadra exacto"
+                    : diferencia > 0
+                      ? "Sobra en bancos"
+                      : "Falta en bancos"}
+                </span>
+              </div>
+              <span className={`text-4xl lg:text-5xl font-black ${diferencia >= 0 ? "text-success" : "text-error"}`}>
+                {diferencia > 0 ? "+" : ""}{formatCurrency(diferencia)}
+              </span>
+              <div className="grid grid-cols-2 gap-3 mt-1">
+                <div className="rounded-lg bg-base-100 p-3 shadow-sm">
+                  <p className="text-xs text-base-content/60 uppercase tracking-wide">Total en bancos</p>
+                  <p className="text-lg lg:text-xl font-bold">{formatCurrency(totalBancos)}</p>
+                </div>
+                <div className="rounded-lg bg-base-100 p-3 shadow-sm">
+                  <p className="text-xs text-base-content/60 uppercase tracking-wide">Balance meses activos</p>
+                  <p className="text-lg lg:text-xl font-bold">{formatCurrency(balanceMesesActivos)}</p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
+
+            {/* Balance de meses activos */}
+            <FadeIn delay={160} className="card bg-base-100 shadow-md">
+              <div className="card-body p-4 lg:p-5 gap-3">
+                <h2 className="card-title text-sm lg:text-base flex items-center gap-2">
+                  <CalendarClock className="size-5 text-primary" />
+                  Balance de meses activos
+                </h2>
+                {cargando ? (
+                  <div className="flex justify-center py-8">
+                    <span className="loading loading-spinner loading-md text-primary" />
+                  </div>
+                ) : mesesActivos.length === 0 ? (
+                  <p className="text-sm text-base-content/60 py-4 text-center">
+                    No hay meses con proyectos activos
+                  </p>
+                ) : (
+                  <ul className="flex flex-col divide-y divide-base-200">
+                    {mesesActivos.map((m) => (
+                      <li
+                        key={`${m.mes}-${m.anio}`}
+                        className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{m.mes} {m.anio}</span>
+                          <span className="badge badge-warning badge-sm whitespace-nowrap">En proceso</span>
+                        </div>
+                        <span className={`font-bold text-sm ${m.balance >= 0 ? "text-success" : "text-error"}`}>
+                          {formatCurrency(m.balance)}
+                        </span>
+                      </li>
                     ))}
-                  </select>
+                  </ul>
+                )}
+                <div className="flex items-center justify-between border-t border-base-200 pt-3 mt-auto">
+                  <span className="text-sm font-semibold">Total acumulado</span>
+                  <span className={`text-lg font-black ${balanceMesesActivos >= 0 ? "text-success" : "text-error"}`}>
+                    {formatCurrency(balanceMesesActivos)}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium text-base-content/60 uppercase tracking-wide whitespace-nowrap">Tipo de Bono</label>
-                  <select
-                    className="select select-sm select-bordered"
-                    value={filtroTipoBono}
-                    onChange={e => setFiltroTipoBono(e.target.value)}
+                <p className="text-xs text-base-content/50">
+                  Los meses cerrados (todos sus proyectos finalizados) se excluyen del cálculo.
+                </p>
+              </div>
+            </FadeIn>
+
+            {/* Cuentas bancarias */}
+            <FadeIn delay={240} className="card bg-base-100 shadow-md">
+              <div className="card-body p-4 lg:p-5 gap-3">
+                <h2 className="card-title text-sm lg:text-base flex items-center gap-2">
+                  <Landmark className="size-5 text-primary" />
+                  Cuentas bancarias
+                </h2>
+                {todosEnCero && (
+                  <div className="alert alert-info py-2 px-3 text-sm">
+                    <Info className="size-4 shrink-0" />
+                    <span>Ingrese los valores de las cuentas</span>
+                  </div>
+                )}
+                <ul className="flex flex-col gap-2">
+                  {cuentas.map((c) => (
+                    <li key={c.id} className="flex items-center gap-2">
+                      <span
+                        className="text-sm font-medium w-32 sm:w-40 truncate shrink-0"
+                        title={c.nombre}
+                      >
+                        {c.nombre}
+                      </span>
+                      <label className="input input-bordered input-sm flex items-center gap-2 grow">
+                        <span className="text-primary font-bold">₡</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          className="grow text-right"
+                          placeholder="0,00"
+                          aria-label={`Saldo de ${c.nombre}`}
+                          value={saldos[c.id] ?? ""}
+                          onChange={(e) => handleSaldoChange(c.id, e.target.value)}
+                          onBlur={() => formatearSaldo(c.id)}
+                        />
+                      </label>
+                      <button
+                        className="btn btn-ghost btn-circle btn-sm text-error"
+                        onClick={() => handleEliminarCuenta(c.id)}
+                        aria-label={`Eliminar ${c.nombre}`}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <form onSubmit={handleAgregarCuenta} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    className="input input-bordered input-sm grow"
+                    placeholder="Nueva cuenta (ej: Banco Popular)"
+                    value={nuevaCuenta}
+                    onChange={(e) => setNuevaCuenta(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-sm gap-1"
+                    disabled={!nuevaCuenta.trim()}
                   >
-                    {TIPOS_BONO.map(t => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
+                    <Plus className="size-4" />
+                    Agregar
+                  </button>
+                </form>
+                <div className="flex items-center justify-between border-t border-base-200 pt-3 mt-auto">
+                  <span className="text-sm font-semibold">Total en bancos</span>
+                  <span className="text-lg font-black">{formatCurrency(totalBancos)}</span>
                 </div>
               </div>
-            </div>
-          </FadeIn>
-
-          <section className="grid grid-cols-2 gap-3 lg:gap-5 shrink-0">
-            <StatCard 
-              icon={TrendingUp} 
-              label="Ingresos" 
-              value={filteredData.ingresos} 
-              colorClass="text-success"
-              delay={80}
-            />
-            <StatCard 
-              icon={TrendingDown} 
-              label="Egresos" 
-              value={-filteredData.egresos} 
-              colorClass="text-error"
-              delay={160}
-            />
-            <StatCard 
-              icon={Wallet} 
-              label="Balance" 
-              value={filteredData.balance} 
-              colorClass={filteredData.balance >= 0 ? "text-success" : "text-error"}
-              delay={240}
-              fullGrid={true}
-            />
-          </section>
-
-          <FadeIn delay={280} className="card bg-base-100 shadow-md shrink-0">
-            <div className="card-body p-4 lg:p-5">
-              <div className="flex items-center justify-between">
-                <h2 className="card-title text-sm lg:text-base">Comparación Mensual</h2>
-                <div className="flex gap-2">
-                  <span className="badge badge-success badge-sm">Ingresos</span>
-                  <span className="badge badge-error badge-sm">Egresos</span>
-                </div>
-              </div>
-              <div className="h-40 lg:h-52 mt-3">
-                <LineChart data={filteredData.mensual} />
-              </div>
-            </div>
-          </FadeIn>
-
-          <FadeIn delay={380} className="card bg-base-100 shadow-md shrink-0">
-            <div className="card-body p-4 lg:p-5">
-              <h2 className="card-title text-sm lg:text-base">Resumen del Período</h2>
-              <SummaryStats mensual={filteredData.mensual} />
-            </div>
-          </FadeIn>
+            </FadeIn>
+          </div>
         </div>
       </main>
-      </div>
-    </>
+    </div>
   )
 }
