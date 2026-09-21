@@ -16,7 +16,7 @@ const helmet = ((helmetImport as unknown as { default?: typeof helmetImport }).d
 const app = express();
 const PORT = process.env.PORT ?? 4000;
 
-const origenesPermitidos = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3000")
+const origenesPermitidos = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3000,https://ipsum2.vercel.app")
   .split(",")
   .map((origen) => origen.trim())
   .filter(Boolean);
