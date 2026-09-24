@@ -89,6 +89,7 @@ export default function AgregarProyecto() {
   const [bonos, setBonos] = useState([]);
   const [contratistas, setContratistas] = useState([]);
   const [proyectos, setProyectos] = useState([]);
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     listarBonos()
@@ -212,9 +213,11 @@ export default function AgregarProyecto() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (guardando) return;
     if (!validateForm()) return;
 
     try {
+      setGuardando(true);
       await crearProyecto({
         nombre: formData.nombreProyecto,
         presupuesto: Number(formData.presupuesto),
@@ -244,6 +247,8 @@ export default function AgregarProyecto() {
         icon: "error",
         confirmButtonText: "Aceptar",
       });
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -458,8 +463,12 @@ export default function AgregarProyecto() {
 
               {/* Botones */}
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="btn btn-primary flex-1">
-                  Crear Proyecto
+                <button
+                  type="submit"
+                  className="btn btn-primary flex-1"
+                  disabled={guardando}
+                >
+                  {guardando ? "Guardando..." : "Crear Proyecto"}
                 </button>
                 <Link href="/" className="btn btn-ghost flex-1">
                   Cancelar

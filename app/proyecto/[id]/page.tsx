@@ -763,12 +763,16 @@ export default function ProyectoPage() {
                   Presupuesto utilizado{" "}
                   <InfoTip text="Porcentaje del presupuesto consumido: egresos del proyecto ÷ presupuesto del proyecto." />
                 </span>
-                <span className="font-bold">{totales.pctUso}%</span>
+                <span className="font-bold">
+                  {proyecto.presupuesto > 0
+                    ? `${totales.pctUso}%`
+                    : "Sin presupuesto definido"}
+                </span>
               </div>
               <progress
                 className="progress progress-primary w-full h-2"
-                value={totales.egresos}
-                max={proyecto.presupuesto}
+                value={proyecto.presupuesto > 0 ? totales.egresos : 0}
+                max={proyecto.presupuesto > 0 ? proyecto.presupuesto : 1}
               />
               <div className="flex justify-between text-[11px] sm:text-xs mt-1 text-base-content/60">
                 <span>Gastado: {formatCurrency(totales.egresos)}</span>
@@ -842,7 +846,11 @@ export default function ProyectoPage() {
             value={totales.disponible}
             color={totales.disponible >= 0 ? "success" : "error"}
             delay={250}
-            subtitle={`${totales.pctUso}% utilizado`}
+            subtitle={
+              proyecto.presupuesto > 0
+                ? `${totales.pctUso}% utilizado`
+                : "Sin presupuesto definido"
+            }
             hint="Presupuesto del proyecto − egresos del proyecto."
           />
           {/* M5: ganancia = ingresos − egresos (campo derivado del backend;

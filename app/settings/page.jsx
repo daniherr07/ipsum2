@@ -43,6 +43,7 @@ function FadeIn({ children, delay = 0, className = "" }) {
 
 function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
   const [nombre, setNombre] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -50,16 +51,23 @@ function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
     } else {
       setNombre("");
     }
+    setGuardando(false);
   }, [initialData, isOpen]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (guardando) return;
     if (!nombre.trim()) {
       Swal.fire("Error", "El nombre no puede estar vacío", "error");
       return;
     }
-    onSubmit(nombre.trim());
-    setNombre("");
+    try {
+      setGuardando(true);
+      await onSubmit(nombre.trim());
+      setNombre("");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -83,11 +91,11 @@ function FormModal({ isOpen, onClose, onSubmit, title, initialData }) {
             />
           </div>
           <div className="modal-action">
-            <button type="button" onClick={onClose} className="btn btn-ghost">
+            <button type="button" onClick={onClose} className="btn btn-ghost" disabled={guardando}>
               Cancelar
             </button>
-            <button type="submit" className="btn btn-primary">
-              Guardar
+            <button type="submit" className="btn btn-primary" disabled={guardando}>
+              {guardando ? "Guardando..." : "Guardar"}
             </button>
           </div>
         </form>

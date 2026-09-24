@@ -141,6 +141,7 @@ function AgregarMovimientoContenido() {
   const [componenteOC, setComponenteOC] = useState("")
   const [componenteProveedor, setComponenteProveedor] = useState("")
   const [componenteDescripcion, setComponenteDescripcion] = useState("")
+  const [guardando, setGuardando] = useState(false)
 
   // Catalogo real de ordenes de compra (antes eran opciones OC1/OC2/OC3
   // escritas a mano, que no existian en el catalogo real y el backend
@@ -459,6 +460,8 @@ function AgregarMovimientoContenido() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (guardando) return
+
     if (esEgreso) {
       if (componentes.length === 0) {
         Swal.fire({
@@ -481,6 +484,7 @@ function AgregarMovimientoContenido() {
       }
 
       try {
+        setGuardando(true)
         for (const c of componentes) {
           if (c.tipo === "egreso-general") {
             await crearMovimiento({
@@ -525,9 +529,12 @@ function AgregarMovimientoContenido() {
           text: error instanceof Error ? error.message : "Error desconocido",
           confirmButtonColor: "#dc2626",
         })
+      } finally {
+        setGuardando(false)
       }
     } else {
       try {
+        setGuardando(true)
         await crearMovimiento({
           tipo: "ingreso",
           proyectoId: proyectoSeleccionado,
@@ -558,6 +565,8 @@ function AgregarMovimientoContenido() {
           text: error instanceof Error ? error.message : "Error desconocido",
           confirmButtonColor: "#16a34a",
         })
+      } finally {
+        setGuardando(false)
       }
     }
   }
@@ -1189,10 +1198,10 @@ function AgregarMovimientoContenido() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  disabled={esEgreso && restante < 0}
+                  disabled={guardando || (esEgreso && restante < 0)}
                   className={`btn flex-1 ${esEgreso ? "btn-error" : "btn-success"}`}
                 >
-                  Guardar Movimiento
+                  {guardando ? "Guardando..." : "Guardar Movimiento"}
                 </button>
                 <Link href="/" className="btn btn-ghost flex-1">
                   Cancelar

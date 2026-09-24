@@ -207,6 +207,7 @@ export default function MovimientosPage() {
      no coincidian exactamente con un elemento del catalogo) */
   const [ordenesCompra, setOrdenesCompra] = useState([]);
   const [proveedores, setProveedores] = useState([]);
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     listarCatalogo("ordenes-compra").then(setOrdenesCompra).catch(() => {});
@@ -214,7 +215,7 @@ export default function MovimientosPage() {
   }, []);
 
   const handleSave = async () => {
-    if (!editingItem) return;
+    if (!editingItem || guardando) return;
 
     let payload;
     if (editingItem.tipo === "ingreso") {
@@ -249,6 +250,7 @@ export default function MovimientosPage() {
     }
 
     try {
+      setGuardando(true);
       await actualizarMovimiento(editingItem.id, payload);
       closeEditModal();
       cargarMovimientos();
@@ -258,6 +260,8 @@ export default function MovimientosPage() {
         title: "No se pudo guardar",
         text: error.message,
       });
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -783,11 +787,11 @@ export default function MovimientosPage() {
             </div>
 
             <div className="modal-action mt-3">
-              <button className="btn btn-sm btn-ghost" onClick={closeEditModal}>
+              <button className="btn btn-sm btn-ghost" onClick={closeEditModal} disabled={guardando}>
                 Cancelar
               </button>
-              <button className="btn btn-sm btn-primary" onClick={handleSave}>
-                Guardar
+              <button className="btn btn-sm btn-primary" onClick={handleSave} disabled={guardando}>
+                {guardando ? "Guardando..." : "Guardar"}
               </button>
             </div>
           </div>

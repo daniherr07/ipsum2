@@ -54,6 +54,7 @@ export default function ControlCuentasPage() {
   const [cuentas, setCuentas] = useState<ItemCatalogo[]>([])
   const [saldos, setSaldos] = useState<Record<string, string>>({})
   const [nuevaCuenta, setNuevaCuenta] = useState("")
+  const [guardandoCuenta, setGuardandoCuenta] = useState(false)
 
   /* Catálogo de cuentas bancarias: vive en el backend (Supabase), mismo
      patrón que contratistas/proveedores/ordenes de compra. */
@@ -129,7 +130,11 @@ export default function ControlCuentasPage() {
 
   const totalBancos = redondear(cuentas.reduce((sum, c) => sum + saldoDe(c.id), 0))
   const balanceMesesActivos = redondear(mesesActivos.reduce((sum, m) => sum + m.balance, 0))
-  const diferencia = redondear(totalBancos - balanceMesesActivos)
+  /* La comparación es contra la magnitud del resultado: con pérdida, los bancos
+     deben alcanzar a cubrirla (bancos − |balance|); con ganancia es idéntico a
+     bancos − balance. Sobra = plata en bancos sin movimientos que la expliquen;
+     falta = los bancos no cubren el resultado registrado. */
+  const diferencia = redondear(totalBancos - Math.abs(balanceMesesActivos))
   const todosEnCero = cuentas.every((c) => saldoDe(c.id) === 0)
 
   const handleSaldoChange = (id: string, value: string) => {
@@ -151,6 +156,7 @@ export default function ControlCuentasPage() {
 
   const handleAgregarCuenta = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (guardandoCuenta) return
     const nombre = nuevaCuenta.trim()
     if (!nombre) return
     if (cuentas.some((c) => c.nombre.toLowerCase() === nombre.toLowerCase())) {
@@ -158,6 +164,7 @@ export default function ControlCuentasPage() {
       return
     }
     try {
+      setGuardandoCuenta(true)
       const cuenta = await crearItemCatalogo("cuentas-bancarias", nombre)
       setCuentas((prev) => [...prev, cuenta])
       setNuevaCuenta("")
@@ -167,10 +174,43 @@ export default function ControlCuentasPage() {
         title: "No se pudo agregar la cuenta",
         text: error instanceof Error ? error.message : "Error desconocido",
       })
+    } finally {
+      setGuardandoCuenta(false)
     }
   }
 
   const handleEliminarCuenta = async (id: string) => {
+    const nombre = cuentas.find((c) => c.id === id)?.nombre ?? "esta cuenta"
+    const saldo = redondear(saldoDe(id))
+
+    /* Una cuenta con saldo digitado no se elimina: primero hay que dejarla en cero,
+       para no perder de vista el monto al conciliar. */
+    if (saldo !== 0) {
+      await Swal.fire({
+        icon: "warning",
+        title: "No se puede eliminar",
+        text: `La cuenta "${nombre}" tiene un saldo de ₡${saldo.toLocaleString("es-ES", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}. Para eliminarla, primero ingresá el saldo en ₡0,00.`,
+        confirmButtonColor: "#035496",
+      })
+      return
+    }
+
+    const resultado = await Swal.fire({
+      icon: "warning",
+      title: "¿Eliminar cuenta?",
+      text: `Se eliminará "${nombre}". Esta acción no se puede deshacer.`,
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+    })
+
+    if (!resultado.isConfirmed) return
+
     try {
       await eliminarItemCatalogo("cuentas-bancarias", id)
       setCuentas((prev) => prev.filter((c) => c.id !== id))
@@ -212,9 +252,11 @@ export default function ControlCuentasPage() {
           <FadeIn
             delay={80}
             className={`card shadow-md border-2 transition-colors ${
-              diferencia >= 0
-                ? "border-success/40 bg-success/5"
-                : "border-error/40 bg-error/5"
+              todosEnCero
+                ? "border-base-300 bg-base-100"
+                : diferencia >= 0
+                  ? "border-success/40 bg-success/5"
+                  : "border-error/40 bg-error/5"
             }`}
           >
             <div className="card-body p-4 lg:p-6 gap-3">
@@ -223,24 +265,44 @@ export default function ControlCuentasPage() {
                   <Scale className="size-5" />
                   Diferencia (bancos − aplicación)
                 </h2>
-                <span className={`badge badge-lg ${diferencia >= 0 ? "badge-success" : "badge-error"}`}>
-                  {diferencia === 0
-                    ? "Cuadra exacto"
-                    : diferencia > 0
-                      ? "Sobra en bancos"
-                      : "Falta en bancos"}
-                </span>
+                {todosEnCero ? (
+                  <span className="badge badge-lg badge-ghost">Sin conciliar</span>
+                ) : (
+                  <span className={`badge badge-lg ${diferencia >= 0 ? "badge-success" : "badge-error"}`}>
+                    {diferencia === 0
+                      ? "Cuadra exacto"
+                      : diferencia > 0
+                        ? "Sobra en bancos"
+                        : "Falta en bancos"}
+                  </span>
+                )}
               </div>
-              <span className={`text-4xl lg:text-5xl font-black ${diferencia >= 0 ? "text-success" : "text-error"}`}>
-                {diferencia > 0 ? "+" : ""}{formatCurrency(diferencia)}
-              </span>
+              {todosEnCero ? (
+                <p className="text-base lg:text-lg font-semibold text-base-content/70">
+                  Digitá los saldos de tus cuentas para conciliar
+                </p>
+              ) : (
+                <>
+                  <span className={`text-4xl lg:text-5xl font-black ${diferencia >= 0 ? "text-success" : "text-error"}`}>
+                    {diferencia > 0 ? "+" : ""}{formatCurrency(diferencia)}
+                  </span>
+                  <p className="text-xs text-base-content/60">
+                    Bancos menos el resultado registrado. «Sobra» = hay plata en bancos sin movimientos
+                    que la expliquen; «falta» = los bancos no alcanzan a cubrir lo registrado.
+                  </p>
+                </>
+              )}
               <div className="grid grid-cols-2 gap-3 mt-1">
                 <div className="rounded-lg bg-base-100 p-3 shadow-sm">
                   <p className="text-xs text-base-content/60 uppercase tracking-wide">Total en bancos</p>
                   <p className="text-lg lg:text-xl font-bold">{formatCurrency(totalBancos)}</p>
                 </div>
                 <div className="rounded-lg bg-base-100 p-3 shadow-sm">
-                  <p className="text-xs text-base-content/60 uppercase tracking-wide">Balance meses activos</p>
+                  <p className="text-xs text-base-content/60 uppercase tracking-wide">
+                    {balanceMesesActivos >= 0
+                      ? "Ganancia registrada (meses activos)"
+                      : "Pérdida registrada (meses activos)"}
+                  </p>
                   <p className="text-lg lg:text-xl font-bold">{formatCurrency(balanceMesesActivos)}</p>
                 </div>
               </div>
@@ -271,21 +333,52 @@ export default function ControlCuentasPage() {
                         key={`${m.mes}-${m.anio}`}
                         className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
                       >
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm">{m.mes} {m.anio}</span>
-                          <span className="badge badge-warning badge-sm whitespace-nowrap">En proceso</span>
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">{m.mes} {m.anio}</span>
+                            <span className="badge badge-warning badge-sm whitespace-nowrap">En proceso</span>
+                          </div>
+                          <span className="text-xs text-base-content/60">
+                            Ingresos: {formatCurrency(m.ingresos)} · Egresos: {formatCurrency(m.egresos)}
+                          </span>
                         </div>
-                        <span className={`font-bold text-sm ${m.balance >= 0 ? "text-success" : "text-error"}`}>
-                          {formatCurrency(m.balance)}
+                        <span
+                          className={`font-bold text-sm whitespace-nowrap ${
+                            m.balance > 0
+                              ? "text-success"
+                              : m.balance < 0
+                                ? "text-error"
+                                : "text-base-content/60"
+                          }`}
+                        >
+                          {m.balance > 0
+                            ? `Ganancia: ${formatCurrency(m.balance)}`
+                            : m.balance < 0
+                              ? `Pérdida: ${formatCurrency(Math.abs(m.balance))}`
+                              : "Sin movimiento"}
                         </span>
                       </li>
                     ))}
                   </ul>
                 )}
                 <div className="flex items-center justify-between border-t border-base-200 pt-3 mt-auto">
-                  <span className="text-sm font-semibold">Total acumulado</span>
-                  <span className={`text-lg font-black ${balanceMesesActivos >= 0 ? "text-success" : "text-error"}`}>
-                    {formatCurrency(balanceMesesActivos)}
+                  <span className="text-sm font-semibold">
+                    {balanceMesesActivos > 0
+                      ? "Ganancia acumulada (meses activos)"
+                      : balanceMesesActivos < 0
+                        ? "Pérdida acumulada (meses activos)"
+                        : "Balance en cero"}
+                  </span>
+                  <span
+                    className={`text-lg font-black ${
+                      balanceMesesActivos > 0
+                        ? "text-success"
+                        : balanceMesesActivos < 0
+                          ? "text-error"
+                          : "text-base-content/60"
+                    }`}
+                  >
+                    {formatCurrency(Math.abs(balanceMesesActivos))}
                   </span>
                 </div>
                 <p className="text-xs text-base-content/50">
@@ -350,10 +443,10 @@ export default function ControlCuentasPage() {
                   <button
                     type="submit"
                     className="btn btn-primary btn-sm gap-1"
-                    disabled={!nuevaCuenta.trim()}
+                    disabled={!nuevaCuenta.trim() || guardandoCuenta}
                   >
                     <Plus className="size-4" />
-                    Agregar
+                    {guardandoCuenta ? "Agregando..." : "Agregar"}
                   </button>
                 </form>
                 <div className="flex items-center justify-between border-t border-base-200 pt-3 mt-auto">
