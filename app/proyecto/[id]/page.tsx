@@ -23,9 +23,11 @@ import {
   listarMovimientos,
   listarCatalogo,
   listarProyectos,
+  listarBonos,
   type Proyecto,
   type Movimiento,
   type ItemCatalogo,
+  type Bono,
 } from "@/lib/api"
 import { ANOS } from "@/lib/anios"
 
@@ -290,17 +292,24 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
   proyecto: Proyecto
   onGuardado: () => void
 }) {
+  const [nombre, setNombre] = useState("")
+  const [presupuesto, setPresupuesto] = useState("")
   const [presupuestoMO, setPresupuestoMO] = useState("")
   const [contratista, setContratista] = useState("")
   const [mesAsignacion, setMesAsignacion] = useState("")
   const [anioAsignacion, setAnioAsignacion] = useState("")
   const [estado, setEstado] = useState<"Revisión" | "Finalizado">("Revisión")
+  const [bono, setBono] = useState("")
+  const [subtipoBono, setSubtipoBono] = useState("")
   const [contratistas, setContratistas] = useState<ItemCatalogo[]>([])
+  const [bonos, setBonos] = useState<Bono[]>([])
   const [otrosProyectos, setOtrosProyectos] = useState<Proyecto[]>([])
   const [guardando, setGuardando] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
+    setNombre(proyecto.nombre ?? "")
+    setPresupuesto(proyecto.presupuesto ? String(proyecto.presupuesto) : "")
     setPresupuestoMO(
       proyecto.presupuestoManoObra ? String(proyecto.presupuestoManoObra) : "",
     )
@@ -308,9 +317,14 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
     setMesAsignacion(proyecto.mesAsignacion ?? "")
     setAnioAsignacion(proyecto.anioAsignacion ?? "")
     setEstado(proyecto.estado ?? "Revisión")
+    setBono(proyecto.bono ?? "")
+    setSubtipoBono(proyecto.subtipoBono ?? "")
     listarCatalogo("contratistas")
       .then(setContratistas)
       .catch(() => setContratistas([]))
+    listarBonos()
+      .then(setBonos)
+      .catch(() => setBonos([]))
     /* C4: para detectar si este proyecto es el último en proceso del mes */
     listarProyectos()
       .then(setOtrosProyectos)
@@ -327,16 +341,25 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!nombre.trim()) {
+      Swal.fire("Error", "El nombre del proyecto es requerido", "error")
+      return
+    }
+    const presupuestoTotal = Number(presupuesto)
+    if (!presupuestoTotal || presupuestoTotal <= 0) {
+      Swal.fire("Error", "El presupuesto debe ser mayor a 0", "error")
+      return
+    }
     const monto = Number(presupuestoMO)
     if (!monto || monto <= 0) {
       Swal.fire("Error", "El presupuesto de mano de obra debe ser mayor a 0", "error")
       return
     }
-    /* M1: la mano de obra no puede superar el presupuesto total del proyecto */
-    if (monto > proyecto.presupuesto) {
+    /* M1: la mano de obra no puede superar el presupuesto total editado */
+    if (monto > presupuestoTotal) {
       Swal.fire(
         "Error",
-        `El presupuesto de mano de obra no puede superar el presupuesto total (${formatCurrency(proyecto.presupuesto)})`,
+        `El presupuesto de mano de obra no puede superar el presupuesto total (${formatCurrency(presupuestoTotal)})`,
         "error",
       )
       return
@@ -347,6 +370,15 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
     }
     if (!mesAsignacion || !anioAsignacion) {
       Swal.fire("Error", "El mes y año de asignación son requeridos", "error")
+      return
+    }
+    if (!bono) {
+      Swal.fire("Error", "El bono es requerido", "error")
+      return
+    }
+    const bonoSel = bonos.find((b) => b.nombre === bono)
+    if (bonoSel && bonoSel.subtipos.length > 0 && !subtipoBono) {
+      Swal.fire("Error", "Seleccione un subtipo de bono", "error")
       return
     }
     /* C4: si este proyecto es el último en proceso del mes, al finalizarlo
@@ -373,14 +405,52 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
         if (!result.isConfirmed) return
       }
     }
+    /* Resumen de cambios + confirmación antes de guardar */
+    const resumen: string[] = []
+    if (nombre.trim() !== proyecto.nombre)
+      resumen.push(`Nombre: ${proyecto.nombre} → ${nombre.trim()}`)
+    if (presupuestoTotal !== proyecto.presupuesto)
+      resumen.push(`Presupuesto: ${formatCurrency(proyecto.presupuesto)} → ${formatCurrency(presupuestoTotal)}`)
+    if (monto !== proyecto.presupuestoManoObra)
+      resumen.push(`Presupuesto mano de obra: ${formatCurrency(proyecto.presupuestoManoObra)} → ${formatCurrency(monto)}`)
+    if (contratista.trim() !== proyecto.contratista)
+      resumen.push(`Contratista: ${proyecto.contratista} → ${contratista.trim()}`)
+    if (mesAsignacion !== proyecto.mesAsignacion || String(anioAsignacion) !== String(proyecto.anioAsignacion))
+      resumen.push(`Asignación: ${proyecto.mesAsignacion} ${proyecto.anioAsignacion} → ${mesAsignacion} ${anioAsignacion}`)
+    if (estado !== proyecto.estado)
+      resumen.push(`Estado: ${proyecto.estado} → ${estado}`)
+    if (bono !== proyecto.bono)
+      resumen.push(`Bono: ${proyecto.bono} → ${bono}`)
+    if ((subtipoBono || "") !== (proyecto.subtipoBono ?? ""))
+      resumen.push(`Subtipo: ${proyecto.subtipoBono ?? "—"} → ${subtipoBono || "—"}`)
+
+    if (resumen.length === 0) {
+      Swal.fire("Sin cambios", "No modificaste ningún dato", "info")
+      return
+    }
+    const confirmacion = await Swal.fire({
+      icon: "question",
+      title: "¿Guardar cambios en el proyecto?",
+      html: `<ul style="text-align:left">${resumen.map((c) => `<li>${c}</li>`).join("")}</ul>`,
+      showCancelButton: true,
+      confirmButtonText: "Sí, guardar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#035496",
+    })
+    if (!confirmacion.isConfirmed) return
+
     setGuardando(true)
     try {
       await actualizarProyecto(proyecto.id, {
+        nombre: nombre.trim(),
+        presupuesto: presupuestoTotal,
         presupuestoManoObra: monto,
         contratista: contratista.trim(),
         mesAsignacion,
         anioAsignacion,
         estado,
+        bono,
+        subtipoBono: subtipoBono || null,
       })
       onGuardado()
       onClose()
@@ -409,12 +479,49 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
   )
   /* El año actual puede estar fuera del rango (proyectos legacy) */
   const anioEnRango = ANOS.some((a) => String(a) === anioAsignacion)
+  /* Subtipos del bono elegido; si está vacío no se muestra el select */
+  const subtiposDelBono = bonos.find((b) => b.nombre === bono)?.subtipos ?? []
 
   return (
     <div className="modal modal-open">
       <div className="modal-box w-full max-w-md">
         <h3 className="font-bold text-lg mb-4">Editar Proyecto</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">
+                Nombre del Proyecto
+              </span>
+            </label>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
+          </div>
+
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">
+                Presupuesto Total
+              </span>
+            </label>
+            <label className="input input-bordered flex items-center gap-2 w-full">
+              <span className="text-primary font-bold">₡</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={presupuesto ? formatMonto(presupuesto) : ""}
+                onChange={(e) =>
+                  setPresupuesto(e.target.value.replace(/\D/g, ""))
+                }
+                placeholder="₡0"
+                className="grow"
+              />
+            </label>
+          </div>
+
           <div className="form-control w-full">
             <label className="label">
               <span className="label-text font-semibold">
@@ -434,9 +541,9 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
                 className="grow"
               />
             </label>
-            {/* M1: límite según presupuesto total */}
+            {/* M1: límite según el presupuesto total editado */}
             <span className="text-xs text-base-content/50 mt-1">
-              Máximo: {formatCurrency(proyecto.presupuesto)}
+              Máximo: {formatCurrency(Number(presupuesto) || 0)}
             </span>
           </div>
 
@@ -526,6 +633,57 @@ function EditarProyectoModal({ isOpen, onClose, proyecto, onGuardado }: {
               ))}
             </select>
           </div>
+
+          {/* Bono y subtipo (el subtipo se resetea al cambiar de bono) */}
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">Bono</span>
+            </label>
+            <select
+              value={bono}
+              onChange={(e) => {
+                setBono(e.target.value)
+                setSubtipoBono("")
+              }}
+              className="select select-bordered w-full"
+            >
+              <option value="">Seleccionar...</option>
+              {!bonos.some((b) => b.nombre === bono) && bono && (
+                <option value={bono}>{bono}</option>
+              )}
+              {bonos.map((b) => (
+                <option key={b.id} value={b.nombre}>
+                  {b.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {subtiposDelBono.length > 0 && (
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text font-semibold">
+                  Subtipo de Bono
+                </span>
+              </label>
+              <select
+                value={subtipoBono}
+                onChange={(e) => setSubtipoBono(e.target.value)}
+                className="select select-bordered w-full"
+              >
+                <option value="">Seleccionar...</option>
+                {!subtiposDelBono.some((s) => s.nombre === subtipoBono) &&
+                  subtipoBono && (
+                    <option value={subtipoBono}>{subtipoBono}</option>
+                  )}
+                {subtiposDelBono.map((s) => (
+                  <option key={s.id} value={s.nombre}>
+                    {s.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="modal-action">
             <button
               type="button"
@@ -761,7 +919,7 @@ export default function ProyectoPage() {
               <div className="flex justify-between text-xs sm:text-sm mb-1">
                 <span className="text-base-content/60">
                   Presupuesto utilizado{" "}
-                  <InfoTip text="Porcentaje del presupuesto consumido: egresos del proyecto ÷ presupuesto del proyecto." />
+                  <InfoTip text="Porcentaje del presupuesto consumido: egresos del proyecto ÷ presupuesto del proyecto. Si supera el 100 %, el gasto excede el presupuesto asignado." />
                 </span>
                 <span className="font-bold">
                   {proyecto.presupuesto > 0
@@ -851,7 +1009,7 @@ export default function ProyectoPage() {
                 ? `${totales.pctUso}% utilizado`
                 : "Sin presupuesto definido"
             }
-            hint="Presupuesto del proyecto − egresos del proyecto."
+            hint="Presupuesto del proyecto − egresos del proyecto. Un porcentaje sobre 100 % indica sobregiro: el disponible es negativo."
           />
           {/* M5: ganancia = ingresos − egresos (campo derivado del backend;
               si no viene, se calcula local con los totales ya cargados) */}
@@ -1019,7 +1177,15 @@ export default function ProyectoPage() {
                             <span className="text-[11px] text-base-content/60 truncate">
                               {mov.tipoEgreso === "egreso-administrativo"
                                 ? `${mov.mes} ${mov.ano}`
-                                : [mov.categoria, mov.ordenCompra]
+                                : [
+                                    new Date(mov.creadoEn).toLocaleDateString("es-ES", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    }),
+                                    mov.categoria,
+                                    mov.ordenCompra,
+                                  ]
                                     .filter(Boolean)
                                     .join(" · ")}
                             </span>

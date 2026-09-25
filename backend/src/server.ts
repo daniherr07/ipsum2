@@ -19,7 +19,9 @@ const PORT = process.env.PORT ?? 4000;
 
 const origenesPermitidos = (process.env.FRONTEND_ORIGIN ?? "http://localhost:3000,https://ipsum2.vercel.app")
   .split(",")
-  .map((origen) => origen.trim())
+  /* El Origin del navegador nunca lleva barra final; se quita para que
+     un valor tipo "http://localhost:3000/" en FRONTEND_ORIGIN no rompa CORS. */
+  .map((origen) => origen.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
 app.use(helmet());

@@ -86,14 +86,31 @@ const parseDate = (dateStr) => {
   return new Date(year, month - 1, day);
 };
 
+const MESES_NUM = Object.fromEntries(MESES.map((m, i) => [m, i + 1]));
+
+/* Fecha de negocio del movimiento: la que se muestra y la que manda en
+   ordenamiento y filtros de mes/año (no la fecha en que se digitó).
+   ponytail: egreso-general no guarda fecha elegida por el usuario; se usa la
+   fecha de registro (creadoEn). Si hace falta la fecha real del pago,
+   agregar columna `fecha` en movimientos (migración Supabase). */
+function fechaDeMovimiento(m) {
+  if (m.tipo === "ingreso") return m.fechaPago;
+  if (m.tipoEgreso === "egreso-administrativo") {
+    return `01/${String(MESES_NUM[m.mes]).padStart(2, "0")}/${m.ano}`;
+  }
+  return formatearCreatedAt(m.creadoEn);
+}
+
 /* Título visible: los egresos no tienen nombre, solo descripción */
 const getTitulo = (m) => (m.tipo === "ingreso" ? m.nombreIngreso : m.descripcion);
 
-/* Texto meta del egreso: categoría · OC  |  mes año */
+/* Texto meta del egreso: fecha + categoría · OC · proveedor  |  mes año */
 const getMetaEgreso = (m) =>
   m.tipoEgreso === "egreso-administrativo"
     ? `${m.mes} ${m.ano}`
-    : [m.categoria, m.ordenCompra, m.proveedor].filter(Boolean).join(" · ");
+    : [fechaDeMovimiento(m), m.categoria, m.ordenCompra, m.proveedor]
+        .filter(Boolean)
+        .join(" · ");
 
 export default function MovimientosPage() {
   const [movimientos, setMovimientos] = useState([]);
@@ -109,11 +126,7 @@ export default function MovimientosPage() {
   const cargarMovimientos = () => {
     setCargando(true);
     listarMovimientos()
-      .then((data) => {
-        setMovimientos(
-          data.map((m) => ({ ...m, created_at: formatearCreatedAt(m.creadoEn) }))
-        );
-      })
+      .then(setMovimientos)
       .catch(() => {
         Swal.fire({
           icon: "error",
@@ -149,24 +162,24 @@ export default function MovimientosPage() {
     }
 
     if (filtroMes) {
-      lista = lista.filter((m) => MESES[parseDate(m.created_at).getMonth()] === filtroMes);
+      lista = lista.filter((m) => MESES[parseDate(fechaDeMovimiento(m)).getMonth()] === filtroMes);
     }
 
     if (filtroAnio) {
-      lista = lista.filter((m) => String(parseDate(m.created_at).getFullYear()) === filtroAnio);
+      lista = lista.filter((m) => String(parseDate(fechaDeMovimiento(m)).getFullYear()) === filtroAnio);
     }
 
     lista.sort((a, b) => {
       switch (sortBy) {
         case "fecha-asc":
-          return parseDate(a.created_at) - parseDate(b.created_at);
+          return parseDate(fechaDeMovimiento(a)) - parseDate(fechaDeMovimiento(b));
         case "monto-desc":
           return b.monto - a.monto;
         case "monto-asc":
           return a.monto - b.monto;
         case "fecha-desc":
         default:
-          return parseDate(b.created_at) - parseDate(a.created_at);
+          return parseDate(fechaDeMovimiento(b)) - parseDate(fechaDeMovimiento(a));
       }
     });
 

@@ -60,11 +60,15 @@ export function obtenerProyecto(id: string): Promise<Proyecto> {
 }
 
 export type ActualizarProyectoInput = {
+  nombre?: string;
+  presupuesto?: number;
   presupuestoManoObra?: number;
   contratista?: string;
   mesAsignacion?: string;
   anioAsignacion?: string;
   estado?: "Revisión" | "Finalizado";
+  bono?: string;
+  subtipoBono?: string | null;
 };
 
 export function actualizarProyecto(

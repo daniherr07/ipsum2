@@ -195,19 +195,29 @@ export async function esMesCerrado(mes: string, anio: string): Promise<boolean> 
    se valida aqui porque requiere el proyecto actual cargado */
 export async function actualizarProyecto(id: string, cambios: ActualizarProyectoInput): Promise<Proyecto> {
   const actual = await obtenerProyecto(id);
-  if (
-    cambios.presupuestoManoObra !== undefined &&
-    cambios.presupuestoManoObra > actual.presupuesto
-  ) {
-    throw new ApiError(400, "VALIDATION_ERROR", "presupuestoManoObra no puede superar el presupuesto del proyecto");
+  /* M1 combinada: la mano de obra efectiva no puede superar el presupuesto
+     efectivo (cualquiera de los dos puede cambiar en esta misma edicion) */
+  const presupuestoEfectivo = cambios.presupuesto ?? actual.presupuesto;
+  const manoObraEfectiva = cambios.presupuestoManoObra ?? actual.presupuestoManoObra;
+  if (manoObraEfectiva > presupuestoEfectivo) {
+    throw new ApiError(400, "VALIDATION_ERROR", "El presupuesto de mano de obra no puede superar el presupuesto del proyecto");
   }
 
   const patch: Record<string, unknown> = {};
+  if (cambios.nombre !== undefined) patch.nombre = cambios.nombre;
+  if (cambios.presupuesto !== undefined) patch.presupuesto = cambios.presupuesto;
   if (cambios.presupuestoManoObra !== undefined) patch.presupuesto_mano_obra = cambios.presupuestoManoObra;
   if (cambios.contratista !== undefined) patch.contratista_id = await resolverContratistaId(cambios.contratista);
   if (cambios.mesAsignacion !== undefined) patch.mes_asignacion = mesANumero(cambios.mesAsignacion);
   if (cambios.anioAsignacion !== undefined) patch.anio_asignacion = Number(cambios.anioAsignacion);
   if (cambios.estado !== undefined) patch.estado = cambios.estado;
+  if (cambios.bono !== undefined) {
+    const bonoId = await resolverBonoId(cambios.bono);
+    patch.bono_id = bonoId;
+    patch.subtipo_bono_id = cambios.subtipoBono
+      ? await resolverSubtipoBonoId(bonoId, cambios.subtipoBono)
+      : null;
+  }
 
   const { data, error } = await supabase
     .from("proyectos")

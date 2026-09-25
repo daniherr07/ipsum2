@@ -136,11 +136,16 @@ export async function validarCrearProyecto(body: unknown): Promise<CrearProyecto
 }
 
 export type ActualizarProyectoInput = {
+  nombre?: string;
+  presupuesto?: number;
   presupuestoManoObra?: number;
   contratista?: string;
   mesAsignacion?: string;
   anioAsignacion?: string;
   estado?: EstadoProyecto;
+  bono?: string;
+  /* null explicito: el nuevo bono no tiene subtipos y hay que limpiar el anterior */
+  subtipoBono?: string | null;
 };
 
 export async function validarActualizarProyecto(body: unknown): Promise<ActualizarProyectoInput> {
@@ -149,6 +154,22 @@ export async function validarActualizarProyecto(body: unknown): Promise<Actualiz
   }
   const data = body as Record<string, unknown>;
   const cambios: ActualizarProyectoInput = {};
+
+  if (data.nombre !== undefined) {
+    const valor = toTrimmedString(data.nombre);
+    if (!valor) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Agregue el nombre del proyecto");
+    }
+    cambios.nombre = valor;
+  }
+
+  if (data.presupuesto !== undefined) {
+    const valor = toNumber(data.presupuesto);
+    if (valor === undefined || valor <= 0) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Agregue un presupuesto válido mayor a 0");
+    }
+    cambios.presupuesto = valor;
+  }
 
   if (data.presupuestoManoObra !== undefined) {
     const valor = toNumber(data.presupuestoManoObra);
@@ -188,6 +209,22 @@ export async function validarActualizarProyecto(body: unknown): Promise<Actualiz
       throw new ApiError(400, "VALIDATION_ERROR", "Seleccione un estado válido");
     }
     cambios.estado = valor;
+  }
+
+  /* Bono y subtipo se validan como pareja: si el nuevo bono no tiene
+     subtipos, subtipoBono queda en null para limpiar el anterior (si se
+     dejara el viejo, romperia la FK compuesta subtipo_pertenece_a_bono) */
+  if (data.bono !== undefined) {
+    const bonoInput = toTrimmedString(data.bono);
+    if (!bonoInput) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Seleccione un bono");
+    }
+    const { bono, subtipoBono } = await validarBonoYSubtipo(
+      bonoInput,
+      toTrimmedString(data.subtipoBono)
+    );
+    cambios.bono = bono;
+    cambios.subtipoBono = subtipoBono ?? null;
   }
 
   if (Object.keys(cambios).length === 0) {

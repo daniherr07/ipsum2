@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   TrendingDown,
   TrendingUp,
   Wallet,
@@ -323,6 +324,91 @@ function ProyectosDelMesCard({ proyectos }) {
   );
 }
 
+/* =========================
+   Selector de mes/año (tipo calendario):
+   botón que abre una grilla de 12 meses con flechas de año.
+   Se cierra al elegir un mes o al hacer clic fuera (patrón
+   dropdown focus-within de daisyUI).
+========================= */
+function SelectorMesAnio({ mesIndex, anio, onChange }) {
+  /* Año que se está navegando dentro del popup (no cambia el global
+     hasta elegir un mes) */
+  const [anioVista, setAnioVista] = useState(anio);
+
+  useEffect(() => {
+    setAnioVista(anio);
+  }, [anio]);
+
+  const elegirMes = (m) => {
+    onChange(m, anioVista);
+    /* Quita el foco para que el dropdown se cierre */
+    document.activeElement?.blur();
+  };
+
+  return (
+    <div className="dropdown dropdown-center">
+      <div
+        tabIndex={0}
+        role="button"
+        aria-label="Seleccionar mes y año"
+        className="flex flex-col items-center cursor-pointer select-none rounded focus:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+      >
+        <span className="text-sm font-medium text-base-content/50">
+          {anio}
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-2xl sm:text-3xl font-black">
+          {MESES[mesIndex]}
+          <ChevronDown size={18} className="text-base-content/40 shrink-0" />
+        </span>
+      </div>
+
+      <div
+        tabIndex={0}
+        className="dropdown-content z-30 mt-2 w-64 rounded-lg border border-base-300 bg-base-100 p-3 shadow-lg"
+      >
+        {/* Navegación de año */}
+        <div className="flex items-center justify-between mb-2">
+          <button
+            type="button"
+            onClick={() => setAnioVista((a) => a - 1)}
+            className="btn btn-ghost btn-xs btn-circle"
+            aria-label="Año anterior"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="font-bold">{anioVista}</span>
+          <button
+            type="button"
+            onClick={() => setAnioVista((a) => a + 1)}
+            className="btn btn-ghost btn-xs btn-circle"
+            aria-label="Año siguiente"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+
+        {/* Grilla de meses */}
+        <div className="grid grid-cols-4 gap-1">
+          {MESES.map((mes, i) => (
+            <button
+              key={mes}
+              type="button"
+              onClick={() => elegirMes(i)}
+              className={`btn btn-sm ${
+                i === mesIndex && anioVista === anio
+                  ? "btn-primary"
+                  : "btn-ghost"
+              }`}
+            >
+              {mes.slice(0, 3)}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const DATA_VACIA = {
   ingresos: 0,
   egresos: 0,
@@ -495,12 +581,11 @@ export default function Home() {
   return (
     <div className="min-h-[calc(100svh-64px)] bg-base-200 p-3 sm:p-4 lg:p-6">
       <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:gap-5 lg:gap-6">
-        {/* Selector de Fecha */}
-        <FadeIn delay={0} className="flex flex-col items-center">
-          <span className="text-base-content/50 text-xs sm:text-sm font-medium mb-1">
-            {anio}
-          </span>
-          <div className="flex items-center gap-4 sm:gap-8">
+        {/* Selector de Fecha: picker tipo calendario + flechas.
+            relative z-30: el FadeIn crea un stacking context (transform) y
+            sin esto las tarjetas de abajo tapan el dropdown. */}
+        <FadeIn delay={0} className="relative z-30 flex flex-col items-center">
+          <div className="flex items-center gap-2 sm:gap-8">
             <button
               onClick={mesAnterior}
               className="btn btn-ghost btn-circle btn-sm bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary dark:text-white dark:hover:bg-primary/80"
@@ -509,10 +594,16 @@ export default function Home() {
               <ChevronLeft size={20} />
             </button>
 
-            <div className="w-40 sm:w-64 flex flex-col items-center gap-1">
-              <h1 className="text-2xl sm:text-4xl font-black text-center">
-                {MESES[mesIndex]}
-              </h1>
+            <div className="flex flex-col items-center gap-1">
+              <SelectorMesAnio
+                mesIndex={mesIndex}
+                anio={anio}
+                onChange={(m, a) => {
+                  setMesIndex(m);
+                  setAnio(a);
+                  triggerFade();
+                }}
+              />
               {/* C4: estado del mes — el select abre/cierra el mes */}
               {data.estadoMes && (
                 <select
@@ -640,7 +731,7 @@ export default function Home() {
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] sm:text-xs text-base-content/70">
                       Has gastado el {pctGasto}% de lo ingresado{" "}
-                      <InfoTip text="Egresos del mes ÷ ingresos del mes." />
+                      <InfoTip text="Egresos del mes ÷ ingresos del mes. Si supera el 100 %, gastaste más de lo que ingresó en el mes." />
                     </span>
                   </div>
                   <progress
