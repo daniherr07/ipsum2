@@ -5,24 +5,11 @@ import {
   obtenerMesAnioProyecto,
 } from "../services/proyectos.js";
 import { listarCatalogo } from "../services/catalogos.js";
+import { listarCategorias } from "../services/categorias.js";
 import { MESES } from "../utils/fechas.js";
 
 const ANIO_REGEX = /^\d{4}$/;
 const FECHA_PAGO_REGEX = /^\d{2}\/\d{2}\/\d{4}$/;
-
-export const OPCIONES_CATEGORIA = [
-  "Mano de Obra",
-  "Materiales",
-  "Equipamiento",
-  "Servicios",
-  "Otros",
-] as const;
-
-/* La orden de compra solo tiene sentido para estas categorias */
-export const CATEGORIAS_CON_ORDEN_COMPRA = ["Materiales", "Equipamiento"];
-
-/* La categoria que no admite proveedor */
-const CATEGORIA_SIN_PROVEEDOR = "Servicios";
 
 /* Rechaza movimientos cuyo mes de negocio ya esta cerrado (todos los
    proyectos del mes estan Finalizados). */
@@ -124,22 +111,27 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
         throw new ApiError(400, "VALIDATION_ERROR", "Seleccione un proyecto válido");
       }
       await validarMesAbiertoDeProyecto(proyectoId);
-      const categoria = toTrimmedString(data.categoria);
-      if (!categoria || !OPCIONES_CATEGORIA.includes(categoria as (typeof OPCIONES_CATEGORIA)[number])) {
-        throw new ApiError(
-          400,
-          "VALIDATION_ERROR",
-          `Seleccione una categoría válida: ${OPCIONES_CATEGORIA.join(", ")}`
-        );
+      const categoriaInput = toTrimmedString(data.categoria);
+      if (!categoriaInput) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Seleccione una categoría válida");
       }
+      const categorias = await listarCategorias();
+      const categoriaEncontrada = categorias.find(
+        (c) => c.nombre.toLowerCase() === categoriaInput.toLowerCase()
+      );
+      if (!categoriaEncontrada) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Seleccione una categoría válida");
+      }
+      const categoria = categoriaEncontrada.nombre;
+
       const ordenCompraInput = toTrimmedString(data.ordenCompra);
       let ordenCompra: string | undefined;
       if (ordenCompraInput) {
-        if (!CATEGORIAS_CON_ORDEN_COMPRA.includes(categoria)) {
+        if (!categoriaEncontrada.aceptaOrdenCompra) {
           throw new ApiError(
             400,
             "VALIDATION_ERROR",
-            "La orden de compra solo aplica para Materiales o Equipamiento"
+            `La orden de compra no aplica para la categoría ${categoria}`
           );
         }
         const catalogo = await listarCatalogo("ordenes-compra");
@@ -159,11 +151,11 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
       const proveedorInput = toTrimmedString(data.proveedor);
       let proveedor: string | undefined;
       if (proveedorInput) {
-        if (categoria === CATEGORIA_SIN_PROVEEDOR) {
+        if (!categoriaEncontrada.aceptaProveedor) {
           throw new ApiError(
             400,
             "VALIDATION_ERROR",
-            "El proveedor no aplica para la categoría Servicios"
+            `El proveedor no aplica para la categoría ${categoria}`
           );
         }
         const catalogo = await listarCatalogo("proveedores");

@@ -219,7 +219,7 @@ function GastosAdministrativosCard({
    Proyectos del Mes component
    (acordeón por proyecto: desglose de egresos + estado)
 ========================= */
-function ProyectosDelMesCard({ proyectos }) {
+function ProyectosDelMesCard({ proyectos, distribucion = [] }) {
   return (
     <div className="w-full h-full bg-base-100 flex flex-col gap-5 rounded-lg shadow-md p-5 sm:p-7">
       <div className="text-center">
@@ -232,14 +232,22 @@ function ProyectosDelMesCard({ proyectos }) {
         <div className="flex flex-col gap-2">
           {proyectos.map((proyecto) => {
             const egresos = proyecto.egresos ?? [];
+            /* El gasto administrativo del mes se muestra como una categoría más */
+            const gastoAdministrativo =
+              distribucion.find((d) => d.proyectoId === proyecto.id)?.monto ?? 0;
             /* Resumen por categoría (una línea por categoría, no por egreso) */
-            const porCategoria = Object.entries(
-              egresos.reduce((acc, e) => {
-                acc[e.categoria] = (acc[e.categoria] ?? 0) + e.monto;
-                return acc;
-              }, {})
-            ).sort((a, b) => b[1] - a[1]);
-            const totalEgresos = egresos.reduce((sum, e) => sum + e.monto, 0);
+            const acumulado = egresos.reduce((acc, e) => {
+              acc[e.categoria] = (acc[e.categoria] ?? 0) + e.monto;
+              return acc;
+            }, {});
+            if (gastoAdministrativo > 0) {
+              acumulado["Gasto Administrativo"] = gastoAdministrativo;
+            }
+            const porCategoria = Object.entries(acumulado).sort(
+              (a, b) => b[1] - a[1]
+            );
+            const totalEgresos =
+              egresos.reduce((sum, e) => sum + e.monto, 0) + gastoAdministrativo;
             return (
               <div
                 key={proyecto.id ?? proyecto.nombre}
@@ -876,7 +884,10 @@ export default function Home() {
 
           <div style={fadeStyle} className="h-full">
             <FadeIn delay={250} className="h-full">
-              <ProyectosDelMesCard proyectos={data.proyectosDelMes} />
+              <ProyectosDelMesCard
+                proyectos={data.proyectosDelMes}
+                distribucion={data.distribucionGastosAdministrativos}
+              />
             </FadeIn>
           </div>
         </div>

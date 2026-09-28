@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import Swal from "sweetalert2";
 import BackButton from "@/components/BackButton";
-import { listarMovimientos, actualizarMovimiento, eliminarMovimiento, listarCatalogo } from "@/lib/api";
+import { listarMovimientos, actualizarMovimiento, eliminarMovimiento, listarCatalogo, listarCategorias } from "@/lib/api";
 import { ANOS } from "@/lib/anios";
 
 /* =========================
@@ -68,8 +68,6 @@ const MESES = [
   "Noviembre",
   "Diciembre",
 ];
-
-const CATEGORIAS = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"];
 
 /* Convierte el creadoEn (ISO) del backend a dd/mm/yyyy para ordenar igual que antes */
 function formatearCreatedAt(creadoEnISO) {
@@ -220,12 +218,20 @@ export default function MovimientosPage() {
      no coincidian exactamente con un elemento del catalogo) */
   const [ordenesCompra, setOrdenesCompra] = useState([]);
   const [proveedores, setProveedores] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     listarCatalogo("ordenes-compra").then(setOrdenesCompra).catch(() => {});
     listarCatalogo("proveedores").then(setProveedores).catch(() => {});
+    listarCategorias().then(setCategorias).catch(() => {});
   }, []);
+
+  /* Reglas propias de la categoría del movimiento en edición
+     (qué campos opcionales aplican) */
+  const categoriaEdicion = categorias.find((c) => c.nombre === editingItem?.categoria);
+  const mostrarOCEdicion = !!categoriaEdicion?.aceptaOrdenCompra;
+  const mostrarProveedorEdicion = !!categoriaEdicion?.aceptaProveedor;
 
   const handleSave = async () => {
     if (!editingItem || guardando) return;
@@ -250,14 +256,20 @@ export default function MovimientosPage() {
         descripcion: editingItem.descripcion || "Egreso administrativo",
       };
     } else {
+      /* Solo se envían OC/proveedor si la categoría los acepta; si el campo
+         solo está oculto por configuración, se conserva el valor existente */
       payload = {
         tipo: "egreso",
         tipoEgreso: "egreso-general",
         proyectoId: editingItem.proyectoId,
         monto: Number(editingItem.monto),
         categoria: editingItem.categoria,
-        ordenCompra: editingItem.ordenCompra || undefined,
-        proveedor: editingItem.proveedor || undefined,
+        ordenCompra: categoriaEdicion?.aceptaOrdenCompra
+          ? editingItem.ordenCompra || undefined
+          : undefined,
+        proveedor: categoriaEdicion?.aceptaProveedor
+          ? editingItem.proveedor || undefined
+          : undefined,
         descripcion: editingItem.descripcion || "Egreso general",
       };
     }
@@ -723,51 +735,62 @@ export default function MovimientosPage() {
                           }
                         >
                           <option value="">Seleccionar...</option>
-                          {CATEGORIAS.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
+                          {/* Valor legacy que ya no está en el catálogo */}
+                          {editingItem.categoria &&
+                            !categorias.some((c) => c.nombre === editingItem.categoria) && (
+                              <option value={editingItem.categoria}>
+                                {editingItem.categoria}
+                              </option>
+                            )}
+                          {categorias.map((cat) => (
+                            <option key={cat.id} value={cat.nombre}>
+                              {cat.nombre}
                             </option>
                           ))}
                         </select>
                       </fieldset>
-                      <fieldset className="fieldset w-full">
-                        <legend className="fieldset-legend text-xs">
-                          Orden de Compra
-                        </legend>
-                        <select
-                          className="select select-sm w-full"
-                          value={editingItem.ordenCompra || ""}
-                          onChange={(e) =>
-                            handleInputChange("ordenCompra", e.target.value)
-                          }
-                        >
-                          <option value="">Sin especificar</option>
-                          {ordenesCompra.map((oc) => (
-                            <option key={oc.id} value={oc.nombre}>
-                              {oc.nombre}
-                            </option>
-                          ))}
-                        </select>
-                      </fieldset>
-                      <fieldset className="fieldset w-full">
-                        <legend className="fieldset-legend text-xs">
-                          Proveedor
-                        </legend>
-                        <select
-                          className="select select-sm w-full"
-                          value={editingItem.proveedor || ""}
-                          onChange={(e) =>
-                            handleInputChange("proveedor", e.target.value)
-                          }
-                        >
-                          <option value="">Sin especificar</option>
-                          {proveedores.map((p) => (
-                            <option key={p.id} value={p.nombre}>
-                              {p.nombre}
-                            </option>
-                          ))}
-                        </select>
-                      </fieldset>
+                      {mostrarOCEdicion && (
+                        <fieldset className="fieldset w-full">
+                          <legend className="fieldset-legend text-xs">
+                            Orden de Compra
+                          </legend>
+                          <select
+                            className="select select-sm w-full"
+                            value={editingItem.ordenCompra || ""}
+                            onChange={(e) =>
+                              handleInputChange("ordenCompra", e.target.value)
+                            }
+                          >
+                            <option value="">Sin especificar</option>
+                            {ordenesCompra.map((oc) => (
+                              <option key={oc.id} value={oc.nombre}>
+                                {oc.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </fieldset>
+                      )}
+                      {mostrarProveedorEdicion && (
+                        <fieldset className="fieldset w-full">
+                          <legend className="fieldset-legend text-xs">
+                            Proveedor
+                          </legend>
+                          <select
+                            className="select select-sm w-full"
+                            value={editingItem.proveedor || ""}
+                            onChange={(e) =>
+                              handleInputChange("proveedor", e.target.value)
+                            }
+                          >
+                            <option value="">Sin especificar</option>
+                            {proveedores.map((p) => (
+                              <option key={p.id} value={p.nombre}>
+                                {p.nombre}
+                              </option>
+                            ))}
+                          </select>
+                        </fieldset>
+                      )}
                     </div>
                   )}
                 </>

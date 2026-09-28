@@ -753,13 +753,17 @@ export default function ProyectoPage() {
     const ingresos = movimientos
       .filter((t) => t.tipo === "ingreso")
       .reduce((s, t) => s + t.monto, 0)
-    const egresos = movimientos
+    const egresosDirectos = movimientos
       .filter((t) => t.tipo === "egreso")
       .reduce((s, t) => s + t.monto, 0)
+    /* El gasto administrativo asignado del mes cuenta como egreso del proyecto */
+    const gastoAdministrativo = proyecto?.gastosAdministrativosMes ?? 0
+    const egresos = egresosDirectos + gastoAdministrativo
     const presupuesto = proyecto?.presupuesto ?? 0
     return {
       ingresos,
       egresos,
+      gastoAdministrativo,
       disponible: presupuesto - egresos,
       pctUso: presupuesto > 0 ? Math.round((egresos / presupuesto) * 100) : 0,
     }
@@ -774,19 +778,25 @@ export default function ProyectoPage() {
       .filter((t) => t.tipo === "egreso")
       .forEach((t) => {
         const nombre =
-          t.tipo === "egreso"
-            ? t.tipoEgreso === "egreso-administrativo"
-              ? "Egreso Administrativo"
-              : t.categoria || "Otros"
+          t.tipo === "egreso" && t.tipoEgreso === "egreso-general"
+            ? t.categoria || "Otros"
             : "Otros"
         if (!map[nombre]) map[nombre] = { monto: 0, count: 0 }
         map[nombre].monto += t.monto
         map[nombre].count += 1
       })
+    /* El gasto administrativo del mes se muestra como una categoría más
+       (count 0: no es un movimiento real del proyecto) */
+    if (totales.gastoAdministrativo > 0) {
+      map["Gasto Administrativo"] = {
+        monto: totales.gastoAdministrativo,
+        count: 0,
+      }
+    }
     return Object.entries(map)
       .map(([nombre, d]) => ({ nombre, ...d }))
       .sort((a, b) => b.monto - a.monto)
-  }, [movimientos])
+  }, [movimientos, totales.gastoAdministrativo])
 
   const donutData = useMemo(
     () => egresoCategorias.map((c) => ({ nombre: c.nombre, monto: c.monto })),
@@ -801,9 +811,11 @@ export default function ProyectoPage() {
   const conteos = useMemo(
     () => ({
       ingresos: movimientos.filter((t) => t.tipo === "ingreso").length,
-      egresos: movimientos.filter((t) => t.tipo === "egreso").length,
+      egresos:
+        movimientos.filter((t) => t.tipo === "egreso").length +
+        (totales.gastoAdministrativo > 0 ? 1 : 0),
     }),
-    [movimientos],
+    [movimientos, totales.gastoAdministrativo],
   )
 
   if (cargando) {
@@ -919,7 +931,7 @@ export default function ProyectoPage() {
               <div className="flex justify-between text-xs sm:text-sm mb-1">
                 <span className="text-base-content/60">
                   Presupuesto utilizado{" "}
-                  <InfoTip text="Porcentaje del presupuesto consumido: egresos del proyecto ÷ presupuesto del proyecto. Si supera el 100 %, el gasto excede el presupuesto asignado." />
+                  <InfoTip text="Porcentaje del presupuesto consumido: egresos del proyecto (incluido el gasto administrativo asignado del mes) ÷ presupuesto del proyecto. Si supera el 100 %, el gasto excede el presupuesto asignado." />
                 </span>
                 <span className="font-bold">
                   {proyecto.presupuesto > 0
@@ -1009,7 +1021,7 @@ export default function ProyectoPage() {
                 ? `${totales.pctUso}% utilizado`
                 : "Sin presupuesto definido"
             }
-            hint="Presupuesto del proyecto − egresos del proyecto. Un porcentaje sobre 100 % indica sobregiro: el disponible es negativo."
+            hint="Presupuesto del proyecto − egresos del proyecto (incluido el gasto administrativo asignado del mes). Un porcentaje sobre 100 % indica sobregiro: el disponible es negativo."
           />
           {/* M5: ganancia = ingresos − egresos (campo derivado del backend;
               si no viene, se calcula local con los totales ya cargados) */}
@@ -1024,7 +1036,7 @@ export default function ProyectoPage() {
             }
             delay={275}
             subtitle="Ingresos − Egresos"
-            hint="Ingresos del proyecto − egresos del proyecto."
+            hint="Ingresos del proyecto − egresos del proyecto (incluido el gasto administrativo asignado del mes)."
           />
         </section>
 
@@ -1034,7 +1046,7 @@ export default function ProyectoPage() {
           <FadeIn delay={300} className="bg-base-100 rounded-lg shadow-md p-4 sm:p-5 h-full">
             <h2 className="font-bold text-sm sm:text-base">
               Desglose de Egresos{" "}
-              <InfoTip text="Porcentaje de cada categoría sobre el total de egresos del proyecto." />
+              <InfoTip text="Porcentaje de cada categoría sobre el total de egresos del proyecto (incluido el gasto administrativo asignado del mes)." />
             </h2>
             {egresoCategorias.length > 0 ? (
               <ul className="space-y-3 mt-3">
@@ -1047,9 +1059,11 @@ export default function ProyectoPage() {
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className={`w-2 h-2 rounded-full shrink-0 ${color.dot}`} />
                           <span className="font-medium truncate">{cat.nombre}</span>
-                          <span className="text-base-content/40 text-xs shrink-0">
-                            ({cat.count} mov.)
-                          </span>
+                          {cat.count > 0 && (
+                            <span className="text-base-content/40 text-xs shrink-0">
+                              ({cat.count} mov.)
+                            </span>
+                          )}
                         </div>
                         <span className="font-semibold text-error shrink-0">
                           {formatCurrency(cat.monto)}
@@ -1124,8 +1138,36 @@ export default function ProyectoPage() {
           </div>
 
           {/* Lista de movimientos */}
-          {movimientosFiltrados.length > 0 ? (
+          {movimientosFiltrados.length > 0 ||
+          (activeTab === "egresos" && totales.gastoAdministrativo > 0) ? (
             <ul className="divide-y divide-base-200 mt-3">
+              {/* Fila informativa del gasto administrativo asignado (no es un
+                  movimiento real: no se edita ni elimina) */}
+              {activeTab === "egresos" && totales.gastoAdministrativo > 0 && (
+                <li className="flex items-center gap-3 p-3 sm:p-4 hover:bg-base-200/60 transition-colors">
+                  <div className="p-2 sm:p-2.5 rounded-full shrink-0 bg-warning/10">
+                    <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm sm:text-base truncate">
+                      Gasto administrativo
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                      <span className="badge badge-xs shrink-0 badge-warning">
+                        Egreso Administrativo
+                      </span>
+                      <span className="text-[11px] text-base-content/60 truncate">
+                        {proyecto.mesAsignacion} {proyecto.anioAsignacion}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="font-black text-sm sm:text-base shrink-0 text-error">
+                    -{formatCurrency(totales.gastoAdministrativo)}
+                  </p>
+                </li>
+              )}
               {movimientosFiltrados.map((mov) => {
                 const esIngreso = mov.tipo === "ingreso"
                 return (

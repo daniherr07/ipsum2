@@ -12,7 +12,7 @@ import {
 import Link from "next/link"
 import Swal from "sweetalert2"
 import BackButton from "@/components/BackButton"
-import { crearItemCatalogo, crearMovimiento, listarCatalogo, listarProyectos } from "@/lib/api"
+import { crearCategoria, crearItemCatalogo, crearMovimiento, listarCatalogo, listarCategorias, listarProyectos, type Categoria } from "@/lib/api"
 import { ANOS } from "@/lib/anios"
 
 interface Proyecto {
@@ -81,14 +81,6 @@ const meses = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
-
-const opcionesCategoria = ["Mano de Obra", "Materiales", "Equipamiento", "Servicios", "Otros"]
-
-/* La orden de compra solo aplica a Materiales/Equipamiento; el proveedor
-   no aplica a Servicios (mismas reglas que valida el backend). */
-const categoriaAceptaOrdenCompra = (categoria: string) =>
-  categoria === "Materiales" || categoria === "Equipamiento"
-const categoriaAceptaProveedor = (categoria: string) => categoria !== "Servicios"
 
 export default function AgregarMovimientoPage() {
   /* useSearchParams requiere un boundary <Suspense> durante el prerender (C8) */
@@ -203,6 +195,51 @@ function AgregarMovimientoContenido() {
         })
       })
   }, [])
+
+  // Categorías de egreso (catálogo configurable con reglas propias)
+  const [categorias, setCategorias] = useState<Categoria[]>([])
+
+  React.useEffect(() => {
+    listarCategorias()
+      .then(setCategorias)
+      .catch(() => {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudieron cargar las categorías",
+          text: "Verifica que el backend esté corriendo en localhost:4000",
+        })
+      })
+  }, [])
+
+  const handleAgregarCategoria = () => {
+    Swal.fire({
+      title: "Nueva Categoría",
+      input: "text",
+      inputLabel: "Ingrese el nombre de la nueva categoría",
+      inputPlaceholder: "Ej: Herramientas",
+      confirmButtonText: "Crear",
+      confirmButtonColor: "#035496",
+      showCancelButton: true,
+    }).then((result) => {
+      if (!result.isConfirmed || !result.value) return
+      const nombre = result.value.trim()
+      if (!nombre) return
+      crearCategoria({ nombre })
+        .then((item) => {
+          setCategorias((prev) => [...prev, item])
+          setComponenteCategoria(item.nombre)
+          if (!item.aceptaOrdenCompra) setComponenteOC("")
+          if (!item.aceptaProveedor) setComponenteProveedor("")
+        })
+        .catch((error) => {
+          Swal.fire({
+            icon: "error",
+            title: "No se pudo crear la categoría",
+            text: error instanceof Error ? error.message : "Error desconocido",
+          })
+        })
+    })
+  }
 
   const handleAgregarProveedor = () => {
     Swal.fire({
@@ -348,10 +385,16 @@ function AgregarMovimientoContenido() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proyectos, componenteMes, componenteAno])
 
+  /* Categoría seleccionada y reglas propias del catálogo
+     (qué campos opcionales aplican a cada categoría) */
+  const categoriaSeleccionada = categorias.find((c) => c.nombre === componenteCategoria)
+  const mostrarCampoOC = !!categoriaSeleccionada?.aceptaOrdenCompra
+  const mostrarCampoProveedor = !!categoriaSeleccionada?.aceptaProveedor
+
   /* Info de presupuesto de Mano de Obra para el egreso general en curso (C7B) */
   const proyectoMO =
     tipoComponente === "egreso-general" &&
-    componenteCategoria === "Mano de Obra" &&
+    !!categoriaSeleccionada?.esManoObra &&
     componenteProyecto
       ? proyectos.find((p) => p.id === componenteProyecto)
       : undefined
@@ -1026,21 +1069,27 @@ function AgregarMovimientoContenido() {
                                 <select
                                   value={componenteCategoria}
                                   onChange={(e) => {
+                                    if (e.target.value === "agregar-nuevo") {
+                                      handleAgregarCategoria()
+                                      return
+                                    }
                                     const cat = e.target.value
                                     setComponenteCategoria(cat)
-                                    if (!categoriaAceptaOrdenCompra(cat)) setComponenteOC("")
-                                    if (!categoriaAceptaProveedor(cat)) setComponenteProveedor("")
+                                    const sel = categorias.find((c) => c.nombre === cat)
+                                    if (!sel?.aceptaOrdenCompra) setComponenteOC("")
+                                    if (!sel?.aceptaProveedor) setComponenteProveedor("")
                                   }}
                                   className="select select-bordered w-full"
                                 >
                                   <option value="">Seleccionar categoría...</option>
-                                  {opcionesCategoria.map((cat) => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                  {categorias.map((cat) => (
+                                    <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
                                   ))}
+                                  <option value="agregar-nuevo">+ Agregar categoría</option>
                                 </select>
                               </div>
 
-                              {categoriaAceptaOrdenCompra(componenteCategoria) && (
+                              {mostrarCampoOC && (
                                 <div className="form-control">
                                   <label className="label pt-0">
                                     <span className="label-text font-semibold">
@@ -1069,7 +1118,7 @@ function AgregarMovimientoContenido() {
                                 </div>
                               )}
 
-                              {categoriaAceptaProveedor(componenteCategoria) && (
+                              {mostrarCampoProveedor && (
                                 <div className="form-control">
                                   <label className="label pt-0">
                                     <span className="label-text font-semibold">

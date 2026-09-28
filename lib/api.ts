@@ -34,7 +34,9 @@ export type Proyecto = {
   bono: string;
   subtipoBono: string;
   creadoEn: string;
-  /* Campos derivados, calculados por el backend en el enriquecimiento */
+  /* Campos derivados, calculados por el backend en el enriquecimiento.
+     `gastosAdministrativosMes` es la parte de gastos administrativos del mes
+     que le corresponde al proyecto; `totalEgresos` y `ganancia` ya la incluyen. */
   gastadoManoObra?: number;
   gastosAdministrativosMes?: number;
   totalIngresos?: number;
@@ -227,6 +229,49 @@ export function actualizarItemCatalogo(
 
 export function eliminarItemCatalogo(tipo: TipoCatalogo, id: string): Promise<Record<string, never>> {
   return apiFetch(`/catalogos/${tipo}/${id}`, { method: "DELETE" });
+}
+
+/* Categorías de egreso: catálogo con reglas propias (acepta OC/proveedor,
+   cuenta como mano de obra) */
+export type Categoria = {
+  id: string;
+  nombre: string;
+  aceptaOrdenCompra: boolean;
+  aceptaProveedor: boolean;
+  esManoObra: boolean;
+  creadoEn: string;
+};
+
+export type CategoriaInput = {
+  nombre: string;
+  aceptaOrdenCompra?: boolean;
+  aceptaProveedor?: boolean;
+  esManoObra?: boolean;
+};
+
+export function listarCategorias(): Promise<Categoria[]> {
+  return apiFetch<Categoria[]>("/categorias");
+}
+
+export function crearCategoria(input: CategoriaInput): Promise<Categoria> {
+  return apiFetch<Categoria>("/categorias", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function actualizarCategoria(
+  id: string,
+  input: Partial<CategoriaInput>
+): Promise<Categoria> {
+  return apiFetch<Categoria>(`/categorias/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function eliminarCategoria(id: string): Promise<Record<string, never>> {
+  return apiFetch(`/categorias/${id}`, { method: "DELETE" });
 }
 
 export type SubtipoBono = {

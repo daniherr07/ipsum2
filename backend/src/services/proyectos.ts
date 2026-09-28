@@ -9,9 +9,13 @@ export type Proyecto = CrearProyectoInput & {
   creadoEn: string;
 };
 
-/* Campos derivados: se calculan desde los movimientos, no se almacenan */
+/* Campos derivados: se calculan desde los movimientos, no se almacenan.
+   El gasto administrativo asignado del mes es un campo de contexto que
+   el controller calcula (C5) y pasa al enriquecer; se suma a totalEgresos y
+   por tanto descuenta en ganancia. */
 export type ProyectoEnriquecido = Proyecto & {
   gastadoManoObra: number;
+  gastosAdministrativosMes: number;
   totalIngresos: number;
   totalEgresos: number;
   ganancia: number;
@@ -151,9 +155,16 @@ export async function obtenerMesAnioProyecto(
 }
 
 /* Enriquecimiento (C2, C6): una sola pasada sobre los movimientos del proyecto.
-   Sigue siendo sincrono porque movimientos todavia vive en memoria (pendiente
-   Ahora async porque listarMovimientos consulta Supabase. */
-export async function enriquecerProyecto(proyecto: Proyecto): Promise<ProyectoEnriquecido> {
+   `gastoAdministrativo` es la parte de gastos administrativos del mes que le
+   corresponde al proyecto (la calcula el controller, ver C5); entra en
+   totalEgresos y por tanto en ganancia.
+   `categoriasManoObra` es el conjunto de nombres de categorías marcadas como
+   mano de obra en el catálogo; por defecto se asume la categoría histórica. */
+export async function enriquecerProyecto(
+  proyecto: Proyecto,
+  gastoAdministrativo = 0,
+  categoriasManoObra: Set<string> = new Set(["Mano de Obra"])
+): Promise<ProyectoEnriquecido> {
   const movimientos = await listarMovimientos({ proyectoId: proyecto.id });
   let totalIngresos = 0;
   let totalEgresos = 0;
@@ -163,21 +174,18 @@ export async function enriquecerProyecto(proyecto: Proyecto): Promise<ProyectoEn
       totalIngresos += m.monto;
     } else if (m.tipo === "egreso" && m.tipoEgreso === "egreso-general") {
       totalEgresos += m.monto;
-      if (m.categoria === "Mano de Obra") gastadoManoObra += m.monto;
+      if (categoriasManoObra.has(m.categoria)) gastadoManoObra += m.monto;
     }
   }
+  totalEgresos += gastoAdministrativo;
   return {
     ...proyecto,
     gastadoManoObra,
+    gastosAdministrativosMes: gastoAdministrativo,
     totalIngresos,
     totalEgresos,
     ganancia: totalIngresos - totalEgresos,
   };
-}
-
-export async function listarProyectosEnriquecidos(): Promise<ProyectoEnriquecido[]> {
-  const proyectos = await listarProyectos();
-  return Promise.all(proyectos.map(enriquecerProyecto));
 }
 
 /* C4: un mes esta "Cerrado" si tiene >= 1 proyecto y TODOS estan Finalizados */

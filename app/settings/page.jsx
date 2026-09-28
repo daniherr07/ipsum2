@@ -17,6 +17,10 @@ import {
   crearSubtipoBono,
   actualizarSubtipoBono,
   eliminarSubtipoBono,
+  listarCategorias,
+  crearCategoria,
+  actualizarCategoria,
+  eliminarCategoria,
 } from "@/lib/api";
 
 function FadeIn({ children, delay = 0, className = "" }) {
@@ -504,8 +508,277 @@ function BonosSection() {
   );
 }
 
+/* =========================
+   Categorías de egreso: catálogo con reglas propias
+   (orden de compra, proveedor, mano de obra)
+========================= */
+function CategoriaModal({ isOpen, onClose, onSubmit, title, initialData }) {
+  const [nombre, setNombre] = useState("");
+  const [aceptaOrdenCompra, setAceptaOrdenCompra] = useState(false);
+  const [aceptaProveedor, setAceptaProveedor] = useState(true);
+  const [esManoObra, setEsManoObra] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setNombre(initialData?.nombre || "");
+    setAceptaOrdenCompra(initialData?.aceptaOrdenCompra ?? false);
+    setAceptaProveedor(initialData?.aceptaProveedor ?? true);
+    setEsManoObra(initialData?.esManoObra ?? false);
+    setGuardando(false);
+  }, [isOpen, initialData]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (guardando) return;
+    if (!nombre.trim()) {
+      Swal.fire("Error", "El nombre no puede estar vacío", "error");
+      return;
+    }
+    try {
+      setGuardando(true);
+      await onSubmit({
+        nombre: nombre.trim(),
+        aceptaOrdenCompra,
+        aceptaProveedor,
+        esManoObra,
+      });
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal modal-open">
+      <div className="modal-box w-full max-w-md">
+        <h3 className="font-bold text-lg mb-4">{title}</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control w-full">
+            <label className="label">
+              <span className="label-text font-semibold">Nombre</span>
+            </label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Ingrese el nombre"
+              className="input input-bordered w-full"
+              autoFocus
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="label cursor-pointer justify-start gap-3">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-primary"
+                checked={aceptaOrdenCompra}
+                onChange={(e) => setAceptaOrdenCompra(e.target.checked)}
+              />
+              <span className="label-text">Acepta Orden de Compra</span>
+            </label>
+            <label className="label cursor-pointer justify-start gap-3">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-primary"
+                checked={aceptaProveedor}
+                onChange={(e) => setAceptaProveedor(e.target.checked)}
+              />
+              <span className="label-text">Acepta Proveedor</span>
+            </label>
+            <label className="label cursor-pointer justify-start gap-3">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-primary"
+                checked={esManoObra}
+                onChange={(e) => setEsManoObra(e.target.checked)}
+              />
+              <span className="label-text">Cuenta como Mano de Obra</span>
+            </label>
+          </div>
+          <div className="modal-action">
+            <button type="button" onClick={onClose} className="btn btn-ghost" disabled={guardando}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={guardando}>
+              {guardando ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
+        </form>
+      </div>
+      <div className="modal-backdrop" onClick={onClose}></div>
+    </div>
+  );
+}
+
+function FlagBadge({ value }) {
+  return value ? (
+    <span className="badge badge-success badge-sm">Sí</span>
+  ) : (
+    <span className="badge badge-ghost badge-sm">No</span>
+  );
+}
+
+function CategoriasSection() {
+  const [items, setItems] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  const cargar = () => {
+    setCargando(true);
+    listarCategorias()
+      .then(setItems)
+      .catch(() => {
+        Swal.fire("Error", "No se pudo cargar la lista de categorías. Verifica que el backend esté corriendo.", "error");
+      })
+      .finally(() => setCargando(false));
+  };
+
+  useEffect(() => {
+    listarCategorias()
+      .then(setItems)
+      .catch(() => {
+        Swal.fire("Error", "No se pudo cargar la lista de categorías. Verifica que el backend esté corriendo.", "error");
+      })
+      .finally(() => setCargando(false));
+  }, []);
+
+  const handleAdd = async (input) => {
+    try {
+      await crearCategoria(input);
+      setIsModalOpen(false);
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: "Categoría agregada correctamente", timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleEdit = async (input) => {
+    try {
+      await actualizarCategoria(editingId, input);
+      setIsModalOpen(false);
+      setEditingId(null);
+      cargar();
+      Swal.fire({ icon: "success", title: "Éxito", text: "Categoría actualizada correctamente", timer: 1500 });
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
+  const handleDelete = (id) => {
+    Swal.fire({
+      title: "¿Está seguro?",
+      text: "Esta acción no se puede deshacer",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, eliminar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await eliminarCategoria(id);
+          cargar();
+          Swal.fire("Eliminado", "Categoría eliminada correctamente.", "success");
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
+      }
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-base-content">Categorías de Egreso</h2>
+        <button
+          onClick={() => {
+            setEditingId(null);
+            setIsModalOpen(true);
+          }}
+          className="btn btn-primary btn-sm"
+        >
+          <Plus size={18} /> Agregar
+        </button>
+      </div>
+
+      <div className="overflow-x-auto bg-base-100 rounded-lg shadow">
+        <table className="table w-full">
+          <thead>
+            <tr className="bg-base-200">
+              <th>Nombre</th>
+              <th>Orden de Compra</th>
+              <th>Proveedor</th>
+              <th>Mano de Obra</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cargando ? (
+              <tr>
+                <td colSpan="5" className="text-center py-4 text-base-content/60">
+                  Cargando...
+                </td>
+              </tr>
+            ) : items.length > 0 ? (
+              items.map((item) => (
+                <tr key={item.id} className="hover">
+                  <td className="font-semibold">{item.nombre}</td>
+                  <td><FlagBadge value={item.aceptaOrdenCompra} /></td>
+                  <td><FlagBadge value={item.aceptaProveedor} /></td>
+                  <td><FlagBadge value={item.esManoObra} /></td>
+                  <td className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingId(item.id);
+                        setIsModalOpen(true);
+                      }}
+                      className="btn btn-ghost btn-xs"
+                      title="Editar"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="btn btn-ghost btn-xs text-error"
+                      title="Eliminar"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-4 text-base-content/60">
+                  No hay categorías registradas
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <CategoriaModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingId(null);
+        }}
+        onSubmit={editingId ? handleEdit : handleAdd}
+        title={editingId ? "Editar Categoría" : "Agregar Categoría"}
+        initialData={editingId ? items.find((i) => i.id === editingId) : undefined}
+      />
+    </div>
+  );
+}
+
 const CATEGORIAS = [
   { id: "bonos", label: "Tipos de Bono" },
+  { id: "categorias", label: "Categorías de Egreso" },
   { id: "ordenes-compra", label: "Órdenes de Compra" },
   { id: "proveedores", label: "Proveedores" },
   { id: "contratistas", label: "Contratistas" },
@@ -561,6 +834,8 @@ export default function Settings() {
         <FadeIn delay={200} className="bg-base-100 rounded-lg shadow-lg p-6 md:p-8">
           {categoria?.id === "bonos" ? (
             <BonosSection />
+          ) : categoria?.id === "categorias" ? (
+            <CategoriasSection />
           ) : (
             <CatalogoSection tipo={categoria.id} categoryLabel={categoria.label} />
           )}

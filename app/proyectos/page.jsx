@@ -249,7 +249,7 @@ export default function ProyectosPage() {
                     {/* Ganancia total (C6) */}
                     <p className="text-[10px] uppercase font-bold text-base-content/50">
                       Ganancia{" "}
-                      <InfoTip text="Ganancia = ingresos del proyecto − egresos del proyecto." />
+                      <InfoTip text="Ganancia = ingresos del proyecto − egresos del proyecto (incluido el gasto administrativo asignado del mes)." />
                     </p>
                     <p
                       className={`font-black text-lg sm:text-xl ${

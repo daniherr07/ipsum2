@@ -8,6 +8,7 @@ import { movimientosRouter } from "./routes/movimientos.js";
 import { dashboardRouter } from "./routes/dashboard.js";
 import { catalogosRouter } from "./routes/catalogos.js";
 import { bonosRouter } from "./routes/bonos.js";
+import { categoriasRouter } from "./routes/categorias.js";
 import { conciliacionRouter } from "./routes/conciliacion.js";
 import { mesesRouter } from "./routes/meses.js";
 
@@ -34,6 +35,7 @@ app.use(movimientosRouter);
 app.use(dashboardRouter);
 app.use(catalogosRouter);
 app.use(bonosRouter);
+app.use(categoriasRouter);
 app.use(conciliacionRouter);
 app.use(mesesRouter);
 

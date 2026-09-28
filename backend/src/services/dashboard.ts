@@ -41,7 +41,7 @@ export type ResumenDashboard = {
   estadoMes: "En proceso" | "Cerrado" | null;
 };
 
-/* C5: prorrata de los gastos administrativos del mes por peso presupuestario.
+/* C5: distribucion de los gastos administrativos del mes por peso presupuestario.
    Reutilizada por el dashboard y por el detalle de proyecto (gastosAdministrativosMes) */
 export async function calcularDistribucionAdministrativa(
   mes: string,
