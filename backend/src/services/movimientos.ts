@@ -6,23 +6,24 @@ import type { CrearMovimientoInput } from "../validators/movimientos.js";
 export type Movimiento = CrearMovimientoInput & {
   id: string;
   creadoEn: string;
-  /* Mes/anio del proyecto al que pertenece un egreso general; se embebe en
-     las lecturas para atribuir el egreso al mes del proyecto, no a creadoEn. */
+  /* Mes/anio del proyecto al que pertenece un ingreso o egreso general; se
+     embebe en las lecturas para atribuir el movimiento al mes del proyecto. */
   mesAsignacionProyecto?: string;
   anioAsignacionProyecto?: string;
 };
 
 /* H3: mes/anio de negocio de un movimiento, no la fecha en que se inserto.
-   Los egresos generales pertenecen al mes de asignacion de su proyecto (si el
-   proyecto se movio de mes, el egreso lo sigue), no a la fecha de creacion. */
+   Ingresos y egresos generales pertenecen al mes de asignacion de su proyecto
+   (un ingreso de un caso de mayo pagado en junio cuenta en mayo; si el
+   proyecto se movio de mes, el movimiento lo sigue). */
 export function mesAnioDeMovimiento(m: Movimiento): { mes: string; anio: string } {
-  if (m.tipo === "ingreso") return mesAnioDeFechaPago(m.fechaPago);
   if (m.tipo === "egreso" && m.tipoEgreso === "egreso-administrativo") {
     return { mes: m.mes, anio: m.ano };
   }
   if (m.mesAsignacionProyecto && m.anioAsignacionProyecto) {
     return { mes: m.mesAsignacionProyecto, anio: m.anioAsignacionProyecto };
   }
+  if (m.tipo === "ingreso") return mesAnioDeFechaPago(m.fechaPago);
   return mesAnioDe(m.creadoEn);
 }
 
@@ -76,9 +77,18 @@ function aMovimiento(fila: FilaMovimiento): Movimiento {
     monto: Number(fila.monto),
     descripcion: fila.descripcion,
   };
+  const mesProyecto = {
+    mesAsignacionProyecto: fila.proyectos
+      ? MESES[fila.proyectos.mes_asignacion - 1]
+      : undefined,
+    anioAsignacionProyecto: fila.proyectos
+      ? String(fila.proyectos.anio_asignacion)
+      : undefined,
+  };
   if (fila.tipo === "ingreso") {
     return {
       ...base,
+      ...mesProyecto,
       tipo: "ingreso",
       proyectoId: fila.proyecto_id!,
       nombreIngreso: fila.nombre_ingreso!,
@@ -88,18 +98,14 @@ function aMovimiento(fila: FilaMovimiento): Movimiento {
   if (fila.tipo_egreso === "egreso-general") {
     return {
       ...base,
+      ...mesProyecto,
       tipo: "egreso",
       tipoEgreso: "egreso-general",
       proyectoId: fila.proyecto_id!,
       categoria: fila.categoria!,
       ordenCompra: fila.ordenes_compra?.nombre,
       proveedor: fila.proveedores?.nombre,
-      mesAsignacionProyecto: fila.proyectos
-        ? MESES[fila.proyectos.mes_asignacion - 1]
-        : undefined,
-      anioAsignacionProyecto: fila.proyectos
-        ? String(fila.proyectos.anio_asignacion)
-        : undefined,
+      fechaPago: fila.fecha_pago ? fechaIsoADdMmAaaa(fila.fecha_pago) : undefined,
     };
   }
   return {
@@ -150,6 +156,7 @@ async function construirPayload(input: CrearMovimientoInput): Promise<Record<str
     payload.tipo_egreso = "egreso-general";
     payload.proyecto_id = input.proyectoId;
     payload.categoria = input.categoria;
+    payload.fecha_pago = input.fechaPago ? fechaDdMmAaaaAIso(input.fechaPago) : null;
     payload.orden_compra_id = input.ordenCompra ? await resolverOrdenCompraId(input.ordenCompra) : null;
     payload.proveedor_id = input.proveedor ? await resolverProveedorId(input.proveedor) : null;
   } else {
@@ -161,10 +168,26 @@ async function construirPayload(input: CrearMovimientoInput): Promise<Record<str
   return payload;
 }
 
+/* Errores de Postgres que en realidad son datos invalidos (no fallas del
+   servidor): se devuelven como 400 con un mensaje entendible. */
+function errorDeEscritura(error: { code?: string; message: string }): ApiError {
+  if (error.code === "22P02" || error.code === "23503") {
+    return new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      "La categoría, orden de compra o proveedor no es válida en la base de datos. Revise el catálogo en Configuración."
+    );
+  }
+  if (error.code === "23514") {
+    return new ApiError(400, "VALIDATION_ERROR", "Los datos del movimiento no son consistentes con su tipo");
+  }
+  return new ApiError(500, "DB_ERROR", error.message);
+}
+
 export async function crearMovimiento(input: CrearMovimientoInput): Promise<Movimiento> {
   const payload = await construirPayload(input);
   const { data, error } = await supabase.from("movimientos").insert(payload).select(SELECT_MOVIMIENTO).single();
-  if (error) throw new ApiError(500, "DB_ERROR", error.message);
+  if (error) throw errorDeEscritura(error);
   return aMovimiento(data as unknown as FilaMovimiento);
 }
 
@@ -194,7 +217,7 @@ export async function actualizarMovimiento(id: string, input: CrearMovimientoInp
     .single();
   if (error) {
     if (error.code === "PGRST116") throw new ApiError(404, "NOT_FOUND", "Movimiento no encontrado");
-    throw new ApiError(500, "DB_ERROR", error.message);
+    throw errorDeEscritura(error);
   }
   return aMovimiento(data as unknown as FilaMovimiento);
 }

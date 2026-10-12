@@ -88,11 +88,11 @@ const MESES_NUM = Object.fromEntries(MESES.map((m, i) => [m, i + 1]));
 
 /* Fecha de negocio del movimiento: la que se muestra y la que manda en
    ordenamiento y filtros de mes/año (no la fecha en que se digitó).
-   ponytail: egreso-general no guarda fecha elegida por el usuario; se usa la
-   fecha de registro (creadoEn). Si hace falta la fecha real del pago,
-   agregar columna `fecha` en movimientos (migración Supabase). */
+   Egreso general: su fechaPago; si no la tiene (registrado antes de que
+   existiera ese campo) se usa la fecha de registro (creadoEn). */
 function fechaDeMovimiento(m) {
   if (m.tipo === "ingreso") return m.fechaPago;
+  if (m.tipoEgreso === "egreso-general" && m.fechaPago) return m.fechaPago;
   if (m.tipoEgreso === "egreso-administrativo") {
     return `01/${String(MESES_NUM[m.mes]).padStart(2, "0")}/${m.ano}`;
   }
@@ -270,6 +270,7 @@ export default function MovimientosPage() {
         proveedor: categoriaEdicion?.aceptaProveedor
           ? editingItem.proveedor || undefined
           : undefined,
+        fechaPago: editingItem.fechaPago?.trim() || undefined,
         descripcion: editingItem.descripcion || "Egreso general",
       };
     }
@@ -791,6 +792,20 @@ export default function MovimientosPage() {
                           </select>
                         </fieldset>
                       )}
+                      <fieldset className="fieldset w-full">
+                        <legend className="fieldset-legend text-xs">
+                          Fecha de Pago
+                        </legend>
+                        <input
+                          type="text"
+                          className="input input-sm w-full"
+                          value={editingItem.fechaPago || ""}
+                          placeholder="dd/mm/aaaa"
+                          onChange={(e) =>
+                            handleInputChange("fechaPago", e.target.value)
+                          }
+                        />
+                      </fieldset>
                     </div>
                   )}
                 </>
@@ -813,6 +828,8 @@ export default function MovimientosPage() {
                 <legend className="fieldset-legend text-xs">Monto (₵)</legend>
                 <input
                   type="number"
+                  min="0"
+                  step="0.01"
                   className="input input-sm w-full"
                   value={editingItem.monto}
                   onChange={(e) =>

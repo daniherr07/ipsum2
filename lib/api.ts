@@ -4,16 +4,38 @@ type ApiSuccess<T> = { success: true; data: T };
 type ApiFailure = { success: false; error: { code: string; message: string } };
 type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
+/* Tiempo máximo de espera: sin esto, un backend que no responde deja la
+   pantalla en "Guardando..." indefinidamente */
+const TIMEOUT_MS = 20000;
 
-  const result = (await response.json()) as ApiResponse<T>;
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+    });
+  } catch {
+    if (controller.signal.aborted) {
+      throw new Error("El servidor no respondió a tiempo. Revise si el movimiento se guardó antes de intentar de nuevo.");
+    }
+    throw new Error("No se pudo conectar con el servidor. Verifique su conexión.");
+  } finally {
+    clearTimeout(timer);
+  }
+
+  let result: ApiResponse<T>;
+  try {
+    result = (await response.json()) as ApiResponse<T>;
+  } catch {
+    throw new Error(`Respuesta inválida del servidor (HTTP ${response.status})`);
+  }
 
   if (!result.success) {
     throw new Error(result.error.message);
@@ -100,6 +122,8 @@ export type CrearMovimientoInput =
       categoria: string;
       ordenCompra?: string;
       proveedor?: string;
+      /* dd/mm/aaaa; opcional (egresos antiguos no la tienen: usar creadoEn) */
+      fechaPago?: string;
       descripcion: string;
     }
   | {
@@ -114,7 +138,7 @@ export type CrearMovimientoInput =
 export type Movimiento = CrearMovimientoInput & {
   id: string;
   creadoEn: string;
-  /* Mes/anio del proyecto de un egreso general (embebido por el backend) */
+  /* Mes/anio del proyecto de un ingreso o egreso general (embebido por el backend) */
   mesAsignacionProyecto?: string;
   anioAsignacionProyecto?: string;
 };
@@ -155,7 +179,10 @@ export type DistribucionGastoAdministrativo = {
   proyectoId: string;
   nombre: string;
   monto: number;
+  /* Peso del proyecto: presupuesto del proyecto ÷ presupuesto del mes */
   porcentaje: number;
+  /* Gasto administrativo asignado ÷ presupuesto del proyecto */
+  pctSobrePresupuesto: number;
 };
 
 export type EgresoProyecto = {

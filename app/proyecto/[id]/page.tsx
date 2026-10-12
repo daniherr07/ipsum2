@@ -12,6 +12,9 @@ import {
   Calendar,
   Pencil,
   CircleDollarSign,
+  HandCoins,
+  HardHat,
+  Copy,
 } from "lucide-react"
 import Link from "next/link"
 import Swal from "sweetalert2"
@@ -24,6 +27,7 @@ import {
   listarCatalogo,
   listarProyectos,
   listarBonos,
+  listarCategorias,
   type Proyecto,
   type Movimiento,
   type ItemCatalogo,
@@ -44,6 +48,28 @@ const formatNumber = (value: number) =>
   })
 
 const formatCurrency = (value: number) => `₡${formatNumber(value)}`
+
+/* Porcentaje pequeño junto a cada monto (1 decimal, coma decimal) */
+const formatPct = (parte: number, total: number) =>
+  total > 0
+    ? `${((parte / total) * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 })}%`
+    : "—"
+
+/* Fecha de un movimiento en dd/mm/aaaa: la fecha de pago si la tiene;
+   si no (egresos registrados antes de existir ese campo), la de registro */
+const fechaDeMovimiento = (m: Movimiento) => {
+  if ((m.tipo === "ingreso" || m.tipoEgreso === "egreso-general") && m.fechaPago) {
+    return m.fechaPago
+  }
+  return new Date(m.creadoEn).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
+
+/* dd/mm/aaaa -> aaaa-mm-dd para ordenar cronológicamente */
+const claveFecha = (ddmmaaaa: string) => ddmmaaaa.split("/").reverse().join("-")
 
 // Animated number hook
 function useAnimatedNumber(target: number, duration = 1000) {
@@ -120,7 +146,7 @@ const COLOR_STYLES = {
   error: { bg: "bg-error/10", text: "text-error" },
 } as const
 
-function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle, hint }: {
+function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle, hint, pct }: {
   icon: typeof TrendingUp
   label: string
   value: number
@@ -128,6 +154,8 @@ function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle, hint }
   delay?: number
   subtitle?: string
   hint?: string
+  /* Porcentaje pequeño junto al monto (ej. "45%") */
+  pct?: string
 }) {
   const animatedValue = useAnimatedNumber(value)
   const styles = COLOR_STYLES[color]
@@ -144,6 +172,11 @@ function StatCard({ icon: Icon, label, value, color, delay = 0, subtitle, hint }
           </p>
           <p className={`font-black text-sm sm:text-lg truncate ${styles.text}`}>
             {formatCurrency(animatedValue)}
+            {pct && (
+              <span className="ms-1.5 text-[10px] sm:text-xs font-semibold text-base-content/50">
+                {pct}
+              </span>
+            )}
           </p>
           {subtitle && (
             <p className="text-[10px] text-base-content/50">{subtitle}</p>
@@ -717,6 +750,19 @@ export default function ProyectoPage() {
   const [cargando, setCargando] = useState(true)
   const [activeTab, setActiveTab] = useState<"ingresos" | "egresos">("ingresos")
   const [modalEditar, setModalEditar] = useState(false)
+  /* Nombres de las categorías marcadas como mano de obra en el catálogo
+     (por defecto la categoría histórica, mismo criterio que el backend) */
+  const [categoriasMO, setCategoriasMO] = useState<Set<string>>(
+    () => new Set(["Mano de Obra"]),
+  )
+
+  useEffect(() => {
+    listarCategorias()
+      .then((cats) =>
+        setCategoriasMO(new Set(cats.filter((c) => c.esManoObra).map((c) => c.nombre))),
+      )
+      .catch(() => {})
+  }, [])
 
   const recargarProyecto = () => {
     obtenerProyecto(id)
@@ -765,9 +811,65 @@ export default function ProyectoPage() {
       egresos,
       gastoAdministrativo,
       disponible: presupuesto - egresos,
+      /* Lo que falta por ingresar (desembolsar) del presupuesto */
+      porDesembolsar: presupuesto - ingresos,
       pctUso: presupuesto > 0 ? Math.round((egresos / presupuesto) * 100) : 0,
     }
   }, [movimientos, proyecto])
+
+  /* =========================
+     Pagos de Mano de Obra, uno por uno y en orden de fecha
+     (para enviarle el desglose al contratista)
+  ========================= */
+  const pagosMO = useMemo(() => {
+    const pagos = movimientos
+      .filter(
+        (m) =>
+          m.tipo === "egreso" &&
+          m.tipoEgreso === "egreso-general" &&
+          categoriasMO.has(m.categoria),
+      )
+      .map((m) => ({ id: m.id, fecha: fechaDeMovimiento(m), descripcion: m.descripcion, monto: m.monto }))
+      .sort((a, b) => claveFecha(a.fecha).localeCompare(claveFecha(b.fecha)))
+    const conAcumulado: ((typeof pagos)[number] & { acumulado: number })[] = []
+    for (const p of pagos) {
+      const previo = conAcumulado.length > 0 ? conAcumulado[conAcumulado.length - 1].acumulado : 0
+      conAcumulado.push({ ...p, acumulado: previo + p.monto })
+    }
+    return conAcumulado
+  }, [movimientos, categoriasMO])
+
+  const pagadoMO = pagosMO.length > 0 ? pagosMO[pagosMO.length - 1].acumulado : 0
+  const restanteMO = (proyecto?.presupuestoManoObra ?? 0) - pagadoMO
+
+  const copiarDesgloseMO = async () => {
+    if (!proyecto) return
+    const lineas = [
+      `Desglose de pagos de Mano de Obra`,
+      `Proyecto: ${proyecto.nombre}`,
+      `Contratista: ${proyecto.contratista}`,
+      ``,
+      ...pagosMO.map(
+        (p, i) => `${i + 1}. ${p.fecha} — ${p.descripcion} — ${formatCurrency(p.monto)}`,
+      ),
+      ``,
+      `Total pagado: ${formatCurrency(pagadoMO)}`,
+      `Presupuesto de mano de obra: ${formatCurrency(proyecto.presupuestoManoObra)}`,
+      `Restante por pagar: ${formatCurrency(restanteMO)}`,
+    ]
+    try {
+      await navigator.clipboard.writeText(lineas.join("\n"))
+      Swal.fire({
+        icon: "success",
+        title: "Desglose copiado",
+        text: "Ya podés pegarlo en WhatsApp o en un correo",
+        timer: 1800,
+        showConfirmButton: false,
+      })
+    } catch {
+      Swal.fire("Error", "No se pudo copiar al portapapeles", "error")
+    }
+  }
 
   /* =========================
      Desglose de egresos por categoría
@@ -960,6 +1062,9 @@ export default function ProyectoPage() {
                 <span className="font-bold">
                   {formatCurrency(proyecto.gastadoManoObra ?? 0)} de{" "}
                   {formatCurrency(proyecto.presupuestoManoObra ?? 0)}
+                  <span className="ms-1.5 text-[10px] sm:text-xs font-semibold text-base-content/50">
+                    {formatPct(proyecto.gastadoManoObra ?? 0, proyecto.presupuestoManoObra ?? 0)}
+                  </span>
                 </span>
               </div>
               <progress
@@ -975,15 +1080,19 @@ export default function ProyectoPage() {
                 Gasto administrativo asignado ({proyecto.mesAsignacion}){" "}
                 <InfoTip text="Parte del gasto administrativo del mes que le corresponde a este proyecto, según su peso presupuestario (presupuesto del proyecto ÷ presupuesto total del mes)." />
               </span>
-              <span className="font-bold text-warning">
+              <span className="font-bold text-warning shrink-0">
                 {formatCurrency(proyecto.gastosAdministrativosMes ?? 0)}
+                <span className="ms-1.5 text-[10px] sm:text-xs font-semibold text-base-content/50">
+                  {formatPct(proyecto.gastosAdministrativosMes ?? 0, proyecto.presupuesto)} del
+                  presupuesto
+                </span>
               </span>
             </div>
           </div>
         </FadeIn>
 
         {/* Stat Cards */}
-        <section className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <StatCard
             icon={Wallet}
             label="Presupuesto"
@@ -998,8 +1107,19 @@ export default function ProyectoPage() {
             value={totales.ingresos}
             color="success"
             delay={150}
-            subtitle={`${conteos.ingresos} movimientos`}
-            hint="Suma de todos los ingresos registrados en el proyecto."
+            pct={formatPct(totales.ingresos, proyecto.presupuesto)}
+            subtitle={`${conteos.ingresos} movimientos · % del presupuesto`}
+            hint="Suma de todos los ingresos registrados en el proyecto. El % es ingresos ÷ presupuesto del proyecto."
+          />
+          <StatCard
+            icon={HandCoins}
+            label="Por desembolsar"
+            value={totales.porDesembolsar}
+            color={totales.porDesembolsar > 0 ? "primary" : "success"}
+            delay={175}
+            pct={formatPct(Math.max(totales.porDesembolsar, 0), proyecto.presupuesto)}
+            subtitle="% faltante del presupuesto"
+            hint="Presupuesto del proyecto − ingresos recibidos: lo que falta por ingresar. Si es negativo, ya ingresó más que el presupuesto."
           />
           <StatCard
             icon={TrendingDown}
@@ -1007,8 +1127,9 @@ export default function ProyectoPage() {
             value={totales.egresos}
             color="error"
             delay={200}
-            subtitle={`${conteos.egresos} movimientos`}
-            hint="Suma de todos los egresos del proyecto (generales y el gasto administrativo asignado)."
+            pct={formatPct(totales.egresos, proyecto.presupuesto)}
+            subtitle={`${conteos.egresos} movimientos · % del presupuesto`}
+            hint="Suma de todos los egresos del proyecto (generales y el gasto administrativo asignado). El % es egresos ÷ presupuesto del proyecto."
           />
           <StatCard
             icon={PiggyBank}
@@ -1035,8 +1156,9 @@ export default function ProyectoPage() {
                 : "error"
             }
             delay={275}
-            subtitle="Ingresos − Egresos"
-            hint="Ingresos del proyecto − egresos del proyecto (incluido el gasto administrativo asignado del mes)."
+            pct={formatPct(proyecto.ganancia ?? totales.ingresos - totales.egresos, totales.ingresos)}
+            subtitle="Ingresos − Egresos · % sobre ingresos"
+            hint="Ingresos del proyecto − egresos del proyecto (incluido el gasto administrativo asignado del mes). El % es ganancia ÷ ingresos."
           />
         </section>
 
@@ -1067,6 +1189,9 @@ export default function ProyectoPage() {
                         </div>
                         <span className="font-semibold text-error shrink-0">
                           {formatCurrency(cat.monto)}
+                          <span className="ms-1.5 text-[10px] sm:text-xs font-semibold text-base-content/50">
+                            {pct}%
+                          </span>
                         </span>
                       </div>
                       <div className="h-1.5 rounded-full bg-base-200">
@@ -1094,6 +1219,107 @@ export default function ProyectoPage() {
             <DonutChart data={donutData} />
           </FadeIn>
         </section>
+
+        {/* Pagos de Mano de Obra: línea por línea con fecha, acumulado y lo
+            que le queda al contratista; se puede copiar para enviárselo */}
+        <FadeIn delay={375} className="bg-base-100 rounded-lg shadow-md overflow-hidden">
+          <div className="p-4 sm:p-5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="bg-warning/10 p-2 rounded-lg shrink-0">
+                <HardHat className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-bold text-sm sm:text-base">
+                  Pagos de Mano de Obra{" "}
+                  <InfoTip text="Cada egreso en una categoría marcada como mano de obra, ordenado por fecha de pago. Los egresos registrados antes de existir la fecha de pago muestran su fecha de registro." />
+                </h2>
+                <p className="text-[11px] sm:text-xs text-base-content/60 truncate">
+                  Contratista: {proyecto.contratista}
+                </p>
+              </div>
+            </div>
+            {pagosMO.length > 0 && (
+              <button
+                type="button"
+                onClick={copiarDesgloseMO}
+                className="btn btn-outline btn-primary btn-sm gap-1.5 shrink-0"
+              >
+                <Copy size={14} />
+                <span className="hidden sm:inline">Copiar desglose</span>
+                <span className="sm:hidden">Copiar</span>
+              </button>
+            )}
+          </div>
+
+          {pagosMO.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="table table-sm">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th className="text-right">Monto</th>
+                    <th className="text-right hidden sm:table-cell">Acumulado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagosMO.map((p, i) => (
+                    <tr key={p.id}>
+                      <td className="text-base-content/50">{i + 1}</td>
+                      <td className="whitespace-nowrap">{p.fecha}</td>
+                      <td className="max-w-[10rem] sm:max-w-xs truncate">{p.descripcion}</td>
+                      <td className="text-right font-semibold whitespace-nowrap">
+                        {formatCurrency(p.monto)}
+                      </td>
+                      <td className="text-right text-base-content/60 whitespace-nowrap hidden sm:table-cell">
+                        {formatCurrency(p.acumulado)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-center text-sm text-base-content/50 pb-5">
+              Sin pagos de mano de obra todavía
+            </p>
+          )}
+
+          <div className="grid grid-cols-3 gap-2 text-center border-t border-base-200 p-3 sm:p-4">
+            <div>
+              <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/50">
+                Presupuesto MO
+              </p>
+              <p className="font-bold text-xs sm:text-sm">
+                {formatCurrency(proyecto.presupuestoManoObra ?? 0)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/50">
+                Pagado
+              </p>
+              <p className="font-bold text-xs sm:text-sm text-warning">
+                {formatCurrency(pagadoMO)}
+                <span className="ms-1 text-[10px] font-semibold text-base-content/50">
+                  {formatPct(pagadoMO, proyecto.presupuestoManoObra ?? 0)}
+                </span>
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] sm:text-xs uppercase font-bold text-base-content/50">
+                Restante al contratista
+              </p>
+              <p
+                className={`font-bold text-xs sm:text-sm ${
+                  restanteMO < 0 ? "text-error" : "text-success"
+                }`}
+              >
+                {formatCurrency(restanteMO)}
+              </p>
+            </div>
+          </div>
+        </FadeIn>
 
         {/* Movimientos con tabs */}
         <FadeIn delay={400} className="bg-base-100 rounded-lg shadow-md overflow-hidden">
@@ -1220,11 +1446,7 @@ export default function ProyectoPage() {
                               {mov.tipoEgreso === "egreso-administrativo"
                                 ? `${mov.mes} ${mov.ano}`
                                 : [
-                                    new Date(mov.creadoEn).toLocaleDateString("es-ES", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    }),
+                                    fechaDeMovimiento(mov),
                                     mov.categoria,
                                     mov.ordenCompra,
                                   ]

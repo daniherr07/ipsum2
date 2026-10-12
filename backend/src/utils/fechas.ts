@@ -24,3 +24,11 @@ export function mesAnioDeFechaPago(fechaPago: string): { mes: string; anio: stri
   const [, mm, aaaa] = fechaPago.split("/");
   return { mes: MESES[Number(mm) - 1], anio: aaaa };
 }
+
+/* "dd/mm/aaaa" que exista en el calendario (31/02 pasa el regex pero no
+   es una fecha real; sin esto Postgres la rechaza con un error 500) */
+export function esFechaValida(fecha: string): boolean {
+  const [dd, mm, aaaa] = fecha.split("/").map(Number);
+  const d = new Date(Date.UTC(aaaa, mm - 1, dd));
+  return d.getUTCFullYear() === aaaa && d.getUTCMonth() === mm - 1 && d.getUTCDate() === dd;
+}

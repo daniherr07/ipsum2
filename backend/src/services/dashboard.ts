@@ -5,7 +5,11 @@ export type DistribucionGastoAdministrativo = {
   proyectoId: string;
   nombre: string;
   monto: number;
+  /* Peso del proyecto en el mes: presupuesto del proyecto ÷ presupuesto del mes */
   porcentaje: number;
+  /* Gasto administrativo asignado ÷ presupuesto del propio proyecto (punto 8).
+     Con reparto por peso coincide para todos los proyectos del mes. */
+  pctSobrePresupuesto: number;
 };
 
 export type EgresoProyecto = {
@@ -67,6 +71,10 @@ export async function calcularDistribucionAdministrativa(
       nombre: p.nombre,
       monto: gastosAdministrativos * peso,
       porcentaje: Math.round(peso * 1000) / 10,
+      pctSobrePresupuesto:
+        p.presupuesto > 0
+          ? Math.round(((gastosAdministrativos * peso) / p.presupuesto) * 10000) / 100
+          : 0,
     };
   });
 }

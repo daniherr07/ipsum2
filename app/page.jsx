@@ -158,7 +158,7 @@ function GastosAdministrativosCard({
         </span>
         <p className="text-[11px] sm:text-xs text-base-content/70 mt-1">
           Distribuido por peso presupuestario{" "}
-          <InfoTip text="Cada gasto administrativo se reparte según el peso de cada proyecto: su presupuesto ÷ presupuesto total del mes." />
+          <InfoTip text="Cada gasto administrativo se reparte según el peso de cada proyecto: su presupuesto ÷ presupuesto total del mes. El % de cada proyecto es su gasto administrativo ÷ su propio presupuesto; con este reparto es el mismo para todos los proyectos del mes." />
         </p>
       </div>
 
@@ -192,17 +192,23 @@ function GastosAdministrativosCard({
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                {/* % = gasto administrativo ÷ presupuesto del propio proyecto;
+                    la barra usa la misma escala que la alerta del 10% */}
                 <progress
                   className={`progress w-full ${
                     superaLimite ? "progress-error" : "progress-warning"
                   }`}
-                  value={item.porcentaje}
+                  value={Math.min(item.pctSobrePresupuesto ?? 0, 100)}
                   max="100"
                 ></progress>
-                <span className="text-xs font-semibold text-base-content/60 w-11 text-right shrink-0">
-                  {item.porcentaje.toFixed(1)}%
+                <span className="text-xs font-semibold text-base-content/60 w-14 text-right shrink-0">
+                  {(item.pctSobrePresupuesto ?? 0).toFixed(2)}%
                 </span>
               </div>
+              <p className="text-[10px] text-base-content/50">
+                del presupuesto del proyecto · peso en el mes{" "}
+                {item.porcentaje.toFixed(1)}%
+              </p>
             </div>
           ))
         ) : (

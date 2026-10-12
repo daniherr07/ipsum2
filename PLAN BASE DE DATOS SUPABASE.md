@@ -317,6 +317,10 @@ create table public.movimientos (
   )
 );
 
+-- ACTUALIZACION (oct 2026): ver backend/sql/2026-10-feedback-cliente.sql
+--  * categoria pasa de este enum a text + FK a categorias(nombre) (catalogo configurable)
+--  * fecha_pago se permite (nullable) en egresos generales; el CHECK se recrea
+
 create index movimientos_proyecto_id_idx on public.movimientos (proyecto_id);
 create index movimientos_tipo_idx on public.movimientos (tipo, tipo_egreso);
 create index movimientos_orden_compra_id_idx on public.movimientos (orden_compra_id);

@@ -14,6 +14,13 @@ import Swal from "sweetalert2"
 import BackButton from "@/components/BackButton"
 import { crearCategoria, crearItemCatalogo, crearMovimiento, listarCatalogo, listarCategorias, listarProyectos, type Categoria } from "@/lib/api"
 import { ANOS } from "@/lib/anios"
+import {
+  formatearMonto,
+  formatearMontoInput,
+  limpiarMontoInput,
+  montoANumero,
+  numeroAMontoInput,
+} from "@/lib/montos"
 
 interface Proyecto {
   id: string
@@ -35,6 +42,7 @@ interface ComponenteEgreso {
   categoria?: string
   ordenCompra?: string
   proveedor?: string
+  fechaPago?: string
   descripcion?: string
 }
 
@@ -81,6 +89,80 @@ const meses = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ]
+
+/* dd/mm/aaaa que exista en el calendario (31/02 no) */
+function esFechaValida(dia: string, mes: string, ano: string): boolean {
+  const d = Number(dia), m = Number(mes), a = Number(ano)
+  const fecha = new Date(a, m - 1, d)
+  return fecha.getFullYear() === a && fecha.getMonth() === m - 1 && fecha.getDate() === d
+}
+
+/* Fecha en 3 campos (día / mes / año). El día se escribe libremente
+   (se puede borrar y teclear "05") y se normaliza al salir del campo. */
+function CampoFecha({ dia, mes, ano, onDia, onMes, onAno, color = "" }: {
+  dia: string
+  mes: string
+  ano: string
+  onDia: (v: string) => void
+  onMes: (v: string) => void
+  onAno: (v: string) => void
+  color?: "success" | "error" | ""
+}) {
+  const input = color ? `input-${color}` : ""
+  const select = color ? `select-${color}` : ""
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      <div>
+        <label className="label py-1">
+          <span className="label-text text-xs text-base-content/60">Día</span>
+        </label>
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={2}
+          value={dia}
+          onChange={(e) => onDia(e.target.value.replace(/\D/g, "").slice(0, 2))}
+          onBlur={() => {
+            const n = parseInt(dia)
+            if (n) onDia(String(Math.min(31, n)).padStart(2, "0"))
+          }}
+          placeholder="dd"
+          className={`input input-bordered ${input} w-full text-center`}
+        />
+      </div>
+      <div>
+        <label className="label py-1">
+          <span className="label-text text-xs text-base-content/60">Mes</span>
+        </label>
+        <select
+          value={mes}
+          onChange={(e) => onMes(e.target.value)}
+          className={`select select-bordered ${select} w-full`}
+        >
+          {meses.map((m, idx) => (
+            <option key={idx} value={String(idx + 1).padStart(2, "0")}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="label py-1">
+          <span className="label-text text-xs text-base-content/60">Año</span>
+        </label>
+        <select
+          value={ano}
+          onChange={(e) => onAno(e.target.value)}
+          className={`select select-bordered ${select} w-full`}
+        >
+          {ANOS.map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  )
+}
 
 export default function AgregarMovimientoPage() {
   /* useSearchParams requiere un boundary <Suspense> durante el prerender (C8) */
@@ -133,6 +215,10 @@ function AgregarMovimientoContenido() {
   const [componenteOC, setComponenteOC] = useState("")
   const [componenteProveedor, setComponenteProveedor] = useState("")
   const [componenteDescripcion, setComponenteDescripcion] = useState("")
+  /* Fecha de pago del egreso general (para el desglose por contratista) */
+  const [componenteFechaDia, setComponenteFechaDia] = useState(String(today.getDate()).padStart(2, "0"))
+  const [componenteFechaMes, setComponenteFechaMes] = useState(String(today.getMonth() + 1).padStart(2, "0"))
+  const [componenteFechaAno, setComponenteFechaAno] = useState(today.getFullYear().toString())
   const [guardando, setGuardando] = useState(false)
 
   // Catalogo real de ordenes de compra (antes eran opciones OC1/OC2/OC3
@@ -269,9 +355,11 @@ function AgregarMovimientoContenido() {
     })
   }
 
-  React.useEffect(() => {
-    listarProyectos()
-      .then((data) => {
+  /* Recarga los proyectos (y su gasto de mano de obra); se llama al abrir
+     y después de cada guardado para que el cuadro de MO no quede viejo */
+  const cargarProyectos = React.useCallback(
+    () =>
+      listarProyectos().then((data) => {
         const lista = data.map((p) => ({
           id: p.id,
           nombre: p.nombre,
@@ -282,7 +370,14 @@ function AgregarMovimientoContenido() {
           gastadoManoObra: p.gastadoManoObra,
         }))
         setProyectos(lista)
+        return lista
+      }),
+    [],
+  )
 
+  React.useEffect(() => {
+    cargarProyectos()
+      .then((lista) => {
         /* Preselección del proyecto desde query param ?proyectoId=... (C8):
            se ajusta el filtro de mes para que el proyecto aparezca en la lista */
         if (proyectoIdParam) {
@@ -303,7 +398,7 @@ function AgregarMovimientoContenido() {
           text: "Verifica que el backend esté corriendo en localhost:4000",
         })
       })
-  }, [proyectoIdParam])
+  }, [proyectoIdParam, cargarProyectos])
 
   const esEgreso = tipoMovimiento === "egreso-proyecto"
 
@@ -398,32 +493,38 @@ function AgregarMovimientoContenido() {
     componenteProyecto
       ? proyectos.find((p) => p.id === componenteProyecto)
       : undefined
-  const disponibleMO = proyectoMO
-    ? proyectoMO.presupuestoManoObra - (proyectoMO.gastadoManoObra ?? 0)
+  /* Egresos de MO del mismo proyecto ya agregados a la lista pero aún no
+     guardados: cuentan como utilizados para no exceder el presupuesto */
+  const pendienteMO = proyectoMO
+    ? componentes
+        .filter(
+          (c) =>
+            c.tipo === "egreso-general" &&
+            c.proyecto === proyectoMO.id &&
+            !!categorias.find((cat) => cat.nombre === c.categoria)?.esManoObra,
+        )
+        .reduce((sum, c) => sum + montoANumero(c.monto), 0)
     : 0
-  const montoMONum = parseInt(componenteMonto) || 0
+  const utilizadoMO = proyectoMO ? (proyectoMO.gastadoManoObra ?? 0) + pendienteMO : 0
+  const disponibleMO = proyectoMO ? proyectoMO.presupuestoManoObra - utilizadoMO : 0
+  const montoMONum = montoANumero(componenteMonto)
 
-  const formatCurrency = (value: string) => {
-    const num = parseInt(value.replace(/\D/g, "")) || 0
-    /* Mismo separador de miles que el resto de la app (1.500.000) */
-    return `₡${num.toLocaleString("es-ES", {
-      maximumFractionDigits: 0,
-      useGrouping: "always",
-    })}`
-  }
+  /* Acepta texto crudo ("1500,5") o un número ya convertido a string */
+  const formatCurrency = (value: string) => formatearMonto(montoANumero(value))
 
   const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMonto(e.target.value.replace(/\D/g, ""))
+    setMonto(limpiarMontoInput(e.target.value))
   }
 
   const handleComponenteMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setComponenteMonto(e.target.value.replace(/\D/g, ""))
+    setComponenteMonto(limpiarMontoInput(e.target.value))
   }
 
-  // Calcular restante (egreso de proyecto)
-  const totalNum = parseInt(monto) || 0
-  const sumaComponentes = componentes.reduce((sum, c) => sum + (parseInt(c.monto) || 0), 0)
-  const restante = totalNum - sumaComponentes
+  // Calcular restante (egreso de proyecto), redondeado a céntimos
+  const totalNum = montoANumero(monto)
+  const sumaComponentes =
+    Math.round(componentes.reduce((sum, c) => sum + montoANumero(c.monto), 0) * 100) / 100
+  const restante = Math.round((totalNum - sumaComponentes) * 100) / 100
 
   const resetFormComponente = () => {
     setTipoComponente(null)
@@ -435,6 +536,9 @@ function AgregarMovimientoContenido() {
     setComponenteOC("")
     setComponenteProveedor("")
     setComponenteDescripcion("")
+    setComponenteFechaDia(String(today.getDate()).padStart(2, "0"))
+    setComponenteFechaMes(String(today.getMonth() + 1).padStart(2, "0"))
+    setComponenteFechaAno(today.getFullYear().toString())
     setMostrarFormComponente(false)
   }
 
@@ -472,7 +576,20 @@ function AgregarMovimientoContenido() {
   }
 
   const agregarComponente = () => {
-    if (!tipoComponente || !componenteMonto) return
+    if (!tipoComponente || !montoANumero(componenteMonto)) return
+
+    if (
+      tipoComponente === "egreso-general" &&
+      !esFechaValida(componenteFechaDia, componenteFechaMes, componenteFechaAno)
+    ) {
+      Swal.fire({
+        icon: "warning",
+        title: "Fecha inválida",
+        text: "Revise el día de la fecha de pago",
+        confirmButtonColor: "#dc2626",
+      })
+      return
+    }
 
     const nuevo: ComponenteEgreso = {
       id: Date.now().toString(),
@@ -486,6 +603,10 @@ function AgregarMovimientoContenido() {
         tipoComponente === "egreso-general" && componenteOC ? componenteOC : undefined,
       proveedor:
         tipoComponente === "egreso-general" && componenteProveedor ? componenteProveedor : undefined,
+      fechaPago:
+        tipoComponente === "egreso-general"
+          ? `${componenteFechaDia.padStart(2, "0")}/${componenteFechaMes}/${componenteFechaAno}`
+          : undefined,
       descripcion: componenteDescripcion,
     }
 
@@ -526,6 +647,9 @@ function AgregarMovimientoContenido() {
         return
       }
 
+      /* Cuántos componentes se guardaron: si uno falla a mitad, los ya
+         guardados se quitan de la lista para que reintentar no los duplique */
+      let guardados = 0
       try {
         setGuardando(true)
         for (const c of componentes) {
@@ -534,25 +658,31 @@ function AgregarMovimientoContenido() {
               tipo: "egreso",
               tipoEgreso: "egreso-general",
               proyectoId: c.proyecto!,
-              monto: Number(c.monto),
+              monto: montoANumero(c.monto),
               categoria: c.categoria!,
               ordenCompra: c.ordenCompra,
               proveedor: c.proveedor,
+              fechaPago: c.fechaPago,
               descripcion: c.descripcion || "Egreso general",
             })
           } else {
             await crearMovimiento({
               tipo: "egreso",
               tipoEgreso: "egreso-administrativo",
-              monto: Number(c.monto),
+              monto: montoANumero(c.monto),
               mes: meses[c.mes - 1],
               ano: String(c.ano),
               descripcion: c.descripcion || "Egreso administrativo",
             })
           }
+          guardados++
         }
 
-        Swal.fire({
+        cargarProyectos().catch(() => {})
+
+        /* Se espera a que el usuario cierre el mensaje antes de limpiar el
+           formulario; mientras tanto el botón sigue bloqueado (sin reenvíos) */
+        await Swal.fire({
           icon: "success",
           title: "¡Movimiento guardado!",
           html: `
@@ -566,28 +696,48 @@ function AgregarMovimientoContenido() {
         })
 
         resetFormulario("egreso-proyecto")
-      } catch (error) {        Swal.fire({
+      } catch (error) {
+        const mensaje = error instanceof Error ? error.message : "Error desconocido"
+        if (guardados > 0) {
+          setComponentes((prev) => prev.slice(guardados))
+          cargarProyectos().catch(() => {})
+        }
+        await Swal.fire({
           icon: "error",
           title: "Error al guardar",
-          text: error instanceof Error ? error.message : "Error desconocido",
+          text:
+            guardados > 0
+              ? `Se guardaron ${guardados} de ${componentes.length} egresos; los guardados se quitaron de la lista. ${mensaje}`
+              : mensaje,
           confirmButtonColor: "#dc2626",
         })
       } finally {
         setGuardando(false)
       }
     } else {
+      if (!esFechaValida(fechaPagoDia, fechaPagoMes, fechaPagoAno)) {
+        Swal.fire({
+          icon: "warning",
+          title: "Fecha inválida",
+          text: "Revise el día de la fecha de pago",
+          confirmButtonColor: "#16a34a",
+        })
+        return
+      }
       try {
         setGuardando(true)
         await crearMovimiento({
           tipo: "ingreso",
           proyectoId: proyectoSeleccionado,
-          monto: Number(monto),
+          monto: montoANumero(monto),
           nombreIngreso,
-          fechaPago: `${fechaPagoDia}/${fechaPagoMes}/${fechaPagoAno}`,
+          fechaPago: `${fechaPagoDia.padStart(2, "0")}/${fechaPagoMes}/${fechaPagoAno}`,
           descripcion: descripcion || "Ingreso de proyecto",
         })
 
-        Swal.fire({
+        cargarProyectos().catch(() => {})
+
+        await Swal.fire({
           icon: "success",
           title: "¡Movimiento guardado!",
           html: `
@@ -602,7 +752,7 @@ function AgregarMovimientoContenido() {
 
         resetFormulario("ingreso-proyecto")
       } catch (error) {
-        Swal.fire({
+        await Swal.fire({
           icon: "error",
           title: "Error al guardar",
           text: error instanceof Error ? error.message : "Error desconocido",
@@ -734,10 +884,10 @@ function AgregarMovimientoContenido() {
                       <span className="text-success font-bold">₡</span>
                       <input
                         type="text"
-                        inputMode="numeric"
-                        value={monto ? formatCurrency(monto) : ""}
+                        inputMode="decimal"
+                        value={formatearMontoInput(monto)}
                         onChange={handleMontoChange}
-                        placeholder="₡0"
+                        placeholder="₡0,00"
                         className="grow"
                       />
                     </label>
@@ -753,63 +903,18 @@ function AgregarMovimientoContenido() {
                     />
                   </Field>
 
+                  {/* La fecha de pago es informativa: el ingreso cuenta en el
+                      mes asignado del proyecto, no en el mes de esta fecha */}
                   <Field label="Fecha de Pago">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="label py-1">
-                          <span className="label-text text-xs text-base-content/60">Día</span>
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="31"
-                          value={fechaPagoDia}
-                          onChange={(e) =>
-                            setFechaPagoDia(
-                              String(Math.min(31, Math.max(1, parseInt(e.target.value) || 1))).padStart(2, "0"),
-                            )
-                          }
-                          className="input input-bordered input-success w-full text-center"
-                        />
-                      </div>
-                      <div>
-                        <label className="label py-1">
-                          <span className="label-text text-xs text-base-content/60">Mes</span>
-                        </label>
-                        <select
-                          value={fechaPagoMes}
-                          onChange={(e) =>
-                            setFechaPagoMes(String(parseInt(e.target.value)).padStart(2, "0"))
-                          }
-                          className="select select-bordered select-success w-full"
-                        >
-                          {meses.map((mes, idx) => (
-                            <option
-                              key={idx}
-                              value={String(idx + 1).padStart(2, "0")}
-                              disabled={esMesCerrado(mes, fechaPagoAno)}
-                            >
-                              {mes}
-                              {esMesCerrado(mes, fechaPagoAno) ? " (Cerrado)" : ""}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="label py-1">
-                          <span className="label-text text-xs text-base-content/60">Año</span>
-                        </label>
-                        <select
-                          value={fechaPagoAno}
-                          onChange={(e) => setFechaPagoAno(e.target.value)}
-                          className="select select-bordered select-success w-full"
-                        >
-                          {ANOS.map((ano) => (
-                            <option key={ano} value={ano}>{ano}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
+                    <CampoFecha
+                      dia={fechaPagoDia}
+                      mes={fechaPagoMes}
+                      ano={fechaPagoAno}
+                      onDia={setFechaPagoDia}
+                      onMes={setFechaPagoMes}
+                      onAno={setFechaPagoAno}
+                      color="success"
+                    />
                   </Field>
 
                   <Field label="Descripción">
@@ -833,10 +938,10 @@ function AgregarMovimientoContenido() {
                       <span className="text-error font-bold">₡</span>
                       <input
                         type="text"
-                        inputMode="numeric"
-                        value={monto ? formatCurrency(monto) : ""}
+                        inputMode="decimal"
+                        value={formatearMontoInput(monto)}
                         onChange={handleMontoChange}
-                        placeholder="₡0"
+                        placeholder="₡0,00"
                         className="grow"
                       />
                     </label>
@@ -893,6 +998,7 @@ function AgregarMovimientoContenido() {
                                 ? [
                                     nombreProyecto(comp.proyecto),
                                     comp.categoria,
+                                    comp.fechaPago,
                                     comp.ordenCompra,
                                     comp.proveedor,
                                   ]
@@ -974,7 +1080,7 @@ function AgregarMovimientoContenido() {
                               {restante > 0 && (
                                 <button
                                   type="button"
-                                  onClick={() => setComponenteMonto(restante.toString())}
+                                  onClick={() => setComponenteMonto(numeroAMontoInput(restante))}
                                   className="label-text-alt link link-primary"
                                 >
                                   Usar restante: {formatCurrency(restante.toString())}
@@ -985,10 +1091,10 @@ function AgregarMovimientoContenido() {
                               <span className="text-base-content/60 font-bold">₡</span>
                               <input
                                 type="text"
-                                inputMode="numeric"
-                                value={componenteMonto ? formatCurrency(componenteMonto) : ""}
+                                inputMode="decimal"
+                                value={formatearMontoInput(componenteMonto)}
                                 onChange={handleComponenteMontoChange}
-                                placeholder={restante > 0 ? formatCurrency(restante.toString()) : "₡0"}
+                                placeholder={restante > 0 ? formatCurrency(restante.toString()) : "₡0,00"}
                                 className="grow"
                               />
                             </label>
@@ -1147,6 +1253,21 @@ function AgregarMovimientoContenido() {
                                 </div>
                               )}
 
+                              {/* Fecha real del pago (desglose al contratista) */}
+                              <div className="form-control">
+                                <label className="label pt-0 pb-0">
+                                  <span className="label-text font-semibold">Fecha de pago</span>
+                                </label>
+                                <CampoFecha
+                                  dia={componenteFechaDia}
+                                  mes={componenteFechaMes}
+                                  ano={componenteFechaAno}
+                                  onDia={setComponenteFechaDia}
+                                  onMes={setComponenteFechaMes}
+                                  onAno={setComponenteFechaAno}
+                                />
+                              </div>
+
                               {/* Info presupuesto Mano de Obra del proyecto (C7B) */}
                               {proyectoMO && (
                                 <div className="bg-base-100 border border-base-300 rounded-lg p-3 sm:p-4">
@@ -1167,7 +1288,7 @@ function AgregarMovimientoContenido() {
                                         Utilizado
                                       </p>
                                       <p className="font-bold text-xs sm:text-sm text-warning">
-                                        {formatCurrency(String(proyectoMO.gastadoManoObra ?? 0))}
+                                        {formatCurrency(String(utilizadoMO))}
                                       </p>
                                     </div>
                                     <div>
@@ -1183,6 +1304,12 @@ function AgregarMovimientoContenido() {
                                       </p>
                                     </div>
                                   </div>
+                                  {pendienteMO > 0 && (
+                                    <p className="text-[10px] sm:text-xs text-base-content/60 mt-2">
+                                      Utilizado incluye {formatCurrency(String(pendienteMO))} de
+                                      egresos agregados que aún no se guardan
+                                    </p>
+                                  )}
                                   {montoMONum > disponibleMO && (
                                     <p className="text-error text-xs font-semibold mt-2">
                                       Excede el presupuesto de mano de obra disponible

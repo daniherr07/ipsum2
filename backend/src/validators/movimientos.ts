@@ -6,7 +6,7 @@ import {
 } from "../services/proyectos.js";
 import { listarCatalogo } from "../services/catalogos.js";
 import { listarCategorias } from "../services/categorias.js";
-import { MESES } from "../utils/fechas.js";
+import { MESES, esFechaValida } from "../utils/fechas.js";
 
 const ANIO_REGEX = /^\d{4}$/;
 const FECHA_PAGO_REGEX = /^\d{2}\/\d{2}\/\d{4}$/;
@@ -45,6 +45,9 @@ export type CrearMovimientoInput =
       categoria: string;
       ordenCompra?: string;
       proveedor?: string;
+      /* Fecha real del pago (dd/mm/aaaa); opcional: los egresos anteriores
+         a este campo no la tienen y se muestran con creadoEn */
+      fechaPago?: string;
       descripcion: string;
     }
   | {
@@ -77,9 +80,14 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
   }
   const data = body as Record<string, unknown>;
 
+  /* Hasta 2 decimales (céntimos); la columna es numeric(14,2) */
   const monto = toNumber(data.monto);
-  if (monto === undefined || monto <= 0 || !Number.isInteger(monto)) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Agregue un monto válido mayor a 0");
+  if (
+    monto === undefined ||
+    monto <= 0 ||
+    Math.abs(monto * 100 - Math.round(monto * 100)) > 1e-6
+  ) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Agregue un monto válido mayor a 0 (máximo 2 decimales)");
   }
 
   const descripcion = toTrimmedString(data.descripcion);
@@ -98,8 +106,8 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
       throw new ApiError(400, "VALIDATION_ERROR", "Agregue el nombre del ingreso");
     }
     const fechaPago = toTrimmedString(data.fechaPago);
-    if (!fechaPago || !FECHA_PAGO_REGEX.test(fechaPago)) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Agregue la fecha de pago en formato dd/mm/aaaa");
+    if (!fechaPago || !FECHA_PAGO_REGEX.test(fechaPago) || !esFechaValida(fechaPago)) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Agregue una fecha de pago válida en formato dd/mm/aaaa");
     }
     return { tipo: "ingreso", proyectoId, monto, nombreIngreso, fechaPago, descripcion };
   }
@@ -172,7 +180,16 @@ export async function validarCrearMovimiento(body: unknown): Promise<CrearMovimi
         proveedor = encontrado.nombre;
       }
 
-      return { tipo: "egreso", tipoEgreso: "egreso-general", proyectoId, monto, categoria, ordenCompra, proveedor, descripcion };
+      const fechaPagoInput = toTrimmedString(data.fechaPago);
+      let fechaPago: string | undefined;
+      if (fechaPagoInput) {
+        if (!FECHA_PAGO_REGEX.test(fechaPagoInput) || !esFechaValida(fechaPagoInput)) {
+          throw new ApiError(400, "VALIDATION_ERROR", "Agregue una fecha de pago válida en formato dd/mm/aaaa");
+        }
+        fechaPago = fechaPagoInput;
+      }
+
+      return { tipo: "egreso", tipoEgreso: "egreso-general", proyectoId, monto, categoria, ordenCompra, proveedor, fechaPago, descripcion };
     }
 
     if (data.tipoEgreso === "egreso-administrativo") {
